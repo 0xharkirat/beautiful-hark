@@ -1,11 +1,11 @@
 {
   "header": {
     "icon": {
-      "name": "Tina",
-      "color": "orange",
+      "name": "BiBook",
+      "color": "red",
       "style": "float"
     },
-    "name": "Tina Starter",
+    "name": "Tales of Hark",
     "color": "default",
     "nav": [
       {
@@ -28,30 +28,30 @@
         "icon": {
           "name": "FaLinkedin"
         },
-        "url": "https://www.linkedin.com/company/tinacms"
+        "url": "https://www.linkedin.com/in/talesofhark"
       },
       {
         "icon": {
           "name": "FaGithub"
         },
-        "url": "https://github.com/tinacms/tinacms"
+        "url": "https://github.com/0xHARKIRAT"
       },
       {
         "icon": {
           "name": "FaYoutube"
         },
-        "url": "https://www.youtube.com/@TinaCMS"
+        "url": "https://www.youtube.com/@TalesofHark"
       },
       {
         "icon": {
           "name": "FaXTwitter"
         },
-        "url": "https://x.com/TinaCMS"
+        "url": "https://x.com/TalesofHark"
       }
     ]
   },
   "theme": {
-    "color": "blue",
+    "color": "red",
     "font": "sans",
     "darkMode": "light"
   }

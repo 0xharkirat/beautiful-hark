@@ -47,10 +47,10 @@ export default function PostsClientPage(props: ClientPostProps) {
         <div className="container flex flex-col items-center gap-16">
           <div className="text-center">
             <h2 className="mx-auto mb-6 text-pretty text-3xl font-semibold md:text-4xl lg:max-w-3xl">
-              Blog Posts
+              My Tales
             </h2>
             <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-              Discover the latest insights and tutorials about modern web development, UI design, and component-driven architecture.
+              Stories from the code trenches, creative experiments, and everything in between.
             </p>
           </div>
 
@@ -70,7 +70,7 @@ export default function PostsClientPage(props: ClientPostProps) {
                     <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
                       <Link
                         href={post.url}
-                        className="hover:underline"
+                        className="hover:text-primary transition-colors"
                       >
                         {post.title}
                       </Link>
@@ -100,7 +100,7 @@ export default function PostsClientPage(props: ClientPostProps) {
                     <div className="mt-6 flex items-center space-x-2 md:mt-8">
                       <Link
                         href={post.url}
-                        className="inline-flex items-center font-semibold hover:underline md:text-base"
+                        className="inline-flex items-center font-semibold text-primary hover:underline md:text-base"
                       >
                         <span>Read more</span>
                         <ArrowRight className="ml-2 size-4 transition-transform" />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Icon } from "../../icon";
 import { useLayout } from "../layout-context";
 import { Menu, X } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Header = () => {
   const { globalSettings, theme } = useLayout();
@@ -44,7 +45,7 @@ export const Header = () => {
                 <X className="in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
               </button>
 
-              <div className="hidden lg:block">
+              <div className="hidden lg:flex lg:items-center lg:gap-4">
                 <ul className="flex gap-8 text-sm">
                   {header.nav!.map((item, index) => (
                     <li key={index}>
@@ -56,6 +57,7 @@ export const Header = () => {
                     </li>
                   ))}
                 </ul>
+                <ThemeToggle />
               </div>
             </div>
 
@@ -71,6 +73,9 @@ export const Header = () => {
                       </Link>
                     </li>
                   ))}
+                <div className="pt-6">
+                  <ThemeToggle />
+                </div>
                 </ul>
               </div>
             </div>

@@ -105,7 +105,7 @@ export default function PostClientPage(props: ClientPostProps) {
             </div>
           </div>
         )}
-        <div data-tina-field={tinaField(post, '_body')} className='prose dark:prose-dark w-full max-w-none'>
+        <div data-tina-field={tinaField(post, '_body')} className='prose prose-lg dark:prose-invert w-full max-w-none'>
           <TinaMarkdown
             content={post._body}
             components={{

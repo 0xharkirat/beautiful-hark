@@ -4,6 +4,7 @@ import { Inter as FontSans, Lato, Nunito } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { VideoDialogProvider } from "@/components/ui/VideoDialogContext";
 import VideoDialog from "@/components/ui/VideoDialog";
+import { ThemeProvider } from "@/components/theme-provider";
 
 import "@/styles.css";
 import { TailwindIndicator } from "@/components/ui/breakpoint-indicator";
@@ -25,8 +26,8 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Tina",
-  description: "Tina Cloud Starter",
+  title: "Tales of Hark",
+  description: "The Boy Who Cooks With Tina CMS and GitHub Copilot",
 };
 
 export default function RootLayout({
@@ -35,13 +36,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(fontSans.variable, nunito.variable, lato.variable)}>
+    <html lang="en" className={cn(fontSans.variable, nunito.variable, lato.variable)} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <VideoDialogProvider>
-          {children}
-          <VideoDialog />
-        </VideoDialogProvider>
-        <TailwindIndicator />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <VideoDialogProvider>
+            {children}
+            <VideoDialog />
+          </VideoDialogProvider>
+          <TailwindIndicator />
+        </ThemeProvider>
       </body>
     </html>
   );

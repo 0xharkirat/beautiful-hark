@@ -1,0 +1,195 @@
+---
+title: How I Vibe Coded My Blog with GitHub Copilot and TinaCMS
+heroImg: /uploads/posts/vibe-coding.svg
+excerpt: >
+  A meta journey through building a blog while writing about building that same
+  blog. It's like Inception, but with more code and fewer spinning tops.
+author: content/authors/hark.md
+date: 2025-12-16T10:00:00.000Z
+tags:
+  - {}
+---
+
+## Wait... Am I Blogging About Building the Blog I'm Blogging On? 
+
+Yeah, this is happening. We're going full meta here—like writing a blog post about writing a blog post, on the blog I'm currently writing about. If that sentence made your brain do a backflip, welcome to the vibe.
+
+Think of it like *Inception*: I'm in a dream (the blog), inside another dream (writing about the blog), and somewhere Dom Cobb is yelling "WE NEED TO GO DEEPER!" Except instead of limbo, we're in a world of TypeScript, Tailwind, and TinaCMS.
+
+So buckle up. This is the story of how I turned a blank repo into *Tales of Hark - *a fully themed, red-accented, light/dark mode blog—all while having a conversation with GitHub Copilot like it's my coding buddy at 2 AM.
+
+***
+
+## The Beginning: "Let There Be Blog" 🎨
+
+It started simple:
+
+> "Update the existing project theme with the following changes: Add both light and dark themes. Use red as the primary color in both themes."
+
+And just like that, Copilot went to work. Boom. Red is now the star of the show. Light mode? ✅ Dark mode? ✅ No more boring neutral grays—we're going full *Tales of Hark* vibes with reds, oranges, and pinks.
+
+The CSS variables got a makeover:
+
+```css
+:root {
+  --primary: oklch(0.55 0.22 25); /* Red in light mode */
+}
+
+.dark {
+  --primary: oklch(0.65 0.24 25); /* Red in dark mode */
+}
+```
+
+Clean. Elegant. Red AF. The kind of primary color that says "I mean business, but I also know how to have fun."
+
+***
+
+## The Homepage: Simple, Bold, and Gradient-y 🌅
+
+Next up: the homepage. I didn't want a template dump with 47 sections, each screaming "LOOK AT ME!" I wanted something simple, striking, and on-brand.
+
+> "Homepage: Replace the current homepage content with a simple hero section only. Hero should have a gradient background. Title text: 'Hark Singh'. Subtitle text: 'The Boy Who Cooks With Tina CMS and GitHub Copilot'."
+
+Out went the stats, testimonials, feature grids, and generic CTAs. In came a single, beautiful hero with a gradient:
+
+```
+bg-gradient-to-br from-red-50 via-orange-50 to-pink-50
+```
+
+It's like a sunrise, but for developers. And in dark mode? Even cooler:
+
+```
+dark:from-red-950/20 dark:via-orange-950/20 dark:to-pink-950/20
+```
+
+That's the kind of aesthetic that makes you want to sip coffee and write code at golden hour.
+
+***
+
+## The Branding: Out With Tina, In With Tales 📖
+
+Don't get me wrong—TinaCMS is amazing. But this is *my* blog, so it needed *my* branding.
+
+> "Site title: 'Tales of Hark'. Update the header to remove the Tina logo. Use a simple book icon as the site logo. Replace the favicon to a simple 'H'."
+
+Copilot didn't just swap logos—it completely rebranded the site:
+
+* Header icon? Now a book (`BiBook`) in red. Because "Tales," duh.
+* Favicon? A bold red square with a white "H" in the center.
+* Footer? Added a little "Powered by TinaCMS" credit because respect where it's due.
+* Social links? All updated to "Tales of Hark" (except GitHub, which stays as `0xHARKIRAT` because that's the brand).
+
+It went from "generic starter template" to "this is clearly Hark's domain" in one swoop.
+
+***
+
+## The About Page: Getting Personal 🎵
+
+The About page was full of installation instructions and deployment guides. Cool for a starter, but not for a personal site. So I asked for a rewrite:
+
+> "Remove any remaining starter content. Rewrite the About page so it represents me (Hark) in a fun, engaging, and personal way."
+
+What I got back was gold:
+
+* A fun intro that actually sounds like me.
+* A **Tech Stack** section listing Flutter, Angular, .NET, Azure, and C#.
+* A **personal section** mentioning tabla playing and vlogging.
+
+No corporate speak. No "leveraging synergies." Just a real, human voice that says "hey, this is what I do, and here's what I'm into."
+
+***
+
+## The Dark Mode Fix: Let There Be Light (and Darkness) 🌗
+
+At some point, I realized the About page text was invisible in dark mode. Classic.
+
+> "Text is still not visible on dark mode."
+
+One line fix:
+
+```tsx
+className='prose prose-lg dark:prose-invert max-w-none'
+```
+
+`dark:prose-invert` is like a cheat code for Tailwind Typography. It flips all the prose colors for dark mode—headings, paragraphs, links, code blocks, everything. One class, infinite readability.
+
+***
+
+## The Blog Section: My Tales 📚
+
+The blog list page was titled "Blog Posts." Functional, sure. But boring.
+
+> "Update the blog page title to: 'My Tales'."
+
+Now it's got personality. And to match the red theme, I updated the hover states and link colors:
+
+```tsx
+className="hover:text-primary transition-colors"
+```
+
+Every link, every hover, every little interaction now feels cohesive with the rest of the site. Red is *everywhere*, but in a good way. It's not overwhelming—it's *thematic*.
+
+And for individual blog posts? Added `prose-lg` and `dark:prose-invert` for that crispy, readable experience in both modes.
+
+***
+
+## The Meta Moment: This Post 🎬
+
+And now we're here. Writing a blog post about writing a blog. It's meta, it's recursive, and honestly? It's kind of beautiful.
+
+This entire blog was built through conversation. I described what I wanted, Copilot made it happen, and together we iterated until it felt *right*. No Figma mockups. No 10-page PRDs. Just vibes, prompts, and a willingness to keep going until the result matched the vision.
+
+Is this the future of web development? Maybe. Is it fun as hell? Absolutely.
+
+***
+
+## What I Learned: Vibe Coding is Real 🚀
+
+Here's the thing: **vibe coding** isn't about writing less code—it's about writing code faster, with intention, and with a creative partner (Copilot) that doesn't judge your 2 AM typos.
+
+Some lessons from this journey:
+
+### 1. Start with the Vibe, Not the Features
+
+I didn't start with "I need a blog with X, Y, Z features." I started with "I want something that feels like *me*." The features came naturally after that.
+
+### 2. Iterate Fast, Ship Faster
+
+Every change was small, focused, and immediate. No waiting for CI/CD pipelines or long build times. Edit, save, refresh. Rinse and repeat.
+
+### 3. Let AI Handle the Boilerplate
+
+Copilot crushed the repetitive stuff—updating JSON configs, rewriting CSS variables, fixing prose classes. That freed me up to focus on the *creative decisions*: color choices, tone, content.
+
+### 4. Dark Mode is Non-Negotiable
+
+If your site doesn't have dark mode in 2025, you're leaving users (and vibes) on the table. Tailwind makes it stupidly easy with the `dark:` prefix.
+
+### 5. Personality > Perfection
+
+Your blog doesn't need to be a design masterpiece. It needs to *sound like you*. The quirks, the jokes, the "wait, did I just reference The Matrix?" moments—that's what makes it memorable.
+
+***
+
+## What's Next? 🛠️
+
+This blog is live, but it's not *done*. Here's what's coming:
+
+* More posts (obviously)
+* Maybe some tabla videos embedded
+* A projects page showcasing Flutter and .NET stuff
+* Possibly a dark mode toggle animation that's extra satisfying
+
+But for now? I'm just vibing. Writing. Building. And documenting it all along the way.
+
+***
+
+## Final Thoughts: Welcome to the Tales 📖
+
+If you made it this far, thanks for sticking around. This blog is my little corner of the internet—a place to share code, creativity, and chaos in equal measure.
+
+And hey, if you're wondering whether you can build something cool with GitHub Copilot and TinaCMS? The answer is yes. You absolutely can. Just start with a vibe, throw in some prompts, and see where it takes you.
+
+Who knows? You might end up writing a meta blog post about building a blog while building the blog too.
+
+Welcome to *Tales of Hark*. Let's see where this goes. 🚀

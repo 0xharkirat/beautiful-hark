@@ -73,9 +73,9 @@ export const Header = () => {
                       </Link>
                     </li>
                   ))}
-                <div className="pt-6">
-                  <ThemeToggle />
-                </div>
+                  <div className="pt-6">
+                    <ThemeToggle />
+                  </div>
                 </ul>
               </div>
             </div>

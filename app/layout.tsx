@@ -1,33 +1,28 @@
-import React from "react";
-import { Metadata } from "next";
-import { Inter as FontSans, Lato, Nunito } from "next/font/google";
-import { cn } from "@/lib/utils";
-import { VideoDialogProvider } from "@/components/ui/VideoDialogContext";
-import VideoDialog from "@/components/ui/VideoDialog";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from '@/components/theme-provider';
+import VideoDialog from '@/components/ui/VideoDialog';
+import { VideoDialogProvider } from '@/components/ui/VideoDialogContext';
+import { cn } from '@/lib/utils';
+import type { Metadata } from 'next';
+import { EB_Garamond, Geist } from 'next/font/google';
+import React from 'react';
 
-import "@/styles.css";
-import { TailwindIndicator } from "@/components/ui/breakpoint-indicator";
+import '@/styles.css';
+import { TailwindIndicator } from '@/components/ui/breakpoint-indicator';
 
-const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-sans',
 });
 
-const nunito = Nunito({
-  subsets: ["latin"],
-  variable: "--font-nunito",
-});
-
-const lato = Lato({
-  subsets: ["latin"],
-  variable: "--font-lato",
-  weight: "400",
+const garamond = EB_Garamond({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
-  title: "Tales of Hark",
-  description: "The Boy Who Cooks With Tina CMS and GitHub Copilot",
+  title: 'Tales of Hark',
+  description: 'The Boy Who Cooks With Tina CMS and GitHub Copilot',
 };
 
 export default function RootLayout({
@@ -36,14 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(fontSans.variable, nunito.variable, lato.variable)} suppressHydrationWarning>
-      <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+    <html lang='en' className={cn(geistSans.variable, garamond.variable)} suppressHydrationWarning>
+      <body className='min-h-screen bg-background font-serif antialiased'>
+        <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
           <VideoDialogProvider>
             {children}
             <VideoDialog />

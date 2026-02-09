@@ -1,11 +1,12 @@
-import { format } from 'date-fns';
-import React from 'react';
-import { Components, TinaMarkdown, TinaMarkdownContent } from 'tinacms/dist/rich-text';
-import Image from 'next/image';
-import { Prism } from 'tinacms/dist/rich-text/prism';
-import { Video } from './blocks/video';
 import { PageBlocksVideo } from '@/tina/__generated__/types';
+import { format } from 'date-fns';
+import Image from 'next/image';
+import React from 'react';
+import type { Components, TinaMarkdownContent } from 'tinacms/dist/rich-text';
+import { TinaMarkdown } from 'tinacms/dist/rich-text';
+import { Prism } from 'tinacms/dist/rich-text/prism';
 import { Mermaid } from './blocks/mermaid';
+import { Video } from './blocks/video';
 
 export const components: Components<{
   BlockQuote: {
@@ -27,9 +28,9 @@ export const components: Components<{
     if (!props) {
       return <></>;
     }
-    
+
     if (props.lang === 'mermaid') {
-      return <Mermaid value={props.value} />
+      return <Mermaid value={props.value} />;
     }
 
     return <Prism lang={props.lang} value={props.value} />;
@@ -39,10 +40,10 @@ export const components: Components<{
     authorName: string;
   }) => {
     return (
-      <div>
-        <blockquote>
+      <div className='my-8'>
+        <blockquote className='border-l-2 border-accent-red/40 pl-5 italic text-muted-foreground'>
           <TinaMarkdown content={props.children} />
-          {props.authorName}
+          <footer className='mt-3 font-sans text-xs not-italic tracking-wide text-muted-foreground'>- {props.authorName}</footer>
         </blockquote>
       </div>
     );
@@ -65,8 +66,8 @@ export const components: Components<{
   },
   NewsletterSignup: (props) => {
     return (
-      <div className='bg-white'>
-        <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8'>
+      <div className='rounded-sm border border-border bg-card'>
+        <div className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
           <div className=''>
             <TinaMarkdown content={props.children} />
           </div>
@@ -81,19 +82,19 @@ export const components: Components<{
                 type='email'
                 autoComplete='email'
                 required
-                className='w-full px-5 py-3 border border-gray-300 shadow-xs placeholder-gray-400 focus:ring-1 focus:ring-teal-500 focus:border-teal-500 sm:max-w-xs rounded-md'
+                className='w-full rounded-sm border border-border bg-background px-5 py-3 font-sans placeholder:text-muted-foreground focus:border-accent-red sm:max-w-xs'
                 placeholder={props.placeholder}
               />
-              <div className='mt-3 rounded-md shadow-sm sm:mt-0 sm:ml-3 sm:shrink-0'>
+              <div className='mt-3 rounded-sm sm:ml-3 sm:mt-0 sm:shrink-0'>
                 <button
                   type='submit'
-                  className='w-full flex items-center justify-center py-3 px-5 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
+                  className='flex w-full items-center justify-center rounded-sm border border-accent-red bg-accent-red px-5 py-3 font-sans text-base font-medium text-primary-foreground hover:bg-accent-red/90 focus:outline-hidden'
                 >
                   {props.buttonText}
                 </button>
               </div>
             </form>
-            <div className='mt-3 text-sm text-gray-500'>{props.disclaimer && <TinaMarkdown content={props.disclaimer} />}</div>
+            <div className='mt-3 text-sm text-muted-foreground'>{props.disclaimer && <TinaMarkdown content={props.disclaimer} />}</div>
           </div>
         </div>
       </div>
@@ -104,8 +105,8 @@ export const components: Components<{
       return <></>;
     }
     return (
-      <span className='flex items-center justify-center'>
-        <Image src={props.url} alt={props.alt || ''} width={500} height={500} />
+      <span className='my-6 flex items-center justify-center'>
+        <Image src={props.url} alt={props.alt || ''} width={500} height={500} className='rounded-sm border border-border' />
       </span>
     );
   },

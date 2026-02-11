@@ -1,0 +1,217 @@
+---
+title: 'Let me teach you Git Worktree in 5 minutes'
+excerpt: Stop switching branches. Stop stashing. Work on multiple branches simultaneously. Essential for the AI coding era.
+author: content/authors/hark.md
+date: 2026-02-11T00:00:00.000Z
+tags: []
+---
+
+## The Problem
+
+You're coding a feature. Urgent hotfix needed. You git stash, switch branches, fix it, switch back, git stash pop.
+
+Or worse: you commit to the wrong branch. Again.
+
+**The real issue:** Git gives you multiple branches but only one working directory.
+
+## Why This Matters Now
+
+In the era of AI agents doing parallel work, branches are not enough.
+
+You have GitHub Copilot suggesting code. Claude generating entire features. AI agents running tests and fixing bugs. You want to try AI-generated refactors without breaking your stable code.
+
+**You need multiple things working in parallel.** Different branches. Different dev servers. Different terminals. All at the same time.
+
+Git worktrees solve this. They also keep your sanity if you're doing parallel work yourself.
+
+## The Solution
+
+**Worktrees** = multiple working directories for the same repo.
+
+Same Git history. Different folders. Different branches. Work on them simultaneously.
+
+No switching. No stashing. That's it.
+
+## 5-Minute Practical Walkthrough
+
+### Setup: The Workspace Folder Pattern
+
+Here's the structure we're aiming for:
+
+```
+Beautiful.Hark.Workspace/          ← Open THIS in your editor
+├── Beautiful.Hark/                ← Main repo (main branch)
+├── Beautiful.Hark.feature-auth/   ← Worktree (feature-auth branch)
+└── Beautiful.Hark.hotfix/         ← Worktree (hotfix branch)
+```
+
+**Important:** Git worktrees work anywhere. But using a parent workspace folder saves you from insanity later. You can see all worktrees in your editor sidebar. Clean and organized.
+
+**For existing repos:** Move them into a workspace folder. For new repos: clone into a workspace folder from day one.
+
+### Step 1: Create a Local Repo
+
+Let's start fresh locally:
+
+```bash
+mkdir Beautiful.Hark.Workspace
+cd Beautiful.Hark.Workspace
+mkdir Beautiful.Hark
+cd Beautiful.Hark
+git init
+echo "Hello World" > app.txt
+git add .
+git commit -m "initial commit"
+```
+
+Now open the workspace folder in your editor:
+
+```bash
+code ../
+```
+
+Your editor shows the Beautiful.Hark folder.
+
+### Step 2: Create Your First Worktree
+
+Still inside Beautiful.Hark:
+
+```bash
+git worktree add ../Beautiful.Hark.feature-auth -b feature-auth
+```
+
+What happened?
+
+Git created a new folder Beautiful.Hark.feature-auth next to your main repo. That folder has the feature-auth branch checked out. Your editor sidebar now shows both folders.
+
+**Worktrees are just copies of your repo with shared Git history.** Edit one, commit. Edit the other, commit. No switching needed.
+
+### Step 3: See Both in Your Editor
+
+Look at your editor sidebar:
+
+```
+Beautiful.Hark.Workspace/
+├── Beautiful.Hark/                    ← main branch
+│   └── app.txt
+└── Beautiful.Hark.feature-auth/       ← feature-auth branch
+    └── app.txt
+```
+
+Open app.txt from Beautiful.Hark. Edit it.
+
+Open app.txt from Beautiful.Hark.feature-auth. Edit it differently.
+
+Both files are open. Different branches. No switching. Watch the changes in real-time.
+
+### Step 4: Commit from Each Folder
+
+Open two terminals.
+
+Terminal 1:
+
+```bash
+cd Beautiful.Hark
+echo "main work" >> app.txt
+git add .
+git commit -m "update main"
+```
+
+Terminal 2:
+
+```bash
+cd Beautiful.Hark.feature-auth
+echo "feature work" >> app.txt
+git add .
+git commit -m "add feature"
+```
+
+Both commits exist. Different branches. Same repo.
+
+### Step 5: Real AI Agent Workflow
+
+Create another worktree for AI experiments:
+
+```bash
+cd Beautiful.Hark
+git worktree add ../Beautiful.Hark.ai-experiment -b ai-experiment
+```
+
+Now you have:
+
+Terminal 1: Stable app running in Beautiful.Hark on port 3000
+
+Terminal 2: AI agent making changes in Beautiful.Hark.ai-experiment on port 3001
+
+Terminal 3: Your feature work in Beautiful.Hark.feature-auth
+
+All happening simultaneously. Zero context switching.
+
+### Step 6: Cleanup
+
+List worktrees:
+
+```bash
+git worktree list
+```
+
+Remove a worktree:
+
+```bash
+git worktree remove ../Beautiful.Hark.feature-auth
+```
+
+Never manually delete worktree folders. Always use git worktree remove.
+
+## When to Use Worktrees
+
+**Use worktrees:**
+
+AI agents working in parallel with your code. Multiple features in progress. Urgent hotfixes while feature work continues. PR reviews that need local testing. Running multiple dev servers on different branches.
+
+**Skip worktrees:**
+
+Tiny repos where switching is instant. You only work on one thing at a time. You're still learning basic Git.
+
+## Quick Reference
+
+```bash
+# Create worktree
+git worktree add ../repo-name.branch-name -b branch-name
+
+# List all worktrees
+git worktree list
+
+# Remove worktree
+git worktree remove ../repo-name.branch-name
+
+# Clean up stale references
+git worktree prune
+```
+
+## Branch vs Worktree
+
+| Branch | Worktree |
+|--------|----------|
+| One folder | Multiple folders |
+| Switch to work | Open and work |
+| Stash when switching | Never stash |
+| One at a time | All simultaneously |
+
+## Important Notes
+
+**Merge conflicts can still happen** if you merge branches with diverging changes. Worktrees don't prevent that. They just let you work on multiple branches without switching.
+
+**Workspace folders are optional** but highly recommended. Git worktrees work anywhere. But organizing them in a parent folder keeps you sane.
+
+**Moving existing repos:** Create a workspace folder. Move your repo into it. Continue working. That's it.
+
+## That's It
+
+Worktrees are just multiple folders for the same repo.
+
+Open the workspace folder in your editor. See all branches as folders. Work on them simultaneously.
+
+In the era of AI coding agents, worktrees aren't optional. They're essential.
+
+Next time you reach for git stash, create a worktree instead.

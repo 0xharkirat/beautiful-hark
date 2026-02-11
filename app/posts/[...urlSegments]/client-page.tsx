@@ -31,55 +31,42 @@ export default function PostClientPage(props: ClientPostProps) {
   return (
     <ErrorBoundary>
       <Section>
-        <article className='mx-auto max-w-[70ch]'>
-          <h2 data-tina-field={tinaField(post, 'title')} className='mb-6 text-balance text-4xl font-semibold tracking-tight md:text-5xl'>
+        <article className='mx-auto max-w-3xl px-4 py-16'>
+          <h1 data-tina-field={tinaField(post, 'title')} className='mb-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl'>
             {post.title}
-          </h2>
+          </h1>
 
-          <div data-tina-field={tinaField(post, 'author')} className='mb-10 flex items-center text-sm font-sans text-muted-foreground'>
+          <div className='mb-12 flex items-center gap-3 text-sm text-muted-foreground'>
+            {post.author && post.author.avatar && (
+              <div className='shrink-0'>
+                <Image
+                  data-tina-field={tinaField(post.author, 'avatar')}
+                  className='h-10 w-10 rounded-full border border-border object-cover'
+                  src={post.author.avatar}
+                  alt={post.author.name || 'Author'}
+                  width={40}
+                  height={40}
+                />
+              </div>
+            )}
             {post.author && (
               <>
-                {post.author.avatar && (
-                  <div className='mr-3 shrink-0'>
-                    <Image
-                      data-tina-field={tinaField(post.author, 'avatar')}
-                      priority
-                      className='h-10 w-10 rounded-full border border-border object-cover'
-                      src={post.author.avatar}
-                      alt={post.author.name}
-                      width={500}
-                      height={500}
-                    />
-                  </div>
-                )}
-                <p data-tina-field={tinaField(post.author, 'name')} className='text-sm text-muted-foreground'>
-                  {post.author.name}
-                </p>
-                <span className='mx-2 text-border'>-</span>
+                <span data-tina-field={tinaField(post.author, 'name')}>{post.author.name}</span>
+                <span className='text-border'>•</span>
               </>
             )}
-
-            <p data-tina-field={tinaField(post, 'date')} className='text-sm text-muted-foreground'>
-              {formattedDate}
-            </p>
+            <span data-tina-field={tinaField(post, 'date')}>{formattedDate}</span>
           </div>
 
           {post.heroImg && (
-            <div className='mb-10 w-full'>
-              <div data-tina-field={tinaField(post, 'heroImg')} className='mx-auto max-w-[70ch]'>
-                <Image
-                  priority
-                  src={post.heroImg}
-                  alt={post.title}
-                  width={500}
-                  height={500}
-                  className='mx-auto block h-auto w-full rounded-sm border border-border'
-                />
+            <div className='mb-12'>
+              <div data-tina-field={tinaField(post, 'heroImg')} className='overflow-hidden rounded-lg border border-border'>
+                <Image priority src={post.heroImg} alt={post.title} width={1200} height={630} className='h-auto w-full object-cover' />
               </div>
             </div>
           )}
 
-          <div data-tina-field={tinaField(post, '_body')} className='prose prose-lg dark:prose-invert max-w-[70ch]'>
+          <div data-tina-field={tinaField(post, '_body')} className='prose prose-lg dark:prose-invert max-w-none'>
             <TinaMarkdown
               content={post._body}
               components={{

@@ -1,8 +1,8 @@
 //  TODO: Fix Types in this file
 
+import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import React from 'react';
 import { Fragment, useState } from 'react';
-import { Dialog, Transition, TransitionChild, DialogPanel } from '@headlessui/react';
 import { useLayout } from './layout/layout-context';
 
 //@ts-ignore
@@ -19,6 +19,7 @@ export const RawRenderer = ({ rawData, parentColor }) => {
     yellow: 'text-yellow-600',
   };
   const [isOpen, setIsOpen] = useState(false);
+  const themeColor = (theme?.color ?? 'red') as keyof typeof buttonColorClasses;
 
   function closeModal() {
     setIsOpen(false);
@@ -34,8 +35,7 @@ export const RawRenderer = ({ rawData, parentColor }) => {
         type='button'
         onClick={openModal}
         //@ts-ignore
-        className={`z-10 relative flex items-center px-5 py-2 mx-3 my-2 font-semibold text-sm transition duration-150 ease-out rounded transform focus:shadow-outline focus:outline-hidden whitespace-nowrap opacity-80 hover:opacity-100 shadow-md ${buttonColorClasses[theme!.color!]
-          }`}
+        className={`z-10 relative flex items-center px-5 py-2 mx-3 my-2 font-semibold text-sm transition duration-150 ease-out rounded transform focus:shadow-outline focus:outline-hidden whitespace-nowrap opacity-80 hover:opacity-100 shadow-md ${buttonColorClasses[themeColor]}`}
       >
         View Raw Data
         <span
@@ -55,7 +55,7 @@ export const RawRenderer = ({ rawData, parentColor }) => {
               leaveTo='opacity-0'
             >
               <div className=''>
-                <DialogPanel className='fixed inset-0 bg-linear-to-br from-gray-800 to-gray-1000 opacity-80' />
+                <DialogPanel className='fixed inset-0 bg-background/80 backdrop-blur-[1px]' />
               </div>
             </TransitionChild>
 

@@ -37,24 +37,6 @@ export default function PostClientPage(props: ClientPostProps) {
           </h1>
 
           <div className='mb-12 flex items-center gap-3 text-sm text-muted-foreground'>
-            {post.author && post.author.avatar && (
-              <div className='shrink-0'>
-                <Image
-                  data-tina-field={tinaField(post.author, 'avatar')}
-                  className='h-10 w-10 rounded-full border border-border object-cover'
-                  src={post.author.avatar}
-                  alt={post.author.name || 'Author'}
-                  width={40}
-                  height={40}
-                />
-              </div>
-            )}
-            {post.author && (
-              <>
-                <span data-tina-field={tinaField(post.author, 'name')}>{post.author.name}</span>
-                <span className='text-border'>•</span>
-              </>
-            )}
             <span data-tina-field={tinaField(post, 'date')}>{formattedDate}</span>
           </div>
 

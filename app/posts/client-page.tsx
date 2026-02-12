@@ -1,11 +1,9 @@
 'use client';
 import ErrorBoundary from '@/components/error-boundary';
 import { Section } from '@/components/layout/section';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { PostConnectionQuery, PostConnectionQueryVariables } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
-import { UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -34,10 +32,6 @@ export default function PostsClientPage(props: ClientPostProps) {
       url: `/posts/${post._sys.breadcrumbs.join('/')}`,
       excerpt: post.excerpt,
       heroImg: post.heroImg,
-      author: {
-        name: post.author?.name || 'Anonymous',
-        avatar: post.author?.avatar,
-      },
     };
   });
 
@@ -66,14 +60,6 @@ export default function PostsClientPage(props: ClientPostProps) {
                       </div>
                     )}
                     <div className='flex items-center gap-3 text-sm text-muted-foreground'>
-                      <Avatar className='h-8 w-8'>
-                        {post.author.avatar && <AvatarImage src={post.author.avatar} alt={post.author.name} />}
-                        <AvatarFallback>
-                          <UserRound size={16} strokeWidth={2} className='opacity-60' aria-hidden='true' />
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{post.author.name}</span>
-                      <span className='text-border'>•</span>
                       <span>{post.published}</span>
                     </div>
                   </div>

@@ -22,7 +22,7 @@ const garamond = EB_Garamond({
 
 export const metadata: Metadata = {
   title: 'Tales of Hark',
-  description: 'The Boy Who Cooks With Tina CMS and GitHub Copilot',
+  description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
 };
 
 export default function RootLayout({
@@ -32,6 +32,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en' className={cn(geistSans.variable, garamond.variable)} suppressHydrationWarning>
+      <head>
+        <link rel='alternate' type='application/rss+xml' title='Tales of Hark RSS Feed' href='/feed.xml' />
+        <link rel='alternate' type='application/atom+xml' title='Tales of Hark Atom Feed' href='/atom.xml' />
+        <link rel='alternate' type='application/json' title='Tales of Hark JSON Feed' href='/feed.json' />
+      </head>
       <body className='min-h-screen bg-background font-serif antialiased'>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
           <VideoDialogProvider>

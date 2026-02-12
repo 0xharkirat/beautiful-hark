@@ -22,7 +22,7 @@ const garamond = EB_Garamond({
 
 export const metadata: Metadata = {
   title: 'Tales of Hark',
-  description: 'Welcome to the profile of His Holy Harkness. High Priest of Vibes, Creative Code & Thoughtful Engineering.',
+  description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
 };
 
 export default function RootLayout({

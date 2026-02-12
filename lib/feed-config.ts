@@ -5,7 +5,7 @@ export function getFeedConfig(): FeedOptions {
 
   return {
     title: 'Tales of Hark',
-    description: 'Welcome to the profile of His Holy Harkness. High Priest of Vibes, Creative Code & Thoughtful Engineering.',
+    description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
     id: siteUrl,
     link: siteUrl,
     language: 'en',

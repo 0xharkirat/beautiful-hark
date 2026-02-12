@@ -22,7 +22,7 @@ const garamond = EB_Garamond({
 
 export const metadata: Metadata = {
   title: 'Tales of Hark',
-  description: 'The Boy Who Cooks With Tina CMS and GitHub Copilot',
+  description: 'Welcome to the profile of His Holy Harkness. High Priest of Vibes, Creative Code & Thoughtful Engineering.',
 };
 
 export default function RootLayout({

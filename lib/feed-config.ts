@@ -5,7 +5,7 @@ export function getFeedConfig(): FeedOptions {
 
   return {
     title: 'Tales of Hark',
-    description: 'The Boy Who Cooks With Tina CMS and GitHub Copilot',
+    description: 'Welcome to the profile of His Holy Harkness. High Priest of Vibes, Creative Code & Thoughtful Engineering.',
     id: siteUrl,
     link: siteUrl,
     language: 'en',

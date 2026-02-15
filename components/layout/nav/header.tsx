@@ -30,14 +30,25 @@ export const Header = () => {
           <div className='relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4'>
             <div className='flex w-full items-center justify-between gap-12'>
               <Link href='/' aria-label='home' className='flex items-center space-x-2 text-sm tracking-wide'>
-                <Icon
-                  parentColor={header.color!}
-                  data={{
-                    name: header.icon!.name,
-                    color: header.icon!.color,
-                    style: header.icon!.style,
-                  }}
-                />{' '}
+                {header.logo ? (
+                  <div className="relative mr-2 h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-md transition-all duration-300">
+                    <img
+                      src={header.logo}
+                      alt={header.name || "Logo"}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <Icon
+                    parentColor={header.color!}
+                    data={{
+                      name: header.icon!.name,
+                      color: header.icon!.color,
+                      style: header.icon!.style,
+                    }}
+                  />
+                )}
+                {' '}
                 <span className='text-foreground'>{header.name}</span>
               </Link>
 

@@ -26,6 +26,12 @@
     "social": [
       {
         "icon": {
+          "name": "ssw-icon"
+        },
+        "url": "https://ssw.com.au/people/hark-singh"
+      },
+      {
+        "icon": {
           "name": "FaLinkedin"
         },
         "url": "https://www.linkedin.com/in/talesofhark"

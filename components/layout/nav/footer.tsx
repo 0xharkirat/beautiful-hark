@@ -30,12 +30,39 @@ export const Footer = () => {
             </span>
           </div>
 
-          <div className='order-last flex justify-center gap-6 text-sm md:order-last md:justify-end'>
-            {footer?.social?.map((link, index) => (
-              <Link key={`${link!.icon}${index}`} href={link!.url!} target='_blank' rel='noopener noreferrer'>
-                <Icon data={{ ...link!.icon, size: 'small' }} className='block text-muted-foreground hover:text-accent-red' />
-              </Link>
-            ))}
+          <div className='order-last flex items-center justify-center gap-6 text-sm md:order-last md:justify-end'>
+            {footer?.social?.map((link, index) => {
+              if (link!.icon!.name === 'ssw-icon') {
+                return (
+                  <Link
+                    key={`${link!.icon}${index}`}
+                    href={link!.url!}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-muted-foreground transition-colors hover:text-accent-red'
+                  >
+                    <div
+                      className='h-5 w-[60px] bg-current'
+                      style={{
+                        maskImage: "url('/uploads/ssw-logo-white.png')",
+                        WebkitMaskImage: "url('/uploads/ssw-logo-white.png')",
+                        maskSize: 'contain',
+                        WebkitMaskSize: 'contain',
+                        maskRepeat: 'no-repeat',
+                        WebkitMaskRepeat: 'no-repeat',
+                        maskPosition: 'center',
+                        WebkitMaskPosition: 'center',
+                      }}
+                    />
+                  </Link>
+                );
+              }
+              return (
+                <Link key={`${link!.icon}${index}`} href={link!.url!} target='_blank' rel='noopener noreferrer'>
+                  <Icon data={{ ...link!.icon, size: 'small' }} className='block text-muted-foreground hover:text-accent-red' />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>

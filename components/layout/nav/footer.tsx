@@ -11,10 +11,20 @@ export const Footer = () => {
   return (
     <footer className='border-t bg-background pt-16 font-sans'>
       <div className='mx-auto max-w-5xl px-6'>
-        <div className='mt-8 flex flex-col items-center gap-6 border-t py-6 md:flex-row md:justify-between'>
+        <div className='mt-8 flex flex-col items-center gap-6 py-6 md:flex-row md:justify-between'>
           <div className='order-last flex justify-center md:order-first md:justify-start'>
             <Link href='/' aria-label='go home'>
-              <Icon parentColor={header!.color!} data={header!.icon} />
+              {header!.logo ? (
+                <div className="relative mr-2 h-16 w-16 overflow-hidden rounded-md -my-2">
+                  <img
+                    src={header!.logo}
+                    alt={header!.name || "Logo"}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <Icon parentColor={header!.color!} data={header!.icon} />
+              )}
             </Link>
             <span className='ml-2 self-center text-sm text-muted-foreground'>
               © {new Date().getFullYear()} {header?.name}, All rights reserved

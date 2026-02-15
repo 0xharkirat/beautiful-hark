@@ -12,6 +12,7 @@ import { AnimatedGroup } from '../motion-primitives/animated-group';
 import { TextEffect } from '../motion-primitives/text-effect';
 import { Button } from '../ui/button';
 import HeroVideoDialog from '../ui/hero-video-dialog';
+import { FadeInImage } from '../ui/fade-in-image';
 const transitionVariants = {
   container: {
     visible: {
@@ -124,12 +125,13 @@ const ImageBlock = ({ image }: { image: PageBlocksHeroImage }) => {
 
   if (image.src) {
     return (
-      <Image
+      <FadeInImage
         className='z-2 border-border/50 aspect-15/8 relative h-auto max-w-full rounded-sm border'
         alt={image!.alt || ''}
         src={image!.src!}
         height={4000}
         width={3000}
+        priority
       />
     );
   }

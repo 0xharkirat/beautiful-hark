@@ -14,10 +14,10 @@ export const Footer = () => {
         <div className='mt-8 flex flex-col items-center gap-6 py-6 md:flex-row md:justify-between'>
           <div className='order-last flex justify-center md:order-first md:justify-start'>
             <Link href='/' aria-label='go home'>
-              {header!.logo ? (
+              {(header!.logo || "/uploads/hark-logo-bg.png") ? (
                 <div className="relative mr-2 h-16 w-16 overflow-hidden rounded-md -my-2">
                   <img
-                    src={header!.logo}
+                    src={header!.logo || "/uploads/hark-logo-bg.png"}
                     alt={header!.name || "Logo"}
                     className="h-full w-full object-cover"
                   />

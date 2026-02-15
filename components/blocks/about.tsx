@@ -9,6 +9,7 @@ import { Disclosure, Transition, Dialog } from "@headlessui/react";
 import { ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { FadeInImage } from "../ui/fade-in-image";
 
 const markdownComponents = {
     a: (props: any) => {
@@ -24,21 +25,25 @@ const markdownComponents = {
             </a>
         );
     },
-    img: (props: any) => (
-        <span className="my-8 flex flex-col items-center">
-            <img
-                src={props.url}
-                alt={props.alt || ""}
-                className="rounded-lg shadow-sm max-h-[500px] w-auto object-contain"
-            />
-            {/* Standard markdown fallback */}
-            {(props.caption || props.title) && (
-                <span className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block">
-                    {props.caption || props.title}
-                </span>
-            )}
-        </span>
-    ),
+    img: (props: any) => {
+        return (
+            <span className="my-8 flex flex-col items-center">
+                <FadeInImage
+                    src={props.url}
+                    alt={props.alt || ""}
+                    width={800}
+                    height={600}
+                    className="rounded-lg shadow-sm w-auto h-auto max-h-[500px] object-contain"
+                />
+                {/* Standard markdown fallback */}
+                {(props.caption || props.title) && (
+                    <span className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block">
+                        {props.caption || props.title}
+                    </span>
+                )}
+            </span>
+        );
+    },
 };
 
 // ... inside Layout ...
@@ -108,11 +113,13 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                         {data.profileImage && (
                             <div data-tina-field={tinaField(data, "profileImage")}>
                                 <div className="relative aspect-square w-full overflow-hidden rounded-t-full mb-4">
-                                    <Image
+                                    <FadeInImage
                                         src={data.profileImage}
                                         alt={data.title || "Profile"}
                                         fill
                                         className="object-cover"
+                                        priority
+                                        sizes="(max-width: 1024px) 100vw, 33vw"
                                     />
                                 </div>
                                 {data.imageCaption && (
@@ -179,11 +186,12 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                                         className="relative aspect-video rounded-lg overflow-hidden shadow-sm cursor-pointer group"
                                         onClick={() => openLightbox(i)}
                                     >
-                                        <Image
+                                        <FadeInImage
                                             src={item.src || ""}
                                             alt={item.alt || `Gallery image ${i + 1}`}
                                             fill
                                             className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                     </div>

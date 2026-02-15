@@ -7,6 +7,7 @@ import { TinaMarkdown } from 'tinacms/dist/rich-text';
 import { Prism } from 'tinacms/dist/rich-text/prism';
 import { Mermaid } from './blocks/mermaid';
 import { Video } from './blocks/video';
+import { FadeInImage } from './ui/fade-in-image';
 
 export const components: Components<{
   BlockQuote: {
@@ -100,13 +101,21 @@ export const components: Components<{
       </div>
     );
   },
+
+
   img: (props) => {
     if (!props) {
       return <></>;
     }
     return (
-      <span className='my-6 flex items-center justify-center'>
-        <Image src={props.url} alt={props.alt || ''} width={500} height={500} className='rounded-sm border border-border' />
+      <span className='my-6 flex items-center justify-center relative overflow-hidden rounded-sm border border-border'>
+        <FadeInImage
+          src={props.url}
+          alt={props.alt || ''}
+          width={500}
+          height={500}
+          className='w-auto h-auto max-h-[500px] object-contain'
+        />
       </span>
     );
   },

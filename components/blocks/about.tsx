@@ -99,7 +99,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                     </h1>
                     {data.subtitle && (
                         <div
-                            className="text-xl text-gray-500 dark:text-gray-400"
+                            className="prose dark:prose-invert text-xl text-gray-500 dark:text-gray-400"
                             data-tina-field={tinaField(data, "subtitle")}
                         >
                             {typeof data.subtitle === 'string' ? (

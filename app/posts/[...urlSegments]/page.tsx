@@ -1,9 +1,45 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import client from '@/tina/__generated__/client';
 import Layout from '@/components/layout/layout';
 import PostClientPage from './client-page';
 
 export const revalidate = 300;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ urlSegments: string[] }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const filepath = resolvedParams.urlSegments.join('/');
+  try {
+    const data = await client.queries.post({
+      relativePath: `${filepath}.mdx`,
+    });
+    const post = data.data.post;
+    return {
+      title: post.title,
+      description: post.excerpt || `Read "${post.title}" on Tales of Hark`,
+      openGraph: {
+        title: post.title,
+        description: post.excerpt || `Read "${post.title}" on Tales of Hark`,
+        ...(post.heroImg && {
+          images: [{ url: post.heroImg, alt: post.title }],
+        }),
+        type: 'article',
+      },
+      twitter: {
+        card: post.heroImg ? 'summary_large_image' : 'summary',
+        title: post.title,
+        description: post.excerpt || `Read "${post.title}" on Tales of Hark`,
+        ...(post.heroImg && { images: [post.heroImg] }),
+      },
+    };
+  } catch {
+    return { title: 'Post' };
+  }
+}
 
 export default async function PostPage({
   params,

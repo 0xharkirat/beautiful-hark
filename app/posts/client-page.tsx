@@ -46,7 +46,7 @@ export default function PostsClientPage(props: ClientPostProps) {
 
           <div className='space-y-12'>
             {posts.map((post) => (
-              <Card key={post.id} className='group overflow-hidden border-border bg-card transition-all duration-200 hover:shadow-lg'>
+              <Card key={post.id} className='group overflow-hidden border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl'>
                 <div className='flex flex-col gap-6 p-8 sm:flex-row sm:gap-8'>
                   <div className='flex-1'>
                     <Link href={post.url}>

@@ -14,6 +14,14 @@ export const Header = () => {
   const pathname = usePathname();
 
   const [menuState, setMenuState] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll(); // check initial state
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -25,8 +33,8 @@ export const Header = () => {
 
   return (
     <header className='font-sans'>
-      <nav data-state={menuState && 'active'} className='fixed z-20 w-full border-b bg-background/95'>
-        <div className='mx-auto max-w-6xl px-6 transition-all duration-300'>
+      <nav data-state={menuState && 'active'} className={`fixed z-20 w-full transition-all duration-300 ${scrolled ? 'border-b bg-background/80 backdrop-blur-lg' : 'border-b border-transparent bg-background/95'}`}>
+        <div className='mx-auto max-w-5xl px-6 transition-all duration-300'>
           <div className='relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4'>
             <div className='flex w-full items-center justify-between gap-12'>
               <Link href='/' aria-label='home' className='flex items-center space-x-2 text-sm tracking-wide'>
@@ -67,7 +75,7 @@ export const Header = () => {
                     <li key={index}>
                       <Link
                         href={item!.href!}
-                        className={`block border-b border-transparent py-1 text-muted-foreground transition-colors duration-150 hover:text-accent-red ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
+                        className={`block border-b border-transparent py-1 text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
                       >
                         <span>{item!.label}</span>
                       </Link>
@@ -85,7 +93,7 @@ export const Header = () => {
                     <li key={index}>
                       <Link
                         href={item!.href!}
-                        className={`block border-b border-transparent pb-1 text-muted-foreground transition-colors duration-150 hover:text-accent-red ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
+                        className={`block border-b border-transparent pb-1 text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
                       >
                         <span>{item!.label}</span>
                       </Link>

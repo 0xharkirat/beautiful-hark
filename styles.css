@@ -164,6 +164,11 @@
     color: var(--accent-red);
   }
 
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
   :focus-visible {
     @apply rounded-xs outline-2 outline-offset-2 outline-accent-red;
   }
@@ -226,16 +231,7 @@
     margin-bottom: 1.5em;
   }
 
-  :where(.prose a) {
-    color: var(--link);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.15s ease;
-  }
 
-  :where(.prose a:hover) {
-    color: var(--accent-red);
-  }
 
   :where(.prose strong) {
     font-weight: 600;
@@ -270,4 +266,17 @@
   :where(.prose code:not(pre code)) {
     @apply rounded-xs border border-border px-1.5 py-0.5;
   }
+}
+
+/* Prose link styles — must be outside @layer base to override @tailwindcss/typography plugin */
+.prose a {
+  color: var(--foreground);
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.prose a:hover {
+  color: var(--accent-red);
+  text-decoration: none;
 }

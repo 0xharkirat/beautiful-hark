@@ -164,6 +164,11 @@
     color: var(--accent-red);
   }
 
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
   :focus-visible {
     @apply rounded-xs outline-2 outline-offset-2 outline-accent-red;
   }
@@ -226,15 +231,16 @@
     margin-bottom: 1.5em;
   }
 
-  :where(.prose a) {
+  .prose a {
     color: var(--link);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, text-decoration 0.15s ease;
   }
 
-  :where(.prose a:hover) {
+  .prose a:hover {
     color: var(--accent-red);
+    text-decoration: underline;
   }
 
   :where(.prose strong) {

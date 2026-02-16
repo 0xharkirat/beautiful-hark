@@ -88,7 +88,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
 
     return (
         <Section className="flex-1" data-tina-field={tinaField(data)}>
-            <div className="mx-auto max-w-6xl px-6 py-12">
+            <div className="mx-auto max-w-5xl px-6 py-12">
                 {/* Header Section */}
                 <div className="mb-12 border-b border-gray-200 dark:border-gray-700 pb-8">
                     <h1
@@ -98,12 +98,16 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                         {data.title}
                     </h1>
                     {data.subtitle && (
-                        <p
+                        <div
                             className="text-xl text-gray-500 dark:text-gray-400"
                             data-tina-field={tinaField(data, "subtitle")}
                         >
-                            {data.subtitle}
-                        </p>
+                            {typeof data.subtitle === 'string' ? (
+                                <p>{data.subtitle}</p>
+                            ) : (
+                                <TinaMarkdown content={data.subtitle} components={markdownComponents} />
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -233,7 +237,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                                                 {/* Close Button */}
                                                 <button
                                                     onClick={closeLightbox}
-                                                    className="absolute -top-10 right-0 p-2 text-white/70 hover:text-white transition-colors focus:outline-none"
+                                                    className="absolute -top-10 right-0 p-2 text-white/70 hover:text-white hover:scale-110 transition-all focus:outline-none"
                                                 >
                                                     <X className="h-8 w-8" />
                                                 </button>
@@ -241,13 +245,13 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                                                 {/* Navigation Buttons */}
                                                 <button
                                                     onClick={showPrev}
-                                                    className="absolute left-0 top-1/2 -translate-y-1/2 -ml-12 p-2 text-white/70 hover:text-white transition-colors focus:outline-none hidden md:block"
+                                                    className="absolute left-0 top-1/2 -translate-y-1/2 -ml-12 p-2 text-white/70 hover:text-white hover:scale-110 transition-all focus:outline-none hidden md:block"
                                                 >
                                                     <ChevronLeft className="h-10 w-10" />
                                                 </button>
                                                 <button
                                                     onClick={showNext}
-                                                    className="absolute right-0 top-1/2 -translate-y-1/2 -mr-12 p-2 text-white/70 hover:text-white transition-colors focus:outline-none hidden md:block"
+                                                    className="absolute right-0 top-1/2 -translate-y-1/2 -mr-12 p-2 text-white/70 hover:text-white hover:scale-110 transition-all focus:outline-none hidden md:block"
                                                 >
                                                     <ChevronRight className="h-10 w-10" />
                                                 </button>
@@ -298,7 +302,7 @@ export const aboutBlockSchema: Template = {
             name: "title",
         },
         {
-            type: "string",
+            type: "rich-text",
             label: "Subtitle",
             name: "subtitle",
         },

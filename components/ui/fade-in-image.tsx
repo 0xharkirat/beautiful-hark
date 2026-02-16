@@ -8,11 +8,11 @@ export const FadeInImage = ({ className, alt, ...props }: ImageProps) => {
     const [isLoading, setIsLoading] = useState(true);
 
     return (
-        <div className={cn("relative overflow-hidden", props.fill && "h-full w-full")}>
+        <span className={cn("relative overflow-hidden block", props.fill && "h-full w-full")}>
             {isLoading && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                    <div className="h-full w-full animate-pulse bg-gray-200 dark:bg-gray-700" />
-                </div>
+                <span className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 block">
+                    <span className="h-full w-full animate-pulse bg-gray-200 dark:bg-gray-700 block" />
+                </span>
             )}
             <Image
                 {...props}
@@ -24,6 +24,6 @@ export const FadeInImage = ({ className, alt, ...props }: ImageProps) => {
                 )}
                 onLoad={() => setIsLoading(false)}
             />
-        </div>
+        </span>
     );
 };

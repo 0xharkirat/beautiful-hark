@@ -34,7 +34,7 @@ export const Footer = () => {
           <div className='order-first flex flex-col items-center gap-4 md:order-none'>
             <span className='text-xs text-muted-foreground'>
               Powered by{' '}
-              <a href='https://tina.io' target='_blank' rel='noopener noreferrer' className='transition-colors hover:text-accent-red'>
+              <a href='https://tina.io' target='_blank' rel='noopener noreferrer' className='transition-colors hover:text-accent-red hover:underline'>
                 TinaCMS
               </a>
             </span>
@@ -49,7 +49,7 @@ export const Footer = () => {
                     href={link!.url!}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='text-muted-foreground transition-colors hover:text-accent-red'
+                    className='text-muted-foreground transition-all hover:text-accent-red hover:scale-110'
                   >
                     <div
                       className='h-5 w-[60px] bg-current'
@@ -69,7 +69,7 @@ export const Footer = () => {
               }
               return (
                 <Link key={`${link!.icon}${index}`} href={link!.url!} target='_blank' rel='noopener noreferrer'>
-                  <Icon data={{ ...link!.icon, size: 'small' }} className='block text-muted-foreground hover:text-accent-red' />
+                  <Icon data={{ ...link!.icon, size: 'small' }} className='block text-muted-foreground transition-all hover:text-accent-red hover:scale-110' />
                 </Link>
               );
             })}

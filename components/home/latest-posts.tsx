@@ -26,7 +26,7 @@ export function LatestPosts({ posts }: LatestPostsProps) {
 
   return (
     <Section>
-      <div className='mx-auto max-w-6xl'>
+      <div className='mx-auto max-w-5xl'>
         <div className='mb-8 flex items-end justify-between gap-4'>
           <h2 className='text-2xl font-semibold md:text-3xl'>Latest from the Blog</h2>
           <Link href='/posts' className='font-sans text-sm text-link hover:text-accent-red hover:underline'>
@@ -43,7 +43,7 @@ export function LatestPosts({ posts }: LatestPostsProps) {
               <Card key={post.id} className='h-full border border-border bg-card p-5'>
                 <p className='mb-3 font-sans text-xs uppercase tracking-wide text-muted-foreground'>{published}</p>
                 <h3 className='text-xl font-semibold leading-tight'>
-                  <Link href={href} className='hover:text-accent-red'>
+                  <Link href={href} className='hover:text-accent-red hover:underline'>
                     {post.title}
                   </Link>
                 </h3>

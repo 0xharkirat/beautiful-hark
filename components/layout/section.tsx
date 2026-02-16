@@ -9,7 +9,7 @@ interface SectionProps extends React.HTMLProps<HTMLElement> {
 export const Section: React.FC<SectionProps> = ({ className, children, background, ...props }) => {
   return (
     <div className={background || 'bg-default'}>
-      <section className={cn('mx-auto max-w-7xl px-6 py-14 md:py-16', className)} {...props}>
+      <section className={cn('mx-auto max-w-5xl px-6 py-14 md:py-16', className)} {...props}>
         {children}
       </section>
     </div>

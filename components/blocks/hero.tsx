@@ -1,4 +1,5 @@
 'use client';
+import React, { useState, useEffect } from 'react';
 import { iconSchema } from '@/tina/fields/icon';
 import { Transition } from 'motion/react';
 import Image from 'next/image';
@@ -42,25 +43,49 @@ const transitionVariants = {
 };
 
 export const Hero = ({ data }: { data: PageBlocksHero }) => {
+  const [hasPlayed, setHasPlayed] = useState(true); // default to true (no animation) to avoid flash
+
+  useEffect(() => {
+    const key = 'hero-animation-played';
+    if (!sessionStorage.getItem(key)) {
+      setHasPlayed(false); // first visit — allow animation
+      sessionStorage.setItem(key, '1');
+    }
+  }, []);
+
+  // When animation hasn't played yet, use normal animated variants; otherwise skip animation
+  const skipAnimation = hasPlayed;
+
+  const noAnimVariants = {
+    container: { visible: {} },
+    item: { hidden: { opacity: 1 }, visible: { opacity: 1 } },
+  };
+
   return (
-    <Section background={data.background!} className='mx-auto flex min-h-[calc(100svh-5rem)] max-w-6xl flex-col items-center gap-10 lg:flex-row lg:gap-20'>
+    <Section background={data.background!} className='mx-auto flex min-h-[calc(100svh-5rem)] max-w-5xl flex-col items-center gap-10 lg:flex-row lg:gap-20'>
       <div className='w-full text-center lg:w-1/2 lg:text-left'>
         {data.headline && (
           <div data-tina-field={tinaField(data, 'headline')}>
-            <TextEffect preset='fade-in-blur' speedSegment={0.3} as='h1' className='text-balance text-6xl md:text-7xl xl:text-[5.25rem]'>
+            <TextEffect preset='fade-in-blur' speedSegment={0.3} as='h1' className='text-balance text-6xl md:text-7xl xl:text-[5.25rem]' trigger={!skipAnimation}>
               {data.headline!}
             </TextEffect>
+            {skipAnimation && (
+              <h1 className='text-balance text-6xl md:text-7xl xl:text-[5.25rem]'>{data.headline!}</h1>
+            )}
           </div>
         )}
         {data.tagline && (
           <div data-tina-field={tinaField(data, 'tagline')}>
-            <TextEffect per='line' preset='fade-in-blur' speedSegment={0.3} delay={0.5} as='p' className='mx-auto mt-8 max-w-2xl text-balance text-lg lg:mx-0'>
+            <TextEffect per='line' preset='fade-in-blur' speedSegment={0.3} delay={0.5} as='p' className='mx-auto mt-8 max-w-2xl whitespace-pre-line text-lg lg:mx-0' trigger={!skipAnimation}>
               {data.tagline!}
             </TextEffect>
+            {skipAnimation && (
+              <p className='mx-auto mt-8 max-w-2xl whitespace-pre-line text-lg lg:mx-0'>{data.tagline!}</p>
+            )}
           </div>
         )}
 
-        <AnimatedGroup variants={transitionVariants} className='mx-auto mt-12 flex w-full max-w-xl flex-col items-stretch justify-center gap-3 md:flex-row lg:mx-0 lg:justify-start'>
+        <AnimatedGroup variants={skipAnimation ? noAnimVariants : transitionVariants} className='mx-auto mt-12 flex w-full max-w-xl flex-col items-stretch justify-center gap-3 md:flex-row lg:mx-0 lg:justify-start'>
           {data.actions &&
             data.actions.map((action) => (
               <div key={action!.label} data-tina-field={tinaField(action)} className='flex-1'>
@@ -76,7 +101,7 @@ export const Hero = ({ data }: { data: PageBlocksHero }) => {
       </div>
 
       {data.image && (
-        <AnimatedGroup variants={transitionVariants} className='w-full lg:w-1/2'>
+        <AnimatedGroup variants={skipAnimation ? noAnimVariants : transitionVariants} className='w-full lg:w-1/2'>
           <div className='relative max-w-full overflow-hidden' data-tina-field={tinaField(data, 'image')}>
             <div className='relative mx-auto max-w-lg overflow-hidden lg:max-w-none'>
               <ImageBlock image={data.image} />

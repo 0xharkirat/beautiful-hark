@@ -33,7 +33,7 @@ export const Footer = () => {
 
           <div className='order-first flex flex-col items-center gap-4 md:order-none'>
             <span className='text-xs text-muted-foreground'>
-              Powered by{' '}
+              Vibe Coded with{' '}
               <a href='https://tina.io' target='_blank' rel='noopener noreferrer' className='transition-colors hover:text-accent-red hover:underline'>
                 TinaCMS
               </a>

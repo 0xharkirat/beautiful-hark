@@ -10,6 +10,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { FadeInImage } from "../ui/fade-in-image";
+import { ScrollReveal } from "../motion-primitives/scroll-reveal";
 
 const markdownComponents = {
     a: (props: any) => {
@@ -27,14 +28,16 @@ const markdownComponents = {
     },
     img: (props: any) => {
         return (
-            <span className="my-8 flex flex-col items-center">
-                <FadeInImage
-                    src={props.url}
-                    alt={props.alt || ""}
-                    width={800}
-                    height={600}
-                    className="rounded-lg shadow-sm w-auto h-auto max-h-[500px] object-contain"
-                />
+            <span className="my-8 flex flex-col items-center group">
+                <span className="overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]">
+                    <FadeInImage
+                        src={props.url}
+                        alt={props.alt || ""}
+                        width={800}
+                        height={600}
+                        className="rounded-lg w-auto h-auto max-h-[500px] object-contain"
+                    />
+                </span>
                 {/* Standard markdown fallback */}
                 {(props.caption || props.title) && (
                     <span className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block">
@@ -90,119 +93,129 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         <Section className="flex-1" data-tina-field={tinaField(data)}>
             <div className="mx-auto max-w-5xl px-6 py-12">
                 {/* Header Section */}
-                <div className="mb-12 border-b border-gray-200 dark:border-gray-700 pb-8">
-                    <h1
-                        className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl mb-2 font-serif"
-                        data-tina-field={tinaField(data, "title")}
-                    >
-                        {data.title}
-                    </h1>
-                    {data.subtitle && (
-                        <div
-                            className="prose dark:prose-invert text-xl text-gray-500 dark:text-gray-400"
-                            data-tina-field={tinaField(data, "subtitle")}
+                <ScrollReveal>
+                    <div className="mb-12 border-b border-gray-200 dark:border-gray-700 pb-8">
+                        <h1
+                            className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl mb-2 font-serif"
+                            data-tina-field={tinaField(data, "title")}
                         >
-                            {typeof data.subtitle === 'string' ? (
-                                <p>{data.subtitle}</p>
-                            ) : (
-                                <TinaMarkdown content={data.subtitle} components={markdownComponents} />
-                            )}
-                        </div>
-                    )}
-                </div>
+                            {data.title}
+                        </h1>
+                        {data.subtitle && (
+                            <div
+                                className="prose dark:prose-invert text-xl text-gray-500 dark:text-gray-400"
+                                data-tina-field={tinaField(data, "subtitle")}
+                            >
+                                {typeof data.subtitle === 'string' ? (
+                                    <p>{data.subtitle}</p>
+                                ) : (
+                                    <TinaMarkdown content={data.subtitle} components={markdownComponents} />
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </ScrollReveal>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
                     {/* Sidebar / Image */}
                     <div className="lg:col-span-1 order-first lg:order-last">
                         {data.profileImage && (
-                            <div data-tina-field={tinaField(data, "profileImage")}>
-                                <div className="relative aspect-square w-full overflow-hidden rounded-t-full mb-4">
-                                    <FadeInImage
-                                        src={data.profileImage}
-                                        alt={data.title || "Profile"}
-                                        fill
-                                        className="object-cover"
-                                        priority
-                                        sizes="(max-width: 1024px) 100vw, 33vw"
-                                    />
-                                </div>
-                                {data.imageCaption && (
-                                    <div className="text-sm text-center text-gray-500 dark:text-gray-400 italic">
-                                        {data.imageCaption}
+                            <ScrollReveal delay={0.2}>
+                                <div data-tina-field={tinaField(data, "profileImage")}>
+                                    <div className="relative aspect-square w-full overflow-hidden rounded-t-full mb-4 transition-transform duration-500 hover:scale-[1.03]">
+                                        <FadeInImage
+                                            src={data.profileImage}
+                                            alt={data.title || "Profile"}
+                                            fill
+                                            className="object-cover"
+                                            priority
+                                            sizes="(max-width: 1024px) 100vw, 33vw"
+                                        />
                                     </div>
-                                )}
-                            </div>
+                                    {data.imageCaption && (
+                                        <div className="text-sm text-center text-gray-500 dark:text-gray-400 italic">
+                                            {data.imageCaption}
+                                        </div>
+                                    )}
+                                </div>
+                            </ScrollReveal>
                         )}
                         {/* Mini Info Box could go here later if needed */}
                     </div>
 
                     {/* Main Content / Summary */}
-                    <div className="lg:col-span-2 prose dark:prose-invert max-w-none">
-                        <div data-tina-field={tinaField(data, "summary")}>
-                            <TinaMarkdown content={data.summary} components={markdownComponents} />
+                    <ScrollReveal delay={0.1} className="lg:col-span-2">
+                        <div className="prose dark:prose-invert max-w-none">
+                            <div data-tina-field={tinaField(data, "summary")}>
+                                <TinaMarkdown content={data.summary} components={markdownComponents} />
+                            </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
                 </div>
 
                 {/* Expandable Sections */}
-                <div className="space-y-4">
-                    {data.sections?.map((section: any, index: number) => (
-                        <div key={index} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
-                            <Disclosure defaultOpen={false}>
-                                {({ open }) => (
-                                    <>
-                                        <Disclosure.Button className="group flex w-full justify-start items-center gap-3 py-4 text-left text-lg font-medium text-gray-900 dark:text-gray-100 hover:text-accent-red transition-colors duration-200 focus:outline-none cursor-pointer">
-                                            <span>{section?.title}</span>
-                                            <ChevronDown
-                                                className={`${open ? 'rotate-180 transform' : ''
-                                                    } h-5 w-5 text-gray-400 group-hover:text-accent-red transition-transform duration-200`}
-                                            />
-                                        </Disclosure.Button>
-                                        <Transition
-                                            enter="transition duration-100 ease-out"
-                                            enterFrom="transform scale-95 opacity-0"
-                                            enterTo="transform scale-100 opacity-100"
-                                            leave="transition duration-75 ease-out"
-                                            leaveFrom="transform scale-100 opacity-100"
-                                            leaveTo="transform scale-95 opacity-0"
-                                        >
-                                            <Disclosure.Panel className="pb-6 prose dark:prose-invert max-w-none">
-                                                <TinaMarkdown content={section?.content} components={markdownComponents} />
-                                            </Disclosure.Panel>
-                                        </Transition>
-                                    </>
-                                )}
-                            </Disclosure>
-                        </div>
-                    ))}
-                </div>
+                <ScrollReveal>
+                    <div className="space-y-4">
+                        {data.sections?.map((section: any, index: number) => (
+                            <div key={index} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
+                                <Disclosure defaultOpen={false}>
+                                    {({ open }) => (
+                                        <>
+                                            <Disclosure.Button className="group flex w-full justify-start items-center gap-3 py-4 text-left text-lg font-medium text-gray-900 dark:text-gray-100 hover:text-accent-red transition-colors duration-200 focus:outline-none cursor-pointer">
+                                                <span>{section?.title}</span>
+                                                <ChevronDown
+                                                    className={`${open ? 'rotate-180 transform' : ''
+                                                        } h-5 w-5 text-gray-400 group-hover:text-accent-red transition-transform duration-200`}
+                                                />
+                                            </Disclosure.Button>
+                                            <Transition
+                                                enter="transition duration-100 ease-out"
+                                                enterFrom="transform scale-95 opacity-0"
+                                                enterTo="transform scale-100 opacity-100"
+                                                leave="transition duration-75 ease-out"
+                                                leaveFrom="transform scale-100 opacity-100"
+                                                leaveTo="transform scale-95 opacity-0"
+                                            >
+                                                <Disclosure.Panel className="pb-6 prose dark:prose-invert max-w-none">
+                                                    <TinaMarkdown content={section?.content} components={markdownComponents} />
+                                                </Disclosure.Panel>
+                                            </Transition>
+                                        </>
+                                    )}
+                                </Disclosure>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollReveal>
 
                 {/* Gallery / Embeds */}
                 {data.gallery && data.gallery.length > 0 && (
-                    <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
-                        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Gallery</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {data.gallery.map((item: any, i: number) => {
-                                if (!item?.src) return null;
-                                return (
-                                    <div
-                                        key={i}
-                                        className="relative aspect-video rounded-lg overflow-hidden shadow-sm cursor-pointer group"
-                                        onClick={() => openLightbox(i)}
-                                    >
-                                        <FadeInImage
-                                            src={item.src || ""}
-                                            alt={item.alt || `Gallery image ${i + 1}`}
-                                            fill
-                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                                    </div>
-                                );
-                            })}
+                    <ScrollReveal>
+                        <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
+                            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Gallery</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {data.gallery.map((item: any, i: number) => {
+                                    if (!item?.src) return null;
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="relative aspect-video rounded-lg overflow-hidden shadow-sm cursor-pointer group transition-all duration-300 hover:shadow-xl hover:scale-[1.03]"
+                                            onClick={() => openLightbox(i)}
+                                        >
+                                            <FadeInImage
+                                                src={item.src || ""}
+                                                alt={item.alt || `Gallery image ${i + 1}`}
+                                                fill
+                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
                 )}
 
                 {/* Lightbox Dialog */}

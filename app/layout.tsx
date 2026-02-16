@@ -21,8 +21,38 @@ const garamond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: 'Tales of Hark',
+  title: {
+    default: 'Tales of Hark',
+    template: '%s | Tales of Hark',
+  },
   description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
+  metadataBase: new URL('https://beautiful-hark.vercel.app'),
+  openGraph: {
+    title: 'Tales of Hark',
+    description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
+    url: 'https://beautiful-hark.vercel.app',
+    siteName: 'Tales of Hark',
+    images: [
+      {
+        url: '/uploads/hark-logo-bg.png',
+        width: 512,
+        height: 512,
+        alt: 'Tales of Hark logo',
+      },
+    ],
+    locale: 'en_AU',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Tales of Hark',
+    description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
+    images: ['/uploads/hark-logo-bg.png'],
+  },
+  icons: {
+    icon: '/uploads/hark-logo-bg.png',
+    apple: '/uploads/hark-logo-bg.png',
+  },
 };
 
 export default function RootLayout({

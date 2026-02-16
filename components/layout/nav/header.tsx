@@ -14,6 +14,14 @@ export const Header = () => {
   const pathname = usePathname();
 
   const [menuState, setMenuState] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll(); // check initial state
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -25,7 +33,7 @@ export const Header = () => {
 
   return (
     <header className='font-sans'>
-      <nav data-state={menuState && 'active'} className='fixed z-20 w-full border-b bg-background/95'>
+      <nav data-state={menuState && 'active'} className={`fixed z-20 w-full transition-all duration-300 ${scrolled ? 'border-b bg-background/80 backdrop-blur-lg' : 'border-b border-transparent bg-background/95'}`}>
         <div className='mx-auto max-w-5xl px-6 transition-all duration-300'>
           <div className='relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4'>
             <div className='flex w-full items-center justify-between gap-12'>

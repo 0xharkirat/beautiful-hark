@@ -1,8 +1,18 @@
+import type { Metadata } from 'next';
 import Layout from '@/components/layout/layout';
 import client from '@/tina/__generated__/client';
 import PostsClientPage from './client-page';
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Read the latest posts from Tales of Hark — software engineering, creative code, and thoughtful engineering.',
+  openGraph: {
+    title: 'Blog | Tales of Hark',
+    description: 'Read the latest posts from Tales of Hark.',
+  },
+};
 
 export default async function PostsPage() {
   let posts = await client.queries.postConnection({

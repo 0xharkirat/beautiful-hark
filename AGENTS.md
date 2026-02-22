@@ -1,54 +1,55 @@
 # AGENTS.md
-Guidance for coding agents working in `/Users/hark/ssw/beautiful-hark`.
+Operational guide for coding agents working in `/Users/hark/ssw/beautiful-hark`.
 
-## Scope and precedence
+## Scope and instruction precedence
 - Applies to the entire repository.
-- If multiple instruction files exist, use the most specific one for files you edit.
-- Rule sources reviewed:
-  - `.github/copilot-instructions.md` (present and authoritative)
-  - `.cursorrules` (not found)
-  - `.cursor/rules/` (not found)
+- If multiple instruction files exist, the most specific file for the edited path wins.
+- Rule sources checked for this repo:
+  - `.github/copilot-instructions.md` (present; must be followed)
+  - `.cursorrules` (not present)
+  - `.cursor/rules/` (not present)
 
 ## Project snapshot
-- Stack: Next.js 15 (App Router), React 18, TypeScript, TinaCMS.
-- Package manager: pnpm (`pnpm-lock.yaml`).
-- Node: `v22` (`.nvmrc`).
-- Lint/format: Biome (`biome.json`).
-- Alias: `@/*` maps to repository root (`tsconfig.json`).
-- Styling: Tailwind CSS v4 + shadcn/ui conventions + `styles.css` tokens.
+- Framework: Next.js 15 (App Router) + React 18 + TypeScript.
+- CMS: TinaCMS (query + visual editing workflow).
+- Package manager: pnpm.
+- Node runtime: `v22` (`.nvmrc`).
+- Lint/format tool: Biome (`biome.json`).
+- Path alias: `@/*` -> repository root (`tsconfig.json`).
+- Styling stack: Tailwind CSS v4 + shadcn/ui conventions.
 
-## Repository layout
-- `app/`: route handlers/pages.
-- `components/`: reusable UI, blocks, layout.
-- `tina/`: Tina config/collections/fields/generated artifacts.
-- `content/`: markdown/json content.
-- `public/`: static assets and Tina admin output.
+## Repository map
+- `app/`: App Router pages/routes.
+- `components/`: reusable UI and block components.
+- `content/`: CMS-backed markdown/json data.
+- `tina/`: Tina config and generated artifacts.
+- `public/`: static files and Tina admin output.
 
-## Build, lint, typecheck, test commands
-Run from repository root.
+## Setup, build, lint, and quality commands
+Run all commands from repository root.
 
-### Install
+### Install dependencies
 ```bash
 pnpm install
 ```
 
-### Develop
+### Local development
 ```bash
 pnpm dev
 ```
-Runs Tina dev + Next dev (`next dev --turbopack`).
+Runs Tina dev and Next.js dev server (`next dev --turbopack -p 3001`).
 
-### Build
+### Production build
 ```bash
 pnpm build
 ```
-Runs `tinacms build && next build`.
+Runs Tina build first, then Next build.
 
-### Build without cloud checks (local fallback)
+### Local build fallback (no Tina cloud checks)
 ```bash
 pnpm build-local
 ```
-Use when Tina cloud credentials are unavailable locally.
+Use when Tina cloud credentials are unavailable in local/dev CI context.
 
 ### Start production server
 ```bash
@@ -62,101 +63,104 @@ pnpm lint
 Equivalent to `biome lint`.
 
 ### Format
-No script is defined; run:
 ```bash
 pnpm exec biome format --write .
 ```
+No dedicated `format` script exists.
 
 ### Typecheck
-No script is defined; run:
 ```bash
 pnpm exec tsc --noEmit
 ```
+No dedicated `typecheck` script exists.
 
-### Tina codegen
+### Tina code generation
 ```bash
 pnpm exec tinacms codegen
 ```
 Run after Tina schema/collection/field changes.
 
-### Tests
+## Test guidance (important)
 - No test runner is currently configured in `package.json`.
-- CI validation for PRs currently relies on `pnpm build`.
+- No `*.test.*` / `*.spec.*` tests are currently present.
+- CI for pull requests currently validates by building (`pnpm build`).
 
-#### Running a single test (important)
-- Not currently possible in this repo (no test framework wired).
-- If a runner is added, use file-targeted commands, for example:
+### Running a single test
+- Currently not possible because no test framework is wired.
+- If tests are added later, prefer file-targeted commands, e.g.:
   - Vitest: `pnpm exec vitest run path/to/file.test.ts -t "case name"`
-  - Playwright: `pnpm exec playwright test tests/foo.spec.ts --grep "case"`
+  - Jest: `pnpm exec jest path/to/file.test.ts -t "case name"`
+  - Playwright: `pnpm exec playwright test tests/foo.spec.ts --grep "case name"`
 
 ## CI behavior to mirror locally
-- `.github/workflows/pr-open.yml` does:
+- `.github/workflows/pr-open.yml` runs:
   1. `pnpm install`
   2. `pnpm build`
-- `.github/workflows/build-and-deploy.yml` also builds with secrets and deploys static output.
+- Match that baseline before opening/updating PRs.
 
-## Copilot rules that must be preserved
+## Copilot instruction highlights to preserve
+From `.github/copilot-instructions.md`, keep the Tina server/client split:
+1. Server `page.tsx` fetches data using `await client.queries.*(...)`.
+2. Server passes all of `{ query, data, variables }` to client component.
+3. Client `client-page.tsx` uses `useTina({ query, data, variables })`.
+4. Editable elements include `data-tina-field={tinaField(...)}`.
 
-For Tina-backed pages, keep the server/client split pattern:
-1. Server `page.tsx` fetches via `client.queries.*`.
-2. Server passes `query`, `data`, and `variables` to a client component.
-3. Client `client-page.tsx` calls `useTina({ query, data, variables })`.
-4. Editable UI elements include `data-tina-field={tinaField(...)}`.
+Hard rule: do not call Tina queries directly from client components.
 
-Do not call Tina queries directly from client components.
+## Code style and implementation guidelines
 
-## Code style guidelines
-
-### Imports
-- Prefer `@/` absolute imports over long relative paths.
-- Keep imports grouped and organized by Biome.
+### Imports and module boundaries
+- Prefer `@/` absolute imports over deep relative imports.
 - Use `import type` for type-only imports.
-- Remove unused imports during edits.
+- Keep imports organized (Biome organize-imports is enabled).
+- Remove unused imports and dead exports when touching files.
 
-### Formatting
-- Follow `biome.json` as source of truth.
-- Key defaults: 2 spaces, semicolons, single quotes, ES5 trailing commas, line width 160.
-- Run lint/format after meaningful edits.
+### Formatting and lint rules
+- Follow `biome.json` as the source of truth.
+- Defaults: 2 spaces, single quotes, semicolons, ES5 trailing commas, line width 160.
+- JSON is ignored by Biome formatting in this repo; keep JSON manually tidy.
+- Use `pnpm lint` and `pnpm exec biome format --write .` after meaningful edits.
 
-### TypeScript and typing
-- `strict` and `strictNullChecks` are enabled; maintain strict safety.
-- Prefer explicit interfaces/types at component and function boundaries.
-- Prefer generated Tina types from `@/tina/__generated__/types`.
-- Avoid `any`; if unavoidable, keep scope narrow and explain in code.
-- Avoid non-null assertions (`!`) unless clearly safe.
+### TypeScript expectations
+- `strict` + `strictNullChecks` are enabled; keep code fully strict-safe.
+- Prefer explicit interfaces/types at component boundaries.
+- Prefer Tina generated types from `@/tina/__generated__/types`.
+- Avoid `any`; if unavoidable, keep scope narrow and document why.
+- Avoid non-null assertions (`!`) unless safety is obvious and local.
 
-### Naming and file conventions
-- Components/types: PascalCase.
-- Variables/functions/props: camelCase.
-- Multiword file names: kebab-case.
-- Route client companions use `client-page.tsx` convention.
-- Keep changes minimal and consistent with nearby patterns.
+### Naming conventions
+- Components and type names: PascalCase.
+- Variables, functions, props: camelCase.
+- Multiword filenames: kebab-case.
+- Route pair naming: `page.tsx` (server) + `client-page.tsx` (client).
 
-### React/Next conventions
-- Add `'use client';` only where client hooks/components require it.
-- Prefer server components for data fetching.
-- Keep `revalidate` usage aligned with neighboring routes.
-- Use `notFound()` for missing content where appropriate.
-
-### Error handling
-- Wrap server-side content fetches with `try/catch` when failure is plausible.
-- Fail gracefully (`notFound`, fallback UI, or error boundary) over hard crashes.
-- Do not silently swallow errors; log actionable context when useful.
+### React and Next.js conventions
+- Use server components by default; add `'use client';` only when required.
+- Keep data fetching on the server whenever possible.
+- Align caching/revalidation behavior with nearby route conventions.
+- Use `notFound()` for missing route content where appropriate.
 
 ### TinaCMS-specific conventions
-- Always pass full `{ query, data, variables }` server -> client.
-- Keep `tinaField` bindings aligned with schema paths.
-- Use `TinaMarkdown` for rich-text rendering.
-- After schema edits: run Tina codegen/build and ensure compilation succeeds.
+- Always preserve server/client split for Tina-backed pages.
+- Always pass full `{ query, data, variables }` into `useTina`.
+- Keep `tinaField` references aligned to exact schema paths.
+- Use `TinaMarkdown` for rich-text content rendering.
+- Never manually edit `tina/__generated__/` output.
 
-## Files/changes to avoid
-- Do not manually edit generated files under `tina/__generated__/`.
-- Do not commit secrets (for example `.env` values).
-- Do not revert unrelated local changes you did not make.
+### Error handling
+- Wrap failure-prone server fetches in `try/catch`.
+- Fail gracefully (`notFound`, fallback UI, or boundary) instead of crashing.
+- Log actionable context when catching errors; do not silently swallow failures.
 
-## Minimal pre-PR checklist
-1. `pnpm lint`
-2. `pnpm exec tsc --noEmit`
-3. `pnpm build` (or `pnpm build-local` when cloud env is unavailable)
-4. If Tina schema changed: `pnpm exec tinacms codegen`
-5. Confirm Tina pages still follow the server/client split pattern
+### Change scope and safety
+- Make minimal, surgical changes consistent with nearby patterns.
+- Do not refactor unrelated areas unless requested.
+- Do not commit secrets (`.env`, tokens, credentials).
+- Do not revert unrelated local changes you did not create.
+
+## Agent checklist before handoff
+1. Run `pnpm lint`.
+2. Run `pnpm exec tsc --noEmit`.
+3. Run `pnpm build` (or `pnpm build-local` if cloud checks cannot run).
+4. If Tina schema changed, run `pnpm exec tinacms codegen`.
+5. Verify Tina pages still follow the required server/client split.

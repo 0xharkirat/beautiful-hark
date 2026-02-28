@@ -10,18 +10,25 @@ jobs:
     steps:
       # Clone repo
       - name: Check out repo to update
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version-file: .nvmrc
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+          run_install: false
+
       # Install deps, update Tina packages, update schema
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
       - name: Update Tina packages
-        run: yarn upgrade tinacms@latest @tinacms/cli@latest
+        run: pnpm update tinacms@latest @tinacms/cli@latest
       - name: Update Schema
-        run: yarn tinacms audit
+        run: pnpm tinacms audit
       # Commit changes
       - name: Commit changes back to branch
         uses: EndBug/add-and-commit@v9

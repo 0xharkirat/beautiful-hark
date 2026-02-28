@@ -1,7 +1,8 @@
 'use client';
 
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Menu, X } from 'lucide-react';
+import { useSearch } from '@/components/ui/SearchContext';
+import { Menu, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
@@ -12,9 +13,15 @@ export const Header = () => {
   const { globalSettings } = useLayout();
   const header = globalSettings!.header!;
   const pathname = usePathname();
+  const { openSearch } = useSearch();
 
   const [menuState, setMenuState] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+  const [isMac, setIsMac] = React.useState(true);
+
+  React.useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().includes('MAC') || navigator.userAgent.includes('Mac'));
+  }, []);
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -22,6 +29,18 @@ export const Header = () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Open search on Cmd+K / Ctrl+K
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearch();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openSearch]);
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -69,20 +88,35 @@ export const Header = () => {
                 <X className='in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200' />
               </button>
 
-              <div className='hidden lg:flex lg:items-center lg:gap-4'>
-                <ul className='flex gap-8 text-sm'>
-                  {header.nav!.map((item, index) => (
-                    <li key={index}>
-                      <Link
-                        href={item!.href!}
-                        className={`block border-b border-transparent py-1 text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
-                      >
-                        <span>{item!.label}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-                <ThemeToggle />
+              <div className='hidden lg:flex lg:items-center lg:gap-4 lg:text-sm'>
+                {header.nav!.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item!.href!}
+                    className={`border-b border-transparent text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
+                  >
+                    <span>{item!.label}</span>
+                  </Link>
+                ))}
+                <div className='group relative'>
+                  <button
+                    type='button'
+                    onClick={openSearch}
+                    aria-label={`Search (${isMac ? '⌘K' : 'Ctrl+K'})`}
+                    className='cursor-pointer p-0.5 text-muted-foreground transition-colors hover:text-accent-red'
+                  >
+                    <Search className='size-4' />
+                  </button>
+                  <div className='pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 font-sans text-xs text-muted-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100'>
+                    {isMac ? '⌘K' : 'Ctrl+K'}
+                  </div>
+                </div>
+                <div className='group relative'>
+                  <ThemeToggle />
+                  <div className='pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 font-sans text-xs text-muted-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100'>
+                    {isMac ? '⌘;' : 'Ctrl+;'}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -99,9 +133,19 @@ export const Header = () => {
                       </Link>
                     </li>
                   ))}
-                  <div className='pt-6'>
-                    <ThemeToggle />
-                  </div>
+                  <li>
+                    <button
+                      type='button'
+                      onClick={() => { setMenuState(false); openSearch(); }}
+                      className='flex w-full items-center gap-2 border-b border-transparent pb-1 text-muted-foreground transition-colors hover:border-accent-red hover:text-accent-red'
+                    >
+                      <Search className='size-4' />
+                      <span>Search</span>
+                    </button>
+                  </li>
+                  <li>
+                    <ThemeToggle mobile />
+                  </li>
                 </ul>
               </div>
             </div>

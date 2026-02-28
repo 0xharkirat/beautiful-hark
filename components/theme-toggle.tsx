@@ -4,36 +4,55 @@ import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button";
-
-export function ThemeToggle() {
+export function ThemeToggle({ mobile = false }: { mobile?: boolean }) {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
 
-    // useEffect only runs on the client, so now we can safely show the UI
     React.useEffect(() => {
         setMounted(true);
     }, []);
 
-    if (!mounted) {
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === ';') {
+                e.preventDefault();
+                setTheme(theme === 'dark' ? 'light' : 'dark');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [theme, setTheme]);
+
+    const toggle = () => mounted && setTheme(theme === "dark" ? "light" : "dark");
+    const label = theme === "dark" ? "Light mode" : "Dark mode";
+
+    if (mobile) {
         return (
-            <Button variant="ghost" size="icon" disabled>
-                <Sun className="h-[1.2rem] w-[1.2rem]" />
-                <span className="sr-only">Toggle theme</span>
-            </Button>
+            <button
+                type="button"
+                onClick={toggle}
+                aria-label="Toggle theme"
+                className="flex w-full items-center gap-2 border-b border-transparent pb-1 text-muted-foreground transition-colors hover:border-accent-red hover:text-accent-red"
+            >
+                <div className="relative flex size-4 items-center">
+                    <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute inset-0 m-auto size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                </div>
+                <span>{label}</span>
+            </button>
         );
     }
 
     return (
-        <Button
-            variant="ghost"
-            size="icon"
-            className="hover:text-accent-red transition-colors"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        <button
+            type="button"
+            onClick={toggle}
+            aria-label="Toggle theme"
+            className="relative flex cursor-pointer items-center p-0.5 text-muted-foreground transition-colors hover:text-accent-red"
         >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute inset-0 m-auto size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
-        </Button>
+        </button>
     );
 }

@@ -35,6 +35,31 @@ const markdownComponents = {
       )}
     </span>
   ),
+  Image: (props: any) => (
+    <span className='my-8 flex flex-col items-center group'>
+      <span className='overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]'>
+        <FadeInImage src={props.url} alt={props.alt || ''} width={800} height={600} className='rounded-lg w-auto h-auto max-h-[500px] object-contain' />
+      </span>
+      {props.caption && <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{props.caption}</span>}
+    </span>
+  ),
+  ImagePair: (props: any) => (
+    <span className='my-8 grid grid-cols-2 gap-4 not-prose'>
+      {[
+        { url: props.leftUrl, alt: props.leftAlt, caption: props.leftCaption },
+        { url: props.rightUrl, alt: props.rightAlt, caption: props.rightCaption },
+      ].map((img, i) =>
+        img.url ? (
+          <span key={i} className='flex flex-col items-center group'>
+            <span className='overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]'>
+              <FadeInImage src={img.url} alt={img.alt || ''} width={600} height={500} className='rounded-lg w-auto h-auto max-h-[400px] object-contain' />
+            </span>
+            {img.caption && <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{img.caption}</span>}
+          </span>
+        ) : null
+      )}
+    </span>
+  ),
 };
 
 // ---------------------------------------------------------------------------
@@ -395,6 +420,18 @@ export const aboutBlockSchema: Template = {
                   label: 'Caption',
                   type: 'string',
                 },
+              ],
+            },
+            {
+              name: 'ImagePair',
+              label: 'Image Pair (2-column)',
+              fields: [
+                { name: 'leftUrl', label: 'Left Image', type: 'image' as const },
+                { name: 'leftAlt', label: 'Left Alt Text', type: 'string' as const },
+                { name: 'leftCaption', label: 'Left Caption', type: 'string' as const },
+                { name: 'rightUrl', label: 'Right Image', type: 'image' as const },
+                { name: 'rightAlt', label: 'Right Alt Text', type: 'string' as const },
+                { name: 'rightCaption', label: 'Right Caption', type: 'string' as const },
               ],
             },
           ],

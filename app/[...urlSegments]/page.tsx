@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import client from '@/tina/__generated__/client';
 import Layout from '@/components/layout/layout';
@@ -27,7 +27,9 @@ export default async function Page({
   return (
     <Layout rawPageData={data}>
       <Section>
-        <ClientPage {...data} />
+        <Suspense>
+          <ClientPage {...data} />
+        </Suspense>
       </Section>
     </Layout>
   );

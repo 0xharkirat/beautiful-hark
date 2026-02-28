@@ -75,8 +75,8 @@ interface TabDef {
 
 const TABS: TabDef[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'career', label: 'Career' },
-  { id: 'early-life', label: 'Early Life & Education' },
+  { id: 'career', label: 'Tale of Career' },
+  { id: 'early-life', label: 'Tale of Childhood & Education' },
 ];
 
 // ---------------------------------------------------------------------------

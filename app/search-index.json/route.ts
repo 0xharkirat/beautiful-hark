@@ -33,19 +33,19 @@ function extractPlainText(richText: unknown): string {
 
 export async function GET() {
   try {
-    let posts = await client.queries.postConnection({ sort: 'date', last: 100 });
-    const allPosts = posts;
+    let posts = await client.queries.postConnection({ sort: 'date', first: 100 });
+    const allEdges = [...(posts.data?.postConnection.edges ?? [])];
 
-    while (posts.data?.postConnection.pageInfo.hasPreviousPage) {
+    while (posts.data?.postConnection.pageInfo.hasNextPage) {
       posts = await client.queries.postConnection({
         sort: 'date',
-        before: posts.data.postConnection.pageInfo.endCursor,
+        first: 100,
+        after: posts.data.postConnection.pageInfo.endCursor,
       });
-      if (!posts.data.postConnection.edges) break;
-      allPosts.data.postConnection.edges.push(...posts.data.postConnection.edges.reverse());
+      allEdges.push(...(posts.data?.postConnection.edges ?? []));
     }
 
-    const index: SearchIndexEntry[] = (allPosts.data.postConnection.edges ?? [])
+    const index: SearchIndexEntry[] = allEdges
       .map((edge) => {
         const post = edge?.node;
         if (!post) return null;

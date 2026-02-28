@@ -1,11 +1,23 @@
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import client from '@/tina/__generated__/client';
 import Layout from '@/components/layout/layout';
 import { Section } from '@/components/layout/section';
 import ClientPage from './client-page';
 
 export const revalidate = 300;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ urlSegments: string[] }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slug = resolvedParams.urlSegments[resolvedParams.urlSegments.length - 1];
+  const title = slug.charAt(0).toUpperCase() + slug.slice(1);
+  return { title };
+}
 
 export default async function Page({
   params,

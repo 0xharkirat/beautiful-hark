@@ -2,6 +2,8 @@
 
 Personal website and blog for Hark Singh — built with Next.js, TinaCMS, and Tailwind CSS. Deployed on Vercel.
 
+Mostly vibe coded with [OpenCode](https://opencode.ai) and Claude Sonnet. Content is all Markdown backed by TinaCMS, and custom components are vibe coded too — surprisingly easy to maintain.
+
 > Live site: [harksingh.com](https://harksingh.com)
 
 ![Home page](docs/screenshots/homepage.png)

@@ -1,112 +1,186 @@
-# Tina Starter 🦙
+# Tales of Hark
 
-![tina-nextjs-starter-demo](https://user-images.githubusercontent.com/103008/130587027-995ccc45-a852-4f90-b658-13e8e0517339.gif)
+Personal website and blog for Hark Singh — built with Next.js, TinaCMS, and Tailwind CSS. Deployed on Vercel.
 
-This Next.js starter is powered by [TinaCMS](https://app.tina.io) for you and your team to visually live edit the structured content of your website. ✨
+> Live site: [harksingh.com](https://harksingh.com)
 
-The content is managed through Markdown and JSON files stored in your GitHub repository, and queried through Tina GraphQL API.
+![Home page](docs/screenshots/homepage.png)
 
-### Features
+| About | Blog | Search |
+|---|---|---|
+| ![About](docs/screenshots/about.png) | ![Blog](docs/screenshots/blogs.png) | ![Search](docs/screenshots/search.png) |
 
-- [Tina Headless CMS](https://app.tina.io) for authentication, content modeling, visual editing and team management.
-- [Vercel](https://vercel.com) deployment to visually edit your site from the `/admin` route.
-- Local development workflow from the filesystem with a local GraqhQL server.
+---
 
-## Requirements
+## Tech stack
 
-- Git, [Node.js Active LTS](https://nodejs.org/en/about/releases/), pnpm installed for local development.
-- A [TinaCMS](https://app.tina.io) account for live editing.
+| Concern | Choice |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript (strict) |
+| CMS | TinaCMS 2.x |
+| Styling | Tailwind CSS v4 + shadcn/ui |
+| Animation | Motion (Framer Motion v12) |
+| Syntax highlighting | Shiki |
+| Diagrams | Mermaid |
+| Feeds | RSS 2.0 / Atom / JSON Feed |
+| Package manager | pnpm |
+| Node version | v22 (`.nvmrc`) |
+| Lint / format | Biome |
 
-## Local Development
+---
 
-Install the project's dependencies:
-
-> [!NOTE]  
-> [Do you know the best package manager for Node.js?](https://www.ssw.com.au/rules/best-package-manager-for-node/) Using the right package manager can greatly enhance your development workflow. We recommend using pnpm for its speed and efficient handling of dependencies. Learn more about why pnpm might be the best choice for your projects by checking out this rule from SSW.
-
+## Project structure
 
 ```
+├── app/                  App Router pages and API routes
+│   ├── page.tsx          Home page
+│   ├── [...urlSegments]/ Catch-all for CMS-backed pages (e.g. /about)
+│   ├── posts/            Blog index and individual post pages
+│   ├── feed.xml/         RSS 2.0 feed
+│   ├── atom.xml/         Atom feed
+│   ├── feed.json/        JSON Feed
+│   └── search-index.json/Client-side search index API
+├── components/
+│   ├── blocks/           Page block components (hero, features, about, video, …)
+│   ├── layout/           Header, footer, nav, section wrapper
+│   ├── ui/               Shared UI: search modal, video dialog, theme toggle, logo
+│   └── mdx-components.tsx Custom TinaMarkdown renderers
+├── content/              CMS content files (Markdown / JSON)
+│   ├── pages/            home.mdx, about.mdx
+│   ├── posts/            Blog post MDX files
+│   ├── tags/             Tag MDX files
+│   ├── authors/          Author Markdown files
+│   └── global/index.json Site-wide header, footer, and theme settings
+├── tina/                 TinaCMS schema, collections, and generated types
+├── lib/                  Utility functions (cn, feed config)
+├── public/               Static assets, Tina admin build, media uploads
+└── docs/                 Developer documentation
+```
+
+---
+
+## Pages and routes
+
+| Route | Description |
+|---|---|
+| `/` | Home — hero block + latest 3 posts |
+| `/about` | About — tabbed profile, career, photo gallery |
+| `/posts` | Blog index — "Chronicles of His Holy Harkness" with tag filtering |
+| `/posts/<slug>` | Individual blog post with OG metadata |
+| `/admin` | TinaCMS visual editing interface |
+| `/feed.xml` | RSS 2.0 feed |
+| `/atom.xml` | Atom feed |
+| `/feed.json` | JSON Feed |
+| `/search-index.json` | Search index (consumed by the client-side search modal) |
+
+---
+
+## Features
+
+- **Block-based pages** — the home and about pages are built from a visual block system editable in TinaCMS (`hero`, `features`, `stats`, `cta`, `callout`, `testimonial`, `video`, `content`, `about`).
+- **Blog** — tag filtering, per-post OG image, reading-friendly typography, TinaMarkdown body with custom components.
+- **Search** — client-side full-text search (title, excerpt, tags) loaded lazily on first open. Keyboard shortcut: `Cmd/Ctrl + K`.
+- **Theme** — system-aware light/dark mode via `next-themes`. Toggle shortcut: `Cmd/Ctrl + ;`.
+- **Mermaid diagrams** — fenced code blocks with `lang="mermaid"` render as live diagrams.
+- **Video** — react-player embeds in posts and pages; a global video dialog for modal playback.
+- **RSS / Atom / JSON feeds** — three feed formats, auto-discovered via `<link rel="alternate">` in the `<head>`.
+- **Animated logo** — SVG eyes that track the cursor, with a dark-mode aura.
+- **ISR** — pages revalidate every 5 minutes; feeds every hour; global layout every minute.
+
+---
+
+## Local development
+
+### 1. Install dependencies
+
+```bash
 pnpm install
 ```
 
-Run the project locally:
+### 2. Set up environment variables
 
+Copy `.env.example` to `.env` and fill in your TinaCloud credentials:
+
+```bash
+cp .env.example .env
 ```
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_TINA_CLIENT_ID` | TinaCloud project client ID |
+| `TINA_TOKEN` | TinaCloud read/write token |
+| `NEXT_PUBLIC_TINA_BRANCH` | Branch for TinaCMS to read from (optional) |
+| `NEXT_PUBLIC_SITE_URL` | Primary domain for RSS feeds (defaults to `https://harksingh.com`) |
+
+Get your client ID and token from [app.tina.io](https://app.tina.io).
+
+### 3. Run the dev server
+
+```bash
 pnpm dev
 ```
 
-### Local URLs
+This starts the TinaCMS local GraphQL server alongside Next.js on port **3001**.
 
-- http://localhost:3000 : browse the website
-- http://localhost:3000/admin : connect to Tina Cloud and go in edit mode
-- http://localhost:3000/exit-admin : log out of Tina Cloud
-- http://localhost:4001/altair/ : GraphQL playground to test queries and browse the API documentation
+| URL | Purpose |
+|---|---|
+| `http://localhost:3001` | Site |
+| `http://localhost:3001/admin` | TinaCMS visual editor |
+| `http://localhost:4001/altair/` | GraphQL playground |
+
+---
+
+## Common commands
+
+```bash
+pnpm dev              # Development server (Tina + Next.js, port 3001)
+pnpm build            # Production build (requires TinaCloud credentials)
+pnpm build-local      # Build without TinaCloud (for local/offline CI)
+pnpm start            # Production server (port 3001)
+pnpm lint             # Lint with Biome
+pnpm exec biome format --write .   # Format with Biome
+pnpm exec tsc --noEmit             # Type-check
+pnpm exec tinacms codegen          # Regenerate Tina types after schema changes
+```
+
+---
+
+## CMS collections
+
+| Collection | Path | Description |
+|---|---|---|
+| `page` | `content/pages/` | Visual block-builder pages |
+| `post` | `content/posts/` | Blog posts with hero image, tags, rich-text body |
+| `author` | `content/authors/` | Author profiles |
+| `tag` | `content/tags/` | Tags referenced by posts |
+| `global` | `content/global/index.json` | Site-wide header, footer, and theme config |
+
+---
+
+## CI
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `pr-open.yml` | PR opened / updated | Runs `pnpm install` + `pnpm build` with TinaCloud credentials |
+| `update-dependabot-pr.yml` | Push to `dependabot/npm_and_yarn/**` | Runs `pnpm update tinacms@latest @tinacms/cli@latest` + `pnpm tinacms audit` and commits the result back |
+
+Dependabot is configured to check for TinaCMS package updates daily.
+
+---
 
 ## Deployment
 
-### GitHub Pages
+The site is deployed on **Vercel**. Vercel automatically sets `NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF`, which TinaCMS uses to determine the content branch for preview deployments.
 
-This starter can be deployed to GitHub Pages. A GitHub Actions workflow is included that handles the build and deployment process. 
+To deploy your own instance:
 
-To deploy to GitHub Pages:
+1. Import the repository in Vercel.
+2. Add `NEXT_PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN` as environment variables.
+3. Vercel handles the rest — `pnpm build` is the build command, `out` is not needed (SSR).
 
-1. In your repository settings, ensure GitHub Pages is enabled and set to deploy from the `gh-pages` branch
-2. Push changes to your main branch - the workflow will automatically build and deploy the site
+---
 
-> [!NOTE]
-> When deploying to GitHub Pages, you'll need to update your secrets in Settings | Secrets and variables | Actions to include:
-> - `NEXT_PUBLIC_TINA_CLIENT_ID`
-> - `TINA_TOKEN`
->
-> You get these from your TinaCloud project - [read the docs](https://tina.io/docs/tina-cloud/deployment-options/github-pages)
+## License
 
-> [!IMPORTANT]
-> GitHub Pages does not support server side code, so this will run as a static site. If you don't want to deploy to GitHub pages, just delete `.github/workflows/build-and-deploy.yml`
-
-### Building the Starter Locally (Using the hosted content API)
-
-Replace the `.env.example`, with `.env`
-
-```
-NEXT_PUBLIC_TINA_CLIENT_ID=<get this from the project you create at app.tina.io>
-TINA_TOKEN=<get this from the project you create at app.tina.io>
-NEXT_PUBLIC_TINA_BRANCH=<Specify the branch with Tina configured>
-```
-
-Build the project:
-
-```bash
-pnpm build
-```
-
-## Getting Help
-
-To get help with any TinaCMS challenges you may have:
-
-- Visit the [documentation](https://tina.io/docs/) to learn about Tina.
-- [Join our Discord](https://discord.gg/zumN63Ybpf) to share feedback.
-- Visit the [community forum](https://community.tinacms.org/) to ask questions.
-- Get support through the chat widget on the TinaCMS Dashboard
-- [Email us](mailto:support@tina.io) to schedule a call with our team and share more about your context and what you're trying to achieve.
-- [Search or open an issue](https://github.com/tinacms/tinacms/issues) if something is not working.
-- Reach out on Twitter at [@tina_cms](https://twitter.com/tina_cms).
-
-## Development tips
-
-### Visual Studio Code GraphQL extension
-
-[Install the GraphQL extension](https://marketplace.visualstudio.com/items?itemName=GraphQL.vscode-graphql) to benefit from type auto-completion.
-
-### Typescript
-
-A good way to ensure your components match the shape of your data is to leverage the auto-generated TypeScript types.
-These are rebuilt when your `tina` config changes.
-
-## LICENSE
-
-Licensed under the [Apache 2.0 license](./LICENSE).
-
-
-# Repository cleaned of LFS content
-# Repository cleaned of LFS content - Wed Sep 17 15:00:42 AEST 2025
-
+Licensed under the [Apache 2.0 License](./LICENSE).

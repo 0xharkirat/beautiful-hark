@@ -69,12 +69,12 @@ export function HarkLogo({ className, trackEyes = false }: HarkLogoProps) {
   }, [trackEyes]);
 
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-black/5 ${className ?? ''}`}>
+    <span className={`inline-flex shrink-0 items-center justify-center ${className ?? ''}`}>
       <svg
         ref={svgRef}
         viewBox="0 0 2048 2048"
         xmlns="http://www.w3.org/2000/svg"
-        className="h-full w-full"
+        className="h-full w-full hark-aura"
         aria-label="Hark logo"
         role="img"
       >

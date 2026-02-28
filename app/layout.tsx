@@ -1,4 +1,6 @@
 import { ThemeProvider } from '@/components/theme-provider';
+import SearchModal from '@/components/ui/SearchModal';
+import { SearchProvider } from '@/components/ui/SearchContext';
 import VideoDialog from '@/components/ui/VideoDialog';
 import { VideoDialogProvider } from '@/components/ui/VideoDialogContext';
 import { cn } from '@/lib/utils';
@@ -69,10 +71,13 @@ export default function RootLayout({
       </head>
       <body className='min-h-screen bg-background font-serif antialiased'>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
-          <VideoDialogProvider>
-            {children}
-            <VideoDialog />
-          </VideoDialogProvider>
+          <SearchProvider>
+            <VideoDialogProvider>
+              {children}
+              <VideoDialog />
+              <SearchModal />
+            </VideoDialogProvider>
+          </SearchProvider>
           <TailwindIndicator />
         </ThemeProvider>
       </body>

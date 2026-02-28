@@ -36,9 +36,9 @@ export const metadata: Metadata = {
     siteName: 'Tales of Hark',
     images: [
       {
-        url: '/uploads/hark-logo-bg.png',
-        width: 512,
-        height: 512,
+        url: '/uploads/hark-logo.svg',
+        width: 2048,
+        height: 2048,
         alt: 'Tales of Hark logo',
       },
     ],
@@ -49,11 +49,11 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Tales of Hark',
     description: 'His Holy Harkness: High Priest of Vibes, Creative Code & Thoughtful Engineering.',
-    images: ['/uploads/hark-logo-bg.png'],
+    images: ['/uploads/hark-logo.svg'],
   },
   icons: {
-    icon: '/uploads/hark-logo-bg.png',
-    apple: '/uploads/hark-logo-bg.png',
+    icon: '/uploads/hark-logo.svg',
+    apple: '/uploads/hark-logo.svg',
   },
 };
 

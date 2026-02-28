@@ -24,7 +24,7 @@ export function ThemeToggle({ mobile = false }: { mobile?: boolean }) {
     }, [theme, setTheme]);
 
     const toggle = () => mounted && setTheme(theme === "dark" ? "light" : "dark");
-    const label = theme === "dark" ? "Light mode" : "Dark mode";
+    const label = mounted ? (theme === "dark" ? "Light mode" : "Dark mode") : "Toggle theme";
 
     if (mobile) {
         return (

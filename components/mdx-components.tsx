@@ -9,6 +9,29 @@ import { Mermaid } from './blocks/mermaid';
 import { Video } from './blocks/video';
 import { FadeInImage } from './ui/fade-in-image';
 
+// Separate client component so it can use useState/useEffect safely
+// without causing hydration mismatches in the parent server component.
+function DateTimeWidget({ format: fmt }: { format?: string }) {
+  const [dt, setDt] = React.useState<Date | null>(null);
+
+  React.useEffect(() => {
+    setDt(new Date());
+  }, []);
+
+  if (!dt) return null;
+
+  switch (fmt) {
+    case 'iso':
+      return <span>{format(dt, 'yyyy-MM-dd')}</span>;
+    case 'utc':
+      return <span>{format(dt, 'eee, dd MMM yyyy HH:mm:ss OOOO')}</span>;
+    case 'local':
+      return <span>{format(dt, 'P')}</span>;
+    default:
+      return <span>{format(dt, 'P')}</span>;
+  }
+}
+
 export const components: Components<{
   BlockQuote: {
     children: TinaMarkdownContent;
@@ -50,20 +73,7 @@ export const components: Components<{
     );
   },
   DateTime: (props) => {
-    const dt = React.useMemo(() => {
-      return new Date();
-    }, []);
-
-    switch (props.format) {
-      case 'iso':
-        return <span>{format(dt, 'yyyy-MM-dd')}</span>;
-      case 'utc':
-        return <span>{format(dt, 'eee, dd MMM yyyy HH:mm:ss OOOO')}</span>;
-      case 'local':
-        return <span>{format(dt, 'P')}</span>;
-      default:
-        return <span>{format(dt, 'P')}</span>;
-    }
+    return <DateTimeWidget format={props.format} />;
   },
   NewsletterSignup: (props) => {
     return (

@@ -9,7 +9,7 @@ export function getFeedConfig(): FeedOptions {
     id: siteUrl,
     link: siteUrl,
     language: 'en',
-    image: `${siteUrl}/uploads/logo.png`,
+    image: `${siteUrl}/uploads/hark-logo.svg`,
     favicon: `${siteUrl}/favicon.ico`,
     copyright: `All rights reserved ${new Date().getFullYear()}, Tales of Hark`,
     feedLinks: {

@@ -2,6 +2,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import type { Template } from 'tinacms';
 import { tinaField } from 'tinacms/dist/react';
@@ -79,12 +80,33 @@ const TABS: TabDef[] = [
   { id: 'early-life', label: 'Tale of Childhood & Education' },
 ];
 
+const TAB_IDS = ['overview', 'career', 'early-life'] as const;
+
+function isTabId(value: string | null): value is TabId {
+  return TAB_IDS.includes(value as TabId);
+}
+
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
 export const About = ({ data }: { data: PageBlocksAbout }) => {
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const tabParam = searchParams.get('tab');
+  const activeTab: TabId = isTabId(tabParam) ? tabParam : 'overview';
+
+  const setActiveTab = (id: TabId) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (id === 'overview') {
+      params.delete('tab');
+    } else {
+      params.set('tab', id);
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const openLightbox = (index: number) => setSelectedImageIndex(index);

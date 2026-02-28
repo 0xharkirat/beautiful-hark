@@ -43,18 +43,20 @@ const transitionVariants = {
 };
 
 export const Hero = ({ data }: { data: PageBlocksHero }) => {
-  const [hasPlayed, setHasPlayed] = useState(true); // default to true (no animation) to avoid flash
+  const [hasPlayed, setHasPlayed] = useState<boolean | null>(null);
 
   useEffect(() => {
     const key = 'hero-animation-played';
     if (!sessionStorage.getItem(key)) {
       setHasPlayed(false); // first visit — allow animation
       sessionStorage.setItem(key, '1');
+    } else {
+      setHasPlayed(true); // already played — skip animation
     }
   }, []);
 
-  // When animation hasn't played yet, use normal animated variants; otherwise skip animation
-  const skipAnimation = hasPlayed;
+  // Before mount: skipAnimation=true (no animation, matches SSR default)
+  const skipAnimation = hasPlayed !== false;
 
   const noAnimVariants = {
     container: { visible: {} },

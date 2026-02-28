@@ -1,12 +1,12 @@
 'use client';
 
 import { ThemeToggle } from '@/components/theme-toggle';
+import { HarkLogo } from '@/components/ui/hark-logo';
 import { useSearch } from '@/components/ui/SearchContext';
 import { Menu, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import { Icon } from '../../icon';
 import { useLayout } from '../layout-context';
 
 export const Header = () => {
@@ -17,7 +17,7 @@ export const Header = () => {
 
   const [menuState, setMenuState] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
-  const [isMac, setIsMac] = React.useState(true);
+  const [isMac, setIsMac] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().includes('MAC') || navigator.userAgent.includes('Mac'));
@@ -57,24 +57,7 @@ export const Header = () => {
           <div className='relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4'>
             <div className='flex w-full items-center justify-between gap-12'>
               <Link href='/' aria-label='home' className='flex items-center space-x-2 text-sm tracking-wide'>
-                {(header.logo || "/uploads/hark-logo-bg.png") ? (
-                  <div className="relative mr-2 h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-md transition-all duration-300">
-                    <img
-                      src={header.logo || "/uploads/hark-logo-bg.png"}
-                      alt={header.name || "Logo"}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <Icon
-                    parentColor={header.color!}
-                    data={{
-                      name: header.icon!.name,
-                      color: header.icon!.color,
-                      style: header.icon!.style,
-                    }}
-                  />
-                )}
+                <HarkLogo className='mr-2 h-16 w-16 lg:h-20 lg:w-20 transition-all duration-300' trackEyes />
                 {' '}
                 <span className='text-foreground'>{header.name}</span>
               </Link>
@@ -102,19 +85,19 @@ export const Header = () => {
                   <button
                     type='button'
                     onClick={openSearch}
-                    aria-label={`Search (${isMac ? '⌘K' : 'Ctrl+K'})`}
+                    aria-label={isMac === null ? 'Search' : `Search (${isMac ? '⌘K' : 'Ctrl+K'})`}
                     className='cursor-pointer p-0.5 text-muted-foreground transition-colors hover:text-accent-red'
                   >
                     <Search className='size-4' />
                   </button>
                   <div className='pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 font-sans text-xs text-muted-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100'>
-                    {isMac ? '⌘K' : 'Ctrl+K'}
+                    {isMac === null ? null : isMac ? '⌘K' : 'Ctrl+K'}
                   </div>
                 </div>
                 <div className='group relative'>
                   <ThemeToggle />
                   <div className='pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-2 py-1 font-sans text-xs text-muted-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100'>
-                    {isMac ? '⌘;' : 'Ctrl+;'}
+                    {isMac === null ? null : isMac ? '⌘;' : 'Ctrl+;'}
                   </div>
                 </div>
               </div>

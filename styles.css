@@ -280,3 +280,16 @@
   color: var(--accent-red);
   text-decoration: none;
 }
+
+@keyframes hark-aura {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px oklch(0.82 0.04 80 / 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px oklch(0.82 0.04 80 / 0.7));
+  }
+}
+
+.dark .hark-aura {
+  animation: hark-aura 4.5s ease-in-out infinite;
+}

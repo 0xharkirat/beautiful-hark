@@ -153,6 +153,23 @@ export const components: Components<{
     if (!props) {
       return <></>;
     }
+    const caption = (props as any).caption;
+    if (caption) {
+      return (
+        <figure className='my-6'>
+          <span className='flex items-center justify-center relative overflow-hidden rounded-sm border border-border'>
+            <FadeInImage
+              src={props.url}
+              alt={props.alt || ''}
+              width={500}
+              height={500}
+              className='w-auto h-auto max-h-[500px] object-contain'
+            />
+          </span>
+          <figcaption className='mt-2 text-center text-sm text-muted-foreground italic'>{caption}</figcaption>
+        </figure>
+      );
+    }
     return (
       <span className='my-6 flex items-center justify-center relative overflow-hidden rounded-sm border border-border'>
         <FadeInImage

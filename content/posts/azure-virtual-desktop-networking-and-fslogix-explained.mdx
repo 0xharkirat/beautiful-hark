@@ -1,5 +1,5 @@
 ---
-title: Azure Networking Fundamentals for Dummies (AVD Edition)
+title: Azure Networking Fundamentals for Dummies (AZ-140 Part 0)
 excerpt: >
   A plain-English walkthrough of Azure Virtual Desktop using the SSW office
   analogy: VNet, subnets, NSGs, Entra ID, session hosts, app groups, and
@@ -9,6 +9,7 @@ date: 2026-02-22T00:00:00.000Z
 tags:
   - tag: content/tags/azure.mdx
   - tag: content/tags/ai.mdx
+  - tag: content/tags/az140.mdx
 ---
 
 So I am preparing for my AZ-140 exam (**Microsoft Certified: Azure Virtual Desktop Specialty**), and I was trying to understand the networking fundamentals with one simple analogy.
@@ -25,9 +26,9 @@ So here is my simple analogy: I am building a new SSW office.
 
 A VNet is essentially your private, fenced-off piece of land in the Azure cloud.
 
-* What is it? It’s a logically isolated network. When you create a VNet, you are carving out a private space that belongs only to you.
-* Why do we need it? If you spin up a server in the cloud without a private network, it's essentially standing naked on the public internet. Anyone can see it and try to attack it. A VNet puts four walls around your resources so they can communicate with each other privately and securely.
-* Why private? Because your internal databases, company files, and user desktops have absolutely no business being exposed to the wild internet.
+* **What is it?** It’s a logically isolated network. When you create a VNet, you are carving out a private space that belongs only to you.
+* **Why do we need it?** If you spin up a server in the cloud without a private network, it’s essentially standing naked on the public internet. Anyone can see it and try to attack it. A VNet puts four walls around your resources so they can communicate with each other privately and securely.
+* **Why private?** Because your internal databases, company files, and user desktops have absolutely no business being exposed to the wild internet.
 
 ## 2) Subnets = The Rooms
 
@@ -41,9 +42,11 @@ Now, you have a massive, empty building. But you wouldn't put the coffee machine
 
 You have the building (VNet) and the rooms (Subnets). But doors are useless if anyone can just turn the handle and walk in.
 
-* **What is it?** An NSG is a digital bouncer. It holds a clipboard with two lists: Allow rules and Deny rules. In Azure, you attach this bouncer to a room (Subnet) or directly to a desk's network card (VM NIC).
+* **What is it?** An NSG is a digital bouncer. It holds a clipboard with two lists: Allow rules and Deny rules. In Azure, you attach this bouncer to a room (Subnet) or directly to a desk's network card (VM NIC). It works purely on network rules: IP addresses, ports, and protocols.
 * **Why do we need them?** Subnets just draw lines on the floor; they don't actually stop traffic by themselves. The NSG enforces the rules.
 * **Why enforce rules?** By default, Azure lets everything inside a VNet talk to everything else. An NSG allows you to say, "The Web Server room can talk to the Database room, but the Database room is never allowed to talk directly to the outside internet."
+
+Note: NSGs are network-layer bouncers only. They check the source IP and port on the clipboard, not the person's identity. The identity check (who you actually are) is handled separately by Entra ID, which we cover in the next section.
 
 ***
 
@@ -115,6 +118,8 @@ FSLogix is Microsoft's solution for profile management, and it is the magic tric
   2. You are routed to any available desk (Session Host).
   3. The moment you sit down, the FSLogix agent grabs your specific backpack from the Locker Room and instantly "mounts" it to the desk over the network.
   4. To Windows, your profile appears in the usual place (`C:\Users\<you>`). It feels local, but the data is coming from that network-backed backpack. When you log off, the backpack detaches and is safely stored again.
+
+> **Important:** The Locker Room doors use traditional AD DS keys by default. For the doors to accept a modern Entra ID badge instead, your user accounts must be **hybrid identities** (synced from AD DS into Entra ID via Microsoft Entra Connect). A purely cloud-only Entra ID account accessing FSLogix via Entra Kerberos is still in preview. We will go deeper on this in Part 1 when we cover AD DS and identity options.
 
 ### AZ-140 gold: three FSLogix details
 

@@ -3,14 +3,16 @@
 import ErrorBoundary from '@/components/error-boundary';
 import { Section } from '@/components/layout/section';
 import { components } from '@/components/mdx-components';
+import { TableOfContents } from '@/components/posts/table-of-contents';
 import { TagChip } from '@/components/posts/tag-chip';
 import type { PostQuery } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
 import Image from 'next/image';
-import React from 'react';
 import { motion } from 'motion/react';
 import { tinaField, useTina } from 'tinacms/dist/react';
 import { TinaMarkdown } from 'tinacms/dist/rich-text';
+
+const ARTICLE_ID = 'post-article';
 
 interface ClientPostProps {
   data: PostQuery;
@@ -33,47 +35,65 @@ export default function PostClientPage(props: ClientPostProps) {
 
   return (
     <ErrorBoundary>
+      {/* No className override — keep Section's default max-w-5xl px-6 to align with the navbar */}
       <Section>
-        <motion.article
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className='mx-auto max-w-3xl px-4 py-16'
-        >
-          <h1 data-tina-field={tinaField(post, 'title')} className='mb-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl'>
-            {post.title}
-          </h1>
+        {/*
+         * Two-column layout on xl+:
+         *   left  — article capped at max-w-2xl for comfortable line length
+         *   right — sticky TOC aside (hidden below xl, handled inside TableOfContents)
+         *
+         * The outer flex container is intentionally wider than the article column
+         * so the TOC has room to sit beside it without squeezing the content.
+         */}
+        <div className='flex gap-12 xl:gap-16'>
+          <motion.article
+            id={ARTICLE_ID}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className='min-w-0 flex-1 max-w-2xl py-16'
+          >
+            <h1
+              data-tina-field={tinaField(post, 'title')}
+              className='mb-4 font-serif text-4xl font-semibold leading-tight tracking-tight md:text-5xl'
+            >
+              {post.title}
+            </h1>
 
-          <div className='mb-12 flex flex-wrap items-center gap-3'>
-            <span data-tina-field={tinaField(post, 'date')} className='text-sm text-muted-foreground'>
-              {formattedDate}
-            </span>
-            {tags.length > 0 && (
-              <div className='flex flex-wrap gap-1.5'>
-                {tags.map((tag) => (
-                  <TagChip key={tag} name={tag} />
-                ))}
+            <div className='mb-12 flex flex-wrap items-center gap-3'>
+              <span data-tina-field={tinaField(post, 'date')} className='text-sm text-muted-foreground'>
+                {formattedDate}
+              </span>
+              {tags.length > 0 && (
+                <div className='flex flex-wrap gap-1.5'>
+                  {tags.map((tag) => (
+                    <TagChip key={tag} name={tag} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {post.heroImg && (
+              <div className='mb-12'>
+                <div data-tina-field={tinaField(post, 'heroImg')} className='overflow-hidden rounded-lg border border-border'>
+                  <Image priority src={post.heroImg} alt={post.title} width={1200} height={630} className='h-auto w-full object-cover' />
+                </div>
               </div>
             )}
-          </div>
 
-          {post.heroImg && (
-            <div className='mb-12'>
-              <div data-tina-field={tinaField(post, 'heroImg')} className='overflow-hidden rounded-lg border border-border'>
-                <Image priority src={post.heroImg} alt={post.title} width={1200} height={630} className='h-auto w-full object-cover' />
-              </div>
+            <div data-tina-field={tinaField(post, '_body')} className='prose dark:prose-invert max-w-none'>
+              <TinaMarkdown
+                content={post._body}
+                components={{
+                  ...components,
+                }}
+              />
             </div>
-          )}
+          </motion.article>
 
-          <div data-tina-field={tinaField(post, '_body')} className='prose prose-lg dark:prose-invert max-w-none'>
-            <TinaMarkdown
-              content={post._body}
-              components={{
-                ...components,
-              }}
-            />
-          </div>
-        </motion.article>
+          {/* TOC — desktop sticky aside + mobile floating dropdown */}
+          <TableOfContents articleSelector={`#${ARTICLE_ID}`} />
+        </div>
       </Section>
     </ErrorBoundary>
   );

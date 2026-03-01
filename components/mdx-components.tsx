@@ -1,6 +1,5 @@
 import { PageBlocksVideo } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
-import Image from 'next/image';
 import React from 'react';
 import type { Components, TinaMarkdownContent } from 'tinacms/dist/rich-text';
 import { TinaMarkdown } from 'tinacms/dist/rich-text';
@@ -8,6 +7,34 @@ import { Prism } from 'tinacms/dist/rich-text/prism';
 import { Mermaid } from './blocks/mermaid';
 import { Video } from './blocks/video';
 import { FadeInImage } from './ui/fade-in-image';
+
+/** Converts heading text to a URL-safe anchor ID, e.g. "Hello World!" → "hello-world" */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/[\s_]+/g, '-');
+}
+
+/**
+ * Heading wrapper that stamps a stable `id` derived from the rendered text content.
+ *
+ * TinaMarkdown passes `children` as a rendered <TinaMarkdown> element (not a string),
+ * so we cannot extract text at render time. Instead we use a ref to read `textContent`
+ * from the real DOM node after mount and set the id then.
+ */
+function AnchoredHeading({ as: Tag, children }: { as: 'h2' | 'h3'; children: React.ReactNode }) {
+  const ref = React.useRef<HTMLHeadingElement>(null);
+
+  React.useLayoutEffect(() => {
+    if (ref.current && !ref.current.id) {
+      ref.current.id = slugify(ref.current.textContent ?? '');
+    }
+  }, []);
+
+  return <Tag ref={ref}>{children}</Tag>;
+}
 
 // Separate client component so it can use useState/useEffect safely
 // without causing hydration mismatches in the parent server component.
@@ -58,6 +85,15 @@ export const components: Components<{
     }
 
     return <Prism lang={props.lang} value={props.value} />;
+  },
+  // Heading renderers that attach stable anchor IDs for the TOC to link to.
+  h2: (props: { children: JSX.Element } | undefined) => {
+    if (!props) return <></>;
+    return <AnchoredHeading as='h2'>{props.children}</AnchoredHeading>;
+  },
+  h3: (props: { children: JSX.Element } | undefined) => {
+    if (!props) return <></>;
+    return <AnchoredHeading as='h3'>{props.children}</AnchoredHeading>;
   },
   BlockQuote: (props: {
     children: TinaMarkdownContent;

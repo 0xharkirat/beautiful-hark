@@ -22,7 +22,7 @@ Before I go deeper into AVD, I needed to understand Azure networking fundamental
 
 So here is my simple analogy: I am building a new SSW office.
 
-![Bird's-eye floor plan of the SSW office showing the VNet building, three subnets (Web Servers, Database, AVD Desktops), NSG bouncers at each room entrance, session host desks, FSLogix profile backpacks, and the Entra ID badge office in the lobby](/uploads/posts/az140-part0/az140-part0-image1.webp "Figure: The complete SSW office analogy — every Azure concept you will meet in this post mapped to one physical space.")
+![Bird's-eye floor plan of the SSW office showing the VNet building, three subnets (Web Servers, Database, AVD Desktops), NSG bouncers at each room entrance, session host desks, FSLogix profile backpacks, and the Entra ID badge office in the lobby](/uploads/posts/az140-part0/az140-part0-image1.webp "Figure: The complete SSW office analogy - every Azure concept you will meet in this post mapped to one physical space.")
 
 ## 1) The Virtual Network (VNet) = The Building
 
@@ -42,7 +42,7 @@ Now, you have a massive, empty building. But you wouldn't put the coffee machine
 * **Why do we need them?** For organization and containment. You might create one subnet for "Web Servers," one for "Databases," and one for "Virtual Desktops."
 * **Why contain them?** If a developer accidentally clicks a bad link and gets a virus, you want that virus trapped in the "Developer Subnet" room. You don't want it spreading freely into the "Database Subnet" room. Subnets let you divide the space logically.
 
-![Floor plan of three rooms — Web Servers Subnet, Database Subnet, and AVD Desktops Subnet — separated by solid walls. A cartoon virus is contained in the Web Servers room with blocked arrows showing it cannot pass into the other rooms](/uploads/posts/az140-part0/az140-part0-image3.webp "Figure: Subnets are interior walls. A virus in the Web Servers room is contained there and cannot reach the Database or AVD Desktops rooms.")
+![Floor plan of three rooms - Web Servers Subnet, Database Subnet, and AVD Desktops Subnet - separated by solid walls. A cartoon virus is contained in the Web Servers room with blocked arrows showing it cannot pass into the other rooms](/uploads/posts/az140-part0/az140-part0-image3.webp "Figure: Subnets are interior walls. A virus in the Web Servers room is contained there and cannot reach the Database or AVD Desktops rooms.")
 
 ## 3) Network Security Groups (NSGs) = The Security Guards
 
@@ -85,7 +85,7 @@ Once Entra ID scans a user's badge and the NSG lets them into the AVD Subnet roo
   * **Personal host pool** = private office. One person gets one fixed desk.
 * We will use these two terms again in the next sections, so keep this picture in your head: shared desks vs private desks.
 
-![Two zones side by side: left zone is an open-plan hot-desking floor with six identical unlabelled desks and arrows pointing to any available desk; right zone shows three private named offices with nameplates for Hark, Pedro, and Lucy, each person going only to their own office](/uploads/posts/az140-part0/az140-part0-image5.webp "Figure: Pooled host pool is hot-desking — any available desk. Personal host pool is a private named office — always your desk.")
+![Two zones side by side: left zone is an open-plan hot-desking floor with six identical unlabelled desks and arrows pointing to any available desk; right zone shows three private named offices with nameplates for Hark, Pedro, and Lucy, each person going only to their own office](/uploads/posts/az140-part0/az140-part0-image5.webp "Figure: Pooled host pool is hot-desking - any available desk. Personal host pool is a private named office - always your desk.")
 
 ## 6) Application Groups = The Tools on the Desk
 
@@ -111,7 +111,7 @@ Imagine at SSW office, we deployed a pooled host pool to save money. On Monday, 
 
 On Tuesday, you log in again. This time, you get Desk B (VM-05). You sit down, and the desk is completely empty. Your theme is gone, your Outlook is empty, and your code is missing.
 
-![Two-panel illustration: Monday panel shows a person happily at Desk VM-01 with dark-mode wallpaper and open apps; Tuesday panel shows the same person at a completely blank Desk VM-05 with a confused expression and a thought bubble showing their lost setup](/uploads/posts/az140-part0/az140-part0-image6.webp "Figure: Hot-desking amnesia — your personalised setup from Monday vanishes when you land on a different VM on Tuesday.")
+![Two-panel illustration: Monday panel shows a person happily at Desk VM-01 with dark-mode wallpaper and open apps; Tuesday panel shows the same person at a completely blank Desk VM-05 with a confused expression and a thought bubble showing their lost setup](/uploads/posts/az140-part0/az140-part0-image6.webp "Figure: Hot-desking amnesia - your personalised setup from Monday vanishes when you land on a different VM on Tuesday.")
 
 How do we fix this without forcing you to sit at the exact same desk every single day?
 
@@ -128,7 +128,7 @@ FSLogix is Microsoft's solution for profile management, and it is the magic tric
   2. You are routed to any available desk (Session Host).
   3. The moment you sit down, the FSLogix agent grabs your specific backpack from the Locker Room and instantly "mounts" it to the desk over the network.
   4. To Windows, your profile appears in the usual place (`C:\Users\<you>`). It feels local, but the data is coming from that network-backed backpack. When you log off, the backpack detaches and is safely stored again.
-     ![Four-step flow diagram: Step 1 — badge in via Entra ID; Step 2 — routed to any available desk; Step 3 — FSLogix grabs your backpack from the Azure Files locker room; Step 4 — desktop feels local but data lives on the network. Below the steps, a logout flow shows the backpack returning safely to the locker](/uploads/posts/az140-part0/az140-part0-image7.webp "Figure: The FSLogix login flow — your profile backpack is fetched from the central locker room the moment you sit down, and returned safely when you log off.")
+     ![Four-step flow diagram: Step 1 - badge in via Entra ID; Step 2 - routed to any available desk; Step 3 - FSLogix grabs your backpack from the Azure Files locker room; Step 4 - desktop feels local but data lives on the network. Below the steps, a logout flow shows the backpack returning safely to the locker](/uploads/posts/az140-part0/az140-part0-image7.webp "Figure: The FSLogix login flow - your profile backpack is fetched from the central locker room the moment you sit down, and returned safely when you log off.")
 
 > **Important:** The Locker Room doors use traditional AD DS keys by default. For the doors to accept a modern Entra ID badge instead, your user accounts must be **hybrid identities** (synced from AD DS into Entra ID via Microsoft Entra Connect). A purely cloud-only Entra ID account accessing FSLogix via Entra Kerberos is still in preview. We will go deeper on this in Part 1 when we cover AD DS and identity options.
 

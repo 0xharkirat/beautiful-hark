@@ -31,7 +31,7 @@ In our new cloud office (AVD), we already have Entra ID acting as our modern "Ba
 
 When an employee sits down at their virtual desk (Session Host), the desk needs to ask the Old Guard: *"Who is this? And what strict rules apply to them today?"*
 
-![Two characters in an office lobby: left side shows the Old Guard (AD DS) — a stern figure behind an oak desk with a GPO rulebook and metal keys, speech bubble reading "Kerberos / NTLM"; right side shows the Entra ID Badge Office — a sleek glass kiosk with a speech bubble reading "OAuth 2.0 / OIDC". An employee stands between them with a question mark overhead](/uploads/posts/az140-part1/part1-image1.webp "Figure: AD DS and Entra ID sit side by side in the same office — two systems, two languages, one confused new employee.")
+![Two characters in an office lobby: left side shows the Old Guard (AD DS) - a stern figure behind an oak desk with a GPO rulebook and metal keys, speech bubble reading "Kerberos / NTLM"; right side shows the Entra ID Badge Office - a sleek glass kiosk with a speech bubble reading "OAuth 2.0 / OIDC". An employee stands between them with a question mark overhead](/uploads/posts/az140-part1/part1-image1.webp "Figure: AD DS and Entra ID sit side by side in the same office - two systems, two languages, one confused new employee.")
 
 > **Exam Tip:** Every Session Host in AVD must be joined to a domain. That domain can be a traditional AD DS domain, a Microsoft Entra Domain Services managed domain, or Entra ID itself (for Entra-joined AVD). More on all three options below.
 
@@ -45,7 +45,7 @@ Entra ID is a modern, glowing **Smart Keycard System** (the "Badge Office & Secu
 
 So why do we need the Old Guard (AD DS) if we have modern Smart Keycards? Because the actual Windows virtual machines (Session Hosts) in AVD are deeply traditional. They still rely on the Old Guard for three critical things:
 
-![Three panels showing the three reasons AD DS still exists: Panel 1 — a thick GPO rulebook with a clock icon suggesting decades of rules; Panel 2 — a locker room door with two locks, one for an AD DS metal key and one for an Entra Kerberos smart keycard, a profile backpack visible through the window; Panel 3 — an old early-2000s desktop computer with a speech bubble saying "I only speak to the Old Guard" and a no-entry symbol over a modern keycard](/uploads/posts/az140-part1/part1-image2.webp "Figure: The three jobs only AD DS can reliably do — enforcing GPO rules, unlocking FSLogix locker room doors, and supporting legacy apps that refuse to speak modern protocols.")
+![Three panels showing the three reasons AD DS still exists: Panel 1 - a thick GPO rulebook with a clock icon suggesting decades of rules; Panel 2 - a locker room door with two locks, one for an AD DS metal key and one for an Entra Kerberos smart keycard, a profile backpack visible through the window; Panel 3 - an old early-2000s desktop computer with a speech bubble saying "I only speak to the Old Guard" and a no-entry symbol over a modern keycard](/uploads/posts/az140-part1/part1-image2.webp "Figure: The three jobs only AD DS can reliably do - enforcing GPO rules, unlocking FSLogix locker room doors, and supporting legacy apps that refuse to speak modern protocols.")
 
 ### Reason A: The Old Rulebook (Group Policy Objects)
 
@@ -71,7 +71,7 @@ If your company relies on a piece of accounting software built 15 years ago, tha
 
 In most real-world AVD setups, you will have both Entra ID and AD DS running side by side. The obvious question is: does an employee need two separate accounts?
 
-![Left-to-right sync diagram: an AD DS box containing Hark's account with a metal key icon, connected by a bridge arrow labelled "Entra Connect (auto-sync)" to an Entra ID box containing the same Hark's account with a smart keycard icon. Below the diagram, a single employee figure holds both a metal key and a smart keycard with the label "One set of credentials. Works in both worlds."](/uploads/posts/az140-part1/part1-image3.webp "Figure: Entra Connect automatically replicates accounts from AD DS into Entra ID — one account, one password, works in both worlds.")
+![Left-to-right sync diagram: an AD DS box containing Hark's account with a metal key icon, connected by a bridge arrow labelled "Entra Connect (auto-sync)" to an Entra ID box containing the same Hark's account with a smart keycard icon. Below the diagram, a single employee figure holds both a metal key and a smart keycard with the label "One set of credentials. Works in both worlds."](/uploads/posts/az140-part1/part1-image3.webp "Figure: Entra Connect automatically replicates accounts from AD DS into Entra ID - one account, one password, works in both worlds.")
 
 No. **Microsoft Entra Connect** (formerly Azure AD Connect) acts as an automatic sync bridge between the two systems. When an account is created or updated in AD DS, Entra Connect replicates it into Entra ID. The user has one set of credentials that works in both worlds. This sync relationship is a core concept in the AZ-140 exam.
 
@@ -81,7 +81,7 @@ No. **Microsoft Entra Connect** (formerly Azure AD Connect) acts as an automatic
 
 The AZ-140 exam expects you to know that there are three ways to handle identity in an AVD environment, not just two.
 
-![](/uploads/posts/az140-part1/part1-image4.webp)
+![Three columns comparing AVD identity options: Column 1 (Option 1 - AD DS on Azure VM) shows an Old Guard figure at a Domain Controller desk with green checkmarks for GPOs, FSLogix, and Legacy Apps, plus an orange warning for "You manage the VM"; Column 2 (Option 2 - Microsoft Entra Domain Services) shows the same Old Guard desk with a Microsoft cloud logo above it and a warning for "Less control, no schema extension"; Column 3 (Option 3 - Entra-joined AVD) shows a modern glass kiosk with a green checkmark for "Simple and modern" and red X marks for "No GPOs" and "Legacy apps break"](/uploads/posts/az140-part1/part1-image4.webp "Figure: The three identity options for AVD - self-managed AD DS, Microsoft-managed Entra Domain Services, or modern Entra-joined with no AD DS at all. Each trades control for simplicity.")
 
 **Option 1: AD DS on an Azure VM (The Old Guard in the cloud lobby)**
 
@@ -111,7 +111,7 @@ Imagine your new cloud office building (your Azure VNet) is located in a data ce
 
 **The Reliability Risk:** If the internet connection (VPN or ExpressRoute) between Sydney and Newcastle drops, no one gets into their virtual desktops. The whole office shuts down.
 
-![](/uploads/posts/az140-part1/part1-image5.webp)
+![Two-panel illustration: left panel (The Problem) shows a map with the Azure VNet in Sydney and an old server closet in Newcastle connected by a long dashed arrow labelled "Every login = long-distance call" with a snail icon for latency and a red warning triangle for single point of failure; right panel (The Solution) shows the Azure VNet in Sydney with both Session Host desks and a Domain Controller VM inside it, connected by a short green arrow labelled "Local. Instant." with a green checkmark over the building](/uploads/posts/az140-part1/part1-image5.webp "Figure: The problem - every AVD login makes a slow long-distance call to a distant server. The solution - put a Domain Controller VM right inside the Azure VNet so authentication is local and instant.")
 
 ### The Solution: Build a Desk in Azure
 

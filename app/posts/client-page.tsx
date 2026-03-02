@@ -22,21 +22,26 @@ function PostsContent({ data }: { data: PostConnectionQuery }) {
   const searchParams = useSearchParams();
   const activeTag = searchParams.get('tag');
 
-  const allPosts = (data?.postConnection.edges ?? []).map((postData) => {
-    const post = postData?.node;
-    if (!post) return null;
-    const date = post.date ? new Date(post.date) : null;
-    const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMM dd, yyyy') : '';
-    return {
-      id: post.id,
-      published: formattedDate,
-      title: post.title,
-      tags: (post.tags ?? []).map((t) => t?.tag?.name).filter((n): n is string => Boolean(n)),
-      url: `/posts/${post._sys.breadcrumbs.join('/')}`,
-      excerpt: post.excerpt,
-      heroImg: post.heroImg,
-    };
-  }).filter((p): p is NonNullable<typeof p> => p !== null);
+  const allPosts = (data?.postConnection.edges ?? [])
+    .map((postData) => {
+      const post = postData?.node;
+      if (!post) return null;
+      const date = post.date ? new Date(post.date) : null;
+      const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMM dd, yyyy') : '';
+      const updatedAt = post.updatedAt ? new Date(post.updatedAt) : null;
+      const formattedUpdatedAt = updatedAt && !Number.isNaN(updatedAt.getTime()) ? format(updatedAt, 'MMM dd, yyyy') : null;
+      return {
+        id: post.id,
+        published: formattedDate,
+        updatedAt: formattedUpdatedAt,
+        title: post.title,
+        tags: (post.tags ?? []).map((t) => t?.tag?.name).filter((n): n is string => Boolean(n)),
+        url: `/posts/${post._sys.breadcrumbs.join('/')}`,
+        excerpt: post.excerpt,
+        heroImg: post.heroImg,
+      };
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null);
 
   // Build tag counts across all posts
   const tagCounts = allPosts.reduce<Record<string, number>>((acc, post) => {
@@ -50,9 +55,7 @@ function PostsContent({ data }: { data: PostConnectionQuery }) {
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
-  const visiblePosts = activeTag
-    ? allPosts.filter((post) => post.tags.includes(activeTag))
-    : allPosts;
+  const visiblePosts = activeTag ? allPosts.filter((post) => post.tags.includes(activeTag)) : allPosts;
 
   return (
     <div className='container mx-auto max-w-6xl px-4 py-16'>
@@ -67,8 +70,7 @@ function PostsContent({ data }: { data: PostConnectionQuery }) {
         <div className='min-w-0 flex-1'>
           {activeTag && (
             <p className='mb-6 text-sm text-muted-foreground'>
-              Showing {visiblePosts.length} post{visiblePosts.length !== 1 ? 's' : ''} tagged{' '}
-              <span className='font-medium text-foreground'>{activeTag}</span>
+              Showing {visiblePosts.length} post{visiblePosts.length !== 1 ? 's' : ''} tagged <span className='font-medium text-foreground'>{activeTag}</span>
             </p>
           )}
 
@@ -92,6 +94,11 @@ function PostsContent({ data }: { data: PostConnectionQuery }) {
                       )}
                       <div className='flex flex-wrap items-center gap-3'>
                         <span className='text-sm text-muted-foreground'>{post.published}</span>
+                        {post.updatedAt && (
+                          <span className='inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground'>
+                            Updated {post.updatedAt}
+                          </span>
+                        )}
                         {post.tags.length > 0 && (
                           <div className='flex flex-wrap gap-1.5'>
                             {post.tags.map((tag) => (

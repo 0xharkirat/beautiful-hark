@@ -34,6 +34,9 @@ export default function PostClientPage(props: ClientPostProps) {
   const date = post.date ? new Date(post.date) : null;
   const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMM dd, yyyy') : '';
 
+  const updatedAt = post.updatedAt ? new Date(post.updatedAt) : null;
+  const formattedUpdatedAt = updatedAt && !Number.isNaN(updatedAt.getTime()) ? format(updatedAt, 'MMM dd, yyyy') : null;
+
   const tags = (post.tags ?? []).map((t) => t?.tag?.name).filter((n): n is string => Boolean(n));
 
   const postUrl = `${getSiteUrl()}${pathname}`;
@@ -66,6 +69,14 @@ export default function PostClientPage(props: ClientPostProps) {
               <span data-tina-field={tinaField(post, 'date')} className='text-sm text-muted-foreground'>
                 {formattedDate}
               </span>
+              {formattedUpdatedAt && (
+                <span
+                  data-tina-field={tinaField(post, 'updatedAt')}
+                  className='inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground'
+                >
+                  Updated {formattedUpdatedAt}
+                </span>
+              )}
               {tags.length > 0 && (
                 <div className='flex flex-wrap gap-1.5'>
                   {tags.map((tag) => (

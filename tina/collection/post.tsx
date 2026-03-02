@@ -80,6 +80,15 @@ const Post: Collection = {
       },
     },
     {
+      type: 'datetime',
+      label: 'Last Updated',
+      name: 'updatedAt',
+      ui: {
+        dateFormat: 'MMMM DD YYYY',
+        timeFormat: 'hh:mm A',
+      },
+    },
+    {
       type: 'object',
       label: 'Tags',
       name: 'tags',

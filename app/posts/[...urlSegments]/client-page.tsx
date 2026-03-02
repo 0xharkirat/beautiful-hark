@@ -5,9 +5,12 @@ import { Section } from '@/components/layout/section';
 import { components } from '@/components/mdx-components';
 import { TableOfContents } from '@/components/posts/table-of-contents';
 import { TagChip } from '@/components/posts/tag-chip';
+import { ShareBar } from '@/components/ui/share-bar';
 import type { PostQuery } from '@/tina/__generated__/types';
+import { getSiteUrl } from '@/lib/feed-config';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { tinaField, useTina } from 'tinacms/dist/react';
 import { TinaMarkdown } from 'tinacms/dist/rich-text';
@@ -25,13 +28,14 @@ interface ClientPostProps {
 export default function PostClientPage(props: ClientPostProps) {
   const { data } = useTina({ ...props });
   const post = data.post;
+  const pathname = usePathname();
 
   const date = post.date ? new Date(post.date) : null;
   const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMM dd, yyyy') : '';
 
-  const tags = (post.tags ?? [])
-    .map((t) => t?.tag?.name)
-    .filter((n): n is string => Boolean(n));
+  const tags = (post.tags ?? []).map((t) => t?.tag?.name).filter((n): n is string => Boolean(n));
+
+  const postUrl = `${getSiteUrl()}${pathname}`;
 
   return (
     <ErrorBoundary>
@@ -53,10 +57,7 @@ export default function PostClientPage(props: ClientPostProps) {
             transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
             className='min-w-0 flex-1 max-w-2xl py-16'
           >
-            <h1
-              data-tina-field={tinaField(post, 'title')}
-              className='mb-4 font-serif text-4xl font-semibold leading-tight tracking-tight md:text-5xl'
-            >
+            <h1 data-tina-field={tinaField(post, 'title')} className='mb-4 font-serif text-4xl font-semibold leading-tight tracking-tight md:text-5xl'>
               {post.title}
             </h1>
 
@@ -72,6 +73,8 @@ export default function PostClientPage(props: ClientPostProps) {
                 </div>
               )}
             </div>
+
+            <ShareBar title={post.title} url={postUrl} className='mb-12' />
 
             {post.heroImg && (
               <div className='mb-12'>

@@ -1,7 +1,8 @@
-import React from 'react';
 import type { Metadata } from 'next';
 import client from '@/tina/__generated__/client';
 import Layout from '@/components/layout/layout';
+import { getSiteUrl } from '@/lib/feed-config';
+import { richTextToPlainText } from '@/lib/rich-text-utils';
 import PostClientPage from './client-page';
 
 export const revalidate = 300;
@@ -18,22 +19,33 @@ export async function generateMetadata({
       relativePath: `${filepath}.mdx`,
     });
     const post = data.data.post;
+    const siteUrl = getSiteUrl();
+    const canonicalPath = `/posts/${filepath}`;
+    const absoluteUrl = `${siteUrl}${canonicalPath}`;
+    const description = post.excerpt ? richTextToPlainText(post.excerpt) : `Read "${post.title}" on Tales of Hark`;
+    const heroImgAbsolute = post.heroImg ? `${siteUrl}${post.heroImg}` : undefined;
     return {
       title: post.title,
-      description: post.excerpt || `Read "${post.title}" on Tales of Hark`,
+      description,
+      alternates: {
+        canonical: absoluteUrl,
+      },
       openGraph: {
         title: post.title,
-        description: post.excerpt || `Read "${post.title}" on Tales of Hark`,
-        ...(post.heroImg && {
-          images: [{ url: post.heroImg, alt: post.title }],
+        description,
+        url: absoluteUrl,
+        ...(heroImgAbsolute && {
+          images: [{ url: heroImgAbsolute, alt: post.title }],
         }),
         type: 'article',
       },
       twitter: {
         card: post.heroImg ? 'summary_large_image' : 'summary',
+        site: '@0xharkirat',
+        creator: '@0xharkirat',
         title: post.title,
-        description: post.excerpt || `Read "${post.title}" on Tales of Hark`,
-        ...(post.heroImg && { images: [post.heroImg] }),
+        description,
+        ...(heroImgAbsolute && { images: [heroImgAbsolute] }),
       },
     };
   } catch {

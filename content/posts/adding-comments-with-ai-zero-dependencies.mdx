@@ -1,8 +1,11 @@
 ---
-title: I added a comment section to my blog in one conversation with AI. Zero dependencies.
+title: >-
+  I added a comment section to my blog in one conversation with AI. Zero
+  dependencies.
 excerpt: >
   No database. No third-party service fees. No weeks of back-and-forth with a
   developer. Just one conversation with an AI agent, and it was live.
+author: ''
 date: 2026-03-02T00:00:00.000Z
 tags:
   - tag: content/tags/ai.mdx
@@ -42,24 +45,26 @@ Then it asked me two questions.
 
 It presented three options:
 
-- **GitHub Discussions via Giscus:** zero-dependency embed, comments live on your GitHub repo
-- **SQLite via Turso:** full control, anonymous or named comments, requires a small database package
-- **Vercel KV (Upstash Redis):** key-value store, serverless-native
+* **GitHub Discussions via Giscus:** zero-dependency embed, comments live on your GitHub repo
+* **SQLite via Turso:** full control, anonymous or named comments, requires a small database package
+* **Vercel KV (Upstash Redis):** key-value store, serverless-native
 
 I picked the first one. [Giscus](https://giscus.app) stores comments directly in your GitHub repository as Discussions. No monthly bill. No third-party database. Your data, on your own GitHub, forever.
 
 **Question 2: Should commenters need to authenticate, or can anyone post anonymously?**
 
-I said: *"start with GitHub login, but then we would do anonymous as well. will it work with Giscus?"*
+I said: 
 
-And here is where the agent did something I genuinely appreciate. It pushed back:
+> *"start with GitHub login, but then we would do anonymous as well. will it work with Giscus?"*
+
+And the agent responded:
 
 > *"Giscus is GitHub-login-only and can't mix anonymous."*
 
-No workaround. No "great idea, here's how we can hack that in." Just an honest answer and two clear paths forward:
+Just an honest answer and asked me to chose from these two paths:
 
-- Ship Giscus now (GitHub login only). Anonymous comments can be added later via a separate custom system.
-- Build a fully custom comment section from scratch with full control.
+* Ship Giscus now (GitHub login only). Anonymous comments can be added later via a separate custom system.
+* Build a fully custom comment section from scratch with full control.
 
 I chose to ship Giscus now and handle anonymous comments separately later.
 
@@ -67,11 +72,11 @@ I chose to ship Giscus now and handle anonymous comments separately later.
 
 ## What it built
 
-One thing the agent did before writing any code: it created a separate Git worktree for this task. I wrote about [why I use worktrees](https://harksingh.com/posts/git-worktrees-for-dummies) in a previous post. The short version is that each task gets its own isolated folder and branch, so I can work on something else in parallel without anything interfering. I have this rule baked into my agent setup, and it followed it without being reminded.
+**One thing the agent did before writing any code:** it created a separate Git worktree for this task. I wrote about [why I use Git worktrees](https://harksingh.com/posts/git-worktrees-for-dummies) in a previous post. The short version is that each task gets its own isolated folder and branch, so I can work on something else in parallel without anything interfering. I have this rule baked into my agent setup, and it followed it without being reminded.
 
-Then it queried my GitHub repository directly to pull the exact configuration details it needed. It wrote the code.
+Then it queried my GitHub repository directly to pull the exact configuration details it needed. Then it shipped.
 
-The result: a fully working comment section, wired into every blog post, that automatically switches between light and dark mode to match the site theme, loads lazily so it never slows the page down, and keeps each post's comments completely separate from one another.
+**The result:** a fully working comment section, wired into every blog post, that automatically switches between light and dark mode to match the site theme, loads lazily so it never slows the page down, and keeps each post's comments completely separate from one another.
 
 Zero new packages added to the project. The comments live as GitHub Discussions on this very repository. If the tool powering the widget ever disappeared, the comments would still be there on GitHub, untouched.
 
@@ -81,7 +86,9 @@ Zero new packages added to the project. The comments live as GitHub Discussions 
 
 Once the feature was built, I had one small request:
 
-**Me:** "We should let users know that to edit comments, click on the timestamp of the comment, which will take you to GitHub Discussion where you can edit your comment."
+**Me:** 
+
+> "We should let users know that to edit comments, click on the timestamp of the comment, which will take you to GitHub Discussion where you can edit your comment."
 
 Done. A small hint appeared below the Comments heading.
 
@@ -91,19 +98,17 @@ One change. Three seconds.
 
 ## Then it handled everything else
 
-Without being asked, the agent:
+Then I asked it to:
 
-- Ran a full quality check on the code it had written
-- Created a pull request with a proper description
-- Watched the automated checks run (build, security scan, deployment preview)
-- Merged it once everything passed
-- Cleaned up the temporary workspace it had used
-- Updated the main codebase
+* Ran a full quality check on the code it had written
+* Created a pull request with a proper description
+* Watched the automated checks run (build, security scan, deployment preview)
+* Merged it once everything passed
+* Cleaned up the temporary workspace it had used
+* Updated the main codebase
 
 Start to finish, one conversation.
 
 ***
 
 Scroll down. The comment section is right there. Try it.
-
-*Hark*

@@ -3,6 +3,7 @@
 import ErrorBoundary from '@/components/error-boundary';
 import { Section } from '@/components/layout/section';
 import { components } from '@/components/mdx-components';
+import { GiscusComments } from '@/components/posts/giscus-comments';
 import { TableOfContents } from '@/components/posts/table-of-contents';
 import { TagChip } from '@/components/posts/tag-chip';
 import { ShareBar } from '@/components/ui/share-bar';
@@ -92,6 +93,8 @@ export default function PostClientPage(props: ClientPostProps) {
                 }}
               />
             </div>
+
+            <GiscusComments term={pathname} />
           </motion.article>
 
           {/* TOC — desktop sticky aside + mobile floating dropdown */}

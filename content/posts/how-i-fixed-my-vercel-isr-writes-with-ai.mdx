@@ -36,9 +36,9 @@ Here is what I understood.
 
 When you build a website with [Next.js](https://nextjs.org), pages can be pre-built and saved as static HTML files. Think of it like printing a newspaper in advance instead of writing each article fresh every time someone asks for it. Much faster.
 
-But content changes. Blog posts get published. So Next.js has a system called ISR. Instead of rebuilding the entire site every time you change something, it quietly rebuilds individual pages in the background on a timer. Every time it rebuilds a page and saves the result, that is one ISR Write.
+But content changes. Blog posts get published. So Next.js has a system called [ISR](https://vercel.com/docs/incremental-static-regeneration). Instead of rebuilding the entire site every time you change something, it quietly rebuilds individual pages in the background on a timer. Every time it rebuilds a page and saves the result, that is one ISR Write.
 
-Vercel gives you 200,000 of these per month for free.
+[Vercel](https://vercel.com) gives you 200,000 of these per month for free.
 
 I had burned through 150,000 of them. In a few weeks. On a blog I had only just started posting on.
 
@@ -52,7 +52,7 @@ This was my next question. I assumed it only happened when someone visited the p
 
 The truth is more nuanced, and it is why I got burned.
 
-ISR uses a pattern called **stale-while-revalidate**. Here is how it actually works:
+ISR uses a pattern called [**stale-while-revalidate**](https://web.dev/articles/stale-while-revalidate). Here is how it actually works:
 
 1. Vercel builds your site. All pages become static HTML files.
 2. You set a `revalidate` number. That number is a freshness limit, not a countdown timer.
@@ -68,7 +68,9 @@ So if ISR requires a visitor, how did I burn through 150,000 writes on a blog I 
 
 **Bots.**
 
-The internet is full of automated crawlers. Googlebot. Bingbot. AI scrapers. Uptime monitors. Security scanners. They hit live websites constantly, all day, every day, whether you know about them or not.
+The internet is full of automated crawlers. [Googlebot](https://developers.google.com/search/docs/crawling-indexing/googlebot). [Bingbot](https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0). AI scrapers. Uptime monitors. Security scanners. They hit live websites constantly, all day, every day, whether you know about them or not.
+
+I had also registered my RSS feed with the [SSW portal](https://www.ssw.com.au), which polls employee blogs every hour or two to surface recent posts. Every time it fetched my feed URL after 60 seconds had passed, that was another write.
 
 Because my layout was set to expire every 60 seconds, any bot pinging any of my pages after a minute had passed would trigger an ISR write. I had not built a ticking time bomb. I had built a trap. Every crawler that walked through the door pulled the trigger.
 
@@ -96,7 +98,7 @@ For those use cases, it is a genuinely smart system.
 
 **My blog is none of those things.**
 
-I publish a post every few weeks. TinaCMS saves content by committing it to GitHub. GitHub tells Vercel to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
+I publish a post every few weeks. [TinaCMS](https://tina.io) saves content by committing it to [GitHub](https://github.com/0xharkirat/beautiful-hark). GitHub tells Vercel to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
 
 ***
 
@@ -150,7 +152,7 @@ My first question was whether this would break TinaCMS. If the navigation is cac
 
 The agent explained why it was safe. Two reasons.
 
-First, [TinaCMS](https://tina.io) live editing works entirely on the client side. When you are inside the CMS editor, a JavaScript hook called `useTina` takes over and feeds live data directly to the page. The Next.js cache is completely bypassed while you are editing. You always see fresh content in the editor.
+First, TinaCMS live editing works entirely on the client side. When you are inside the CMS editor, a JavaScript hook called `useTina` takes over and feeds live data directly to the page. The Next.js cache is completely bypassed while you are editing. You always see fresh content in the editor.
 
 Second, and this is the key insight: every time I merge a pull request to main, Vercel automatically redeploys the entire site. That redeploy clears the entire cache. Everything is rebuilt fresh from scratch. So "cache forever" in practice means "cache until the next deploy", and a deploy happens every single time I publish anything.
 

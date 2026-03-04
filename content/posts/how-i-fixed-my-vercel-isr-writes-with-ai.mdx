@@ -70,7 +70,7 @@ So if ISR requires a visitor, how did I burn through 150,000 writes on a blog I 
 
 The internet is full of automated crawlers. [Googlebot](https://developers.google.com/search/docs/crawling-indexing/googlebot). [Bingbot](https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0). AI scrapers. Uptime monitors. Security scanners. They hit live websites constantly, all day, every day, whether you know about them or not.
 
-I had also registered my RSS feed with the [SSW People portal](https://www.ssw.com.au/people), which polls employee blogs every hour or two to surface recent posts. Every time it fetched my feed URL after 60 seconds had passed, that was another write.
+I had also registered my RSS feed with the [SSW People portal](https://www.ssw.com.au), which polls employee blogs every hour or two to surface recent posts. Every time it fetched my feed URL after 60 seconds had passed, that was another write.
 
 Because my layout was set to expire every 60 seconds, any bot pinging any of my pages after a minute had passed would trigger an ISR write. I had not built a ticking time bomb. I had built a trap. Every crawler that walked through the door pulled the trigger.
 
@@ -98,7 +98,7 @@ For those use cases, it is a genuinely smart system.
 
 **My blog is none of those things.**
 
-I publish a post every few weeks. TinaCMS saves content by committing it to GitHub. GitHub tells Vercel to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
+I publish a post every few weeks. TinaCMS saves content by committing it to [GitHub](https://github.com). GitHub tells [Vercel](https://vercel.com) to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
 
 ***
 
@@ -173,7 +173,7 @@ This conversation taught me something I had not realised about how my site actua
 The flow for publishing a post is:
 
 1. I write the post in TinaCMS
-2. TinaCMS commits the file to GitHub
+2. TinaCMS commits the file to [GitHub](https://github.com)
 3. GitHub tells Vercel: something changed
 4. Vercel rebuilds and redeploys the entire site
 5. Cache is cleared. Fresh pages. Done.

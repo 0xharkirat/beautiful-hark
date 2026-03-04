@@ -13,6 +13,13 @@ export const Footer = () => {
     <footer className='border-t bg-background pt-16 font-sans'>
       <div className='mx-auto max-w-5xl px-6'>
         <div className='mt-8 flex flex-col items-center gap-6 py-6 md:flex-row md:justify-between'>
+          {/* Poems link: first row on mobile, hidden on md+ (nav handles it there) */}
+          <div className='order-first w-full text-center md:hidden'>
+            <Link href='/poems' className='text-sm text-muted-foreground transition-colors hover:text-accent-red'>
+              Poems
+            </Link>
+          </div>
+
           <div className='order-last flex justify-center md:order-first md:justify-start'>
             <Link href='/' aria-label='go home'>
               <HarkLogo className='mr-2 h-16 w-16' />

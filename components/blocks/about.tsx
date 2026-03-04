@@ -2,6 +2,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import type { Template } from 'tinacms';
@@ -227,6 +228,11 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                 <div data-tina-field={tinaField(data, 'summary')}>
                   <TinaMarkdown content={data.summary} components={markdownComponents} />
                 </div>
+              </div>
+              <div className='mt-6'>
+                <Link href='/poems' className='inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-accent-red'>
+                  Also writes poetry &rarr;
+                </Link>
               </div>
             </ScrollReveal>
           </div>

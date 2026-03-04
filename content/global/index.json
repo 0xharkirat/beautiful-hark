@@ -20,6 +20,10 @@
       {
         "href": "/posts",
         "label": "Blog"
+      },
+      {
+        "href": "/poems",
+        "label": "Poems"
       }
     ]
   },

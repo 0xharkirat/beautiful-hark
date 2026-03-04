@@ -70,7 +70,7 @@ So if ISR requires a visitor, how did I burn through 150,000 writes on a blog I 
 
 The internet is full of automated crawlers. Googlebot. Bingbot. AI scrapers. Uptime monitors. Security scanners. They hit live websites constantly, all day, every day, whether you know about them or not.
 
-I had also registered my RSS feed with my company portal, which polls employee blogs regularly to surface recent posts. Every time it fetched my feed URL after 60 seconds had passed, that was another write.
+I had also registered my RSS feed with the SSW portal, which polls employee blogs every hour or two to surface recent posts. Every time it fetched my feed URL after 60 seconds had passed, that was another write.
 
 Because my layout was set to expire every 60 seconds, any bot pinging any of my pages after a minute had passed would trigger an ISR write. I had not built a ticking time bomb. I had built a trap. Every crawler that walked through the door pulled the trigger.
 

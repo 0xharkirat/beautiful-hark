@@ -38,7 +38,7 @@ When you build a website with [Next.js](https://nextjs.org), pages can be pre-bu
 
 But content changes. Blog posts get published. So Next.js has a system called [ISR](https://vercel.com/docs/incremental-static-regeneration). Instead of rebuilding the entire site every time you change something, it quietly rebuilds individual pages in the background on a timer. Every time it rebuilds a page and saves the result, that is one ISR Write.
 
-Vercel gives you 200,000 of these per month for free.
+[Vercel](https://vercel.com) gives you 200,000 of these per month for free.
 
 I had burned through 150,000 of them. In a few weeks. On a blog I had only just started posting on.
 
@@ -98,7 +98,7 @@ For those use cases, it is a genuinely smart system.
 
 **My blog is none of those things.**
 
-I publish a post every few weeks. [TinaCMS](https://tina.io) saves content by committing it to [GitHub](https://github.com/0xharkirat/beautiful-hark). GitHub tells [Vercel](https://vercel.com) to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
+I publish a post every few weeks. [TinaCMS](https://tina.io) saves content by committing it to [GitHub](https://github.com/0xharkirat/beautiful-hark). GitHub tells Vercel to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
 
 ***
 

@@ -47,7 +47,7 @@ export async function GET() {
       allPostEdges.push(...(posts.data?.postConnection.edges ?? []));
     }
 
-    const postEntries: SearchIndexEntry[] = allPostEdges
+    const postEntries = allPostEdges
       .map((edge) => {
         const post = edge?.node;
         if (!post) return null;
@@ -81,7 +81,7 @@ export async function GET() {
       allPoemEdges.push(...(poems.data?.poemConnection.edges ?? []));
     }
 
-    const poemEntries: SearchIndexEntry[] = allPoemEdges
+    const poemEntries = allPoemEdges
       .map((edge) => {
         const poem = edge?.node;
         if (!poem) return null;

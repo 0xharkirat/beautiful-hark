@@ -3,6 +3,7 @@ import client from '@/tina/__generated__/client';
 export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
 
 export interface SearchIndexEntry {
+  type: 'post' | 'poem';
   title: string;
   slug: string;
   url: string;
@@ -33,8 +34,9 @@ function extractPlainText(richText: unknown): string {
 
 export async function GET() {
   try {
+    // ── Posts ──────────────────────────────────────────────────────────────
     let posts = await client.queries.postConnection({ sort: 'date', first: 100 });
-    const allEdges = [...(posts.data?.postConnection.edges ?? [])];
+    const allPostEdges = [...(posts.data?.postConnection.edges ?? [])];
 
     while (posts.data?.postConnection.pageInfo.hasNextPage) {
       posts = await client.queries.postConnection({
@@ -42,10 +44,10 @@ export async function GET() {
         first: 100,
         after: posts.data.postConnection.pageInfo.endCursor,
       });
-      allEdges.push(...(posts.data?.postConnection.edges ?? []));
+      allPostEdges.push(...(posts.data?.postConnection.edges ?? []));
     }
 
-    const index: SearchIndexEntry[] = allEdges
+    const postEntries = allPostEdges
       .map((edge) => {
         const post = edge?.node;
         if (!post) return null;
@@ -54,6 +56,7 @@ export async function GET() {
         const excerptText = extractPlainText(post.excerpt);
 
         return {
+          type: 'post' as const,
           title: post.title ?? '',
           slug,
           url: `/posts/${slug}`,
@@ -63,7 +66,49 @@ export async function GET() {
           heroImg: post.heroImg ?? null,
         } satisfies SearchIndexEntry;
       })
-      .filter((entry): entry is SearchIndexEntry => entry !== null);
+      .filter((entry) => entry !== null);
+
+    // ── Poems ──────────────────────────────────────────────────────────────
+    let poems = await client.queries.poemConnection({ sort: 'date', first: 100 });
+    const allPoemEdges = [...(poems.data?.poemConnection.edges ?? [])];
+
+    while (poems.data?.poemConnection.pageInfo.hasNextPage) {
+      poems = await client.queries.poemConnection({
+        sort: 'date',
+        first: 100,
+        after: poems.data.poemConnection.pageInfo.endCursor,
+      });
+      allPoemEdges.push(...(poems.data?.poemConnection.edges ?? []));
+    }
+
+    const poemEntries = allPoemEdges
+      .map((edge) => {
+        const poem = edge?.node;
+        if (!poem) return null;
+
+        const slug = poem._sys.breadcrumbs.join('/');
+
+        // Build excerpt from English translations only so that searching
+        // English words matches Punjabi poems via their translation lines.
+        const excerpt = (poem.lines ?? [])
+          .map((line) => line?.translation?.trim() ?? '')
+          .filter(Boolean)
+          .join(' ');
+
+        return {
+          type: 'poem' as const,
+          title: poem.title ?? '',
+          slug,
+          url: `/poems/${slug}`,
+          excerpt,
+          tags: [],
+          date: poem.date ?? '',
+          heroImg: null,
+        } satisfies SearchIndexEntry;
+      })
+      .filter((entry) => entry !== null);
+
+    const index: SearchIndexEntry[] = [...postEntries, ...poemEntries];
 
     return Response.json(index, {
       headers: {

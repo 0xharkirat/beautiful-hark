@@ -3,7 +3,7 @@
 import { useSearch } from '@/components/ui/SearchContext';
 import type { SearchIndexEntry } from '@/app/search-index.json/route';
 import { AnimatePresence, motion } from 'motion/react';
-import { Search, X, Tag, ArrowRight } from 'lucide-react';
+import { Search, X, Tag, ArrowRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -11,7 +11,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Case-insensitive substring match across title, excerpt, and tags */
-function filterPosts(entries: SearchIndexEntry[], query: string): SearchIndexEntry[] {
+function filterEntries(entries: SearchIndexEntry[], query: string): SearchIndexEntry[] {
   const q = query.trim().toLowerCase();
   if (!q) return entries;
 
@@ -52,7 +52,7 @@ const SearchModal = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const results = index ? filterPosts(index, query) : [];
+  const results = index ? filterEntries(index, query) : [];
 
   // ── Fetch index once when the modal first opens ───────────────────────────
   useEffect(() => {
@@ -147,7 +147,7 @@ const SearchModal = () => {
           className='fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 pt-[10vh] backdrop-blur-md'
           aria-label='Close search'
         >
-          {/* Modal panel — stop propagation so clicks inside don't close */}
+          {/* Modal panel - stop propagation so clicks inside don't close */}
           <motion.div
             key='search-panel'
             initial={{ y: -20, opacity: 0, scale: 0.97 }}
@@ -158,7 +158,7 @@ const SearchModal = () => {
             className='w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl'
             role='dialog'
             aria-modal='true'
-            aria-label='Search posts'
+            aria-label='Search posts and poems'
           >
             {/* Input row */}
             <div className='flex items-center gap-3 border-b border-border px-5 py-4'>
@@ -168,9 +168,9 @@ const SearchModal = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder='Search posts…'
+                placeholder='Search posts and poems…'
                 className='min-w-0 flex-1 bg-transparent font-sans text-base text-foreground placeholder:text-muted-foreground focus:outline-none'
-                aria-label='Search posts'
+                aria-label='Search posts and poems'
                 aria-autocomplete='list'
                 aria-controls='search-results'
                 aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
@@ -202,19 +202,20 @@ const SearchModal = () => {
                 <p className='px-5 py-8 text-center font-sans text-sm text-muted-foreground'>Loading…</p>
               ) : results.length === 0 && query.trim() !== '' ? (
                 <p className='px-5 py-8 text-center font-sans text-sm text-muted-foreground'>
-                  No posts found for <span className='font-medium text-foreground'>"{query}"</span>
+                  No results found for <span className='font-medium text-foreground'>"{query}"</span>
                 </p>
               ) : results.length === 0 ? (
                 <p className='px-5 py-8 text-center font-sans text-sm text-muted-foreground'>
-                  Start typing to search posts…
+                  Start typing to search posts and poems…
                 </p>
               ) : (
                 <ul id='search-results' ref={listRef} role='listbox' className='py-2'>
                   {results.map((entry, i) => {
                     const isActive = i === activeIndex;
+                    const isPoem = entry.type === 'poem';
                     return (
                       <li
-                        key={entry.slug}
+                        key={`${entry.type}-${entry.slug}`}
                         id={`search-result-${i}`}
                         role='option'
                         aria-selected={isActive}
@@ -229,14 +230,21 @@ const SearchModal = () => {
                         >
                           {/* Icon */}
                           <div className='mt-0.5 shrink-0 rounded-md border border-border bg-background p-1.5 text-muted-foreground'>
-                            <Search className='size-4' />
+                            {isPoem ? <BookOpen className='size-4' /> : <Search className='size-4' />}
                           </div>
 
                           {/* Text */}
                           <div className='min-w-0 flex-1'>
-                            <p className='font-sans text-sm font-semibold leading-snug text-foreground'>
-                              <Highlight text={entry.title} query={query} />
-                            </p>
+                            <div className='flex items-center gap-2'>
+                              <p className='font-sans text-sm font-semibold leading-snug text-foreground'>
+                                <Highlight text={entry.title} query={query} />
+                              </p>
+                              {isPoem && (
+                                <span className='shrink-0 rounded-full bg-muted px-1.5 py-0.5 font-sans text-xs text-muted-foreground'>
+                                  Poem
+                                </span>
+                              )}
+                            </div>
                             {entry.excerpt && (
                               <p className='mt-0.5 line-clamp-2 font-sans text-xs text-muted-foreground'>
                                 <Highlight text={entry.excerpt} query={query} />

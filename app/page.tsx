@@ -4,7 +4,7 @@ import client from '@/tina/__generated__/client';
 import React from 'react';
 import ClientPage from './[...urlSegments]/client-page';
 
-export const revalidate = 300;
+export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
 
 export default async function Home() {
   const data = await client.queries.page({

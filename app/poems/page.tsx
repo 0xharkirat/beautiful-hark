@@ -3,7 +3,7 @@ import Layout from '@/components/layout/layout';
 import client from '@/tina/__generated__/client';
 import PoemsClientPage from './client-page';
 
-export const revalidate = 300;
+export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
 
 export const metadata: Metadata = {
   title: 'Poems',

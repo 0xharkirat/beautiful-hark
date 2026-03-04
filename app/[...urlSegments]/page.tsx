@@ -6,7 +6,7 @@ import Layout from '@/components/layout/layout';
 import { Section } from '@/components/layout/section';
 import ClientPage from './client-page';
 
-export const revalidate = 300;
+export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
 
 export async function generateMetadata({
   params,

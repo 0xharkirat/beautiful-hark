@@ -14,7 +14,7 @@ tags:
 
 I got an email from Vercel.
 
-> *"Your haves used 75% (150,000) of the included free tier usage for ISR Writes (200,000 Writes)."*
+> *"Your free team has used 75% of the included free tier usage for ISR Writes (200,000 Writes)."*
 
 **My first thought:** what is an ISR Write?
 
@@ -40,7 +40,7 @@ But content changes. Blog posts get published. So Next.js has a system called IS
 
 Vercel gives you 200,000 of these per month for free.
 
-I had burned through 150,000 of them. In a few weeks. On a personal blog that started a month ago.
+I had burned through 150,000 of them. In a few weeks. On a blog I had only just started posting on.
 
 Something was very wrong.
 
@@ -48,22 +48,29 @@ Something was very wrong.
 
 ## But when does the rebuild actually happen?
 
-This was my next question, because I assumed it happened when someone visited the page. It does not.
+This was my next question. I assumed it only happened when someone visited the page.
 
-**The rebuild is triggered by time, not by visitors.**
+The truth is more nuanced, and it is why I got burned.
 
-Here is the exact sequence of what happens:
+ISR uses a pattern called **stale-while-revalidate**. Here is how it actually works:
 
 1. Vercel builds your site. All pages become static HTML files.
-2. A countdown timer starts on every page, based on the `revalidate` number you set.
-3. Once that timer runs out, the page is marked as stale.
-4. The next visitor to that page gets the old cached version instantly. But in the background, Vercel quietly rebuilds a fresh version.
-5. That fresh version is saved. That save is one ISR Write.
-6. The timer resets. The whole thing repeats.
+2. You set a `revalidate` number. That number is a freshness limit, not a countdown timer.
+3. A visitor requests a page. They get the cached HTML instantly.
+4. If the cache is older than your `revalidate` limit, Next.js marks it as stale.
+5. The next request to that stale page gets the old version instantly, but triggers a background rebuild.
+6. The rebuilt version is saved. That save is one ISR Write.
+7. The freshness clock resets. The whole thing repeats.
 
-The important thing: **this happens even when nobody is visiting**. The timer runs 24 hours a day. At 3am. On a Sunday. Whether you have one visitor or ten thousand.
+The key part: **a request has to come in to trigger the rebuild.** If nobody visits at 3am, nothing happens at 3am.
 
-That is why I burned through 150,000 writes in less than one month. The clock does not care if anyone is home.
+So if ISR requires a visitor, how did I burn through 150,000 writes on a blog I had only started writing posts on a few weeks ago?
+
+**Bots.**
+
+The internet is full of automated crawlers. Googlebot. Bingbot. AI scrapers. Uptime monitors. Security scanners. They hit live websites constantly, all day, every day, whether you know about them or not.
+
+Because my layout was set to expire every 60 seconds, any bot pinging any of my pages after a minute had passed would trigger an ISR write. I had not built a ticking time bomb. I had built a trap. Every crawler that walked through the door pulled the trigger.
 
 ***
 
@@ -97,7 +104,7 @@ I publish a post every few weeks. TinaCMS saves content by committing it to GitH
 
 I asked the agent to look through my codebase and find what was burning all these writes.
 
-It deploys subagents to read every file. Then it came back with a clear answer.
+It deployed subagents to read every file. Then it came back with a clear answer.
 
 **The problem was one line of code.**
 
@@ -117,9 +124,9 @@ The layout runs on every page. So every page on the site was being rebuilt every
 
 The agent explained why this was especially bad:
 
-> Next.js uses the lowest revalidate value across everything loaded during a page render. Your pages all said "rebuild me every 5 minutes." But the layout was saying "rebuild me every 60 seconds." Next.js listened to the lowest value. Every page on your site was effectively revalidating every minute, 24 hours a day.
+> Next.js uses the lowest revalidate value across everything loaded during a page render. Your pages all said "rebuild me every 5 minutes." But the layout was saying "rebuild me every 60 seconds." Next.js listened to the lowest value. Every page on your site was effectively expiring every minute.
 
-The maths: about 20 pages on the site, rebuilding every 60 seconds, around the clock. That is 28,800 writes per day.
+So every time a bot visited any page after 60 seconds had passed, it triggered a rebuild. With around 8 pages and constant crawler traffic, the writes stacked up fast.
 
 ***
 
@@ -175,11 +182,9 @@ ISR was never needed for me. I was running a complex background timer system to 
 
 ## The numbers after the fix
 
-Before: approximately 28,800 ISR writes per day.
+Before the fix: I had burned through 150,000 writes in a few weeks, on a blog I had only just started posting on. Bots were doing it, minute by minute, page by page.
 
-After: approximately 20 ISR writes per day at most, and in practice close to zero because deploys beat the 24-hour timer every time.
-
-Monthly: from potentially 864,000 writes down to roughly 600.
+After the fix: writes dropped to near zero. The 24-hour timer almost never fires, because a fresh deploy happens before it ever gets the chance.
 
 I will not come close to the 200,000 limit again.
 

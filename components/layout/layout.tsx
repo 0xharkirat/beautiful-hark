@@ -15,7 +15,7 @@ export default async function Layout({ children, rawPageData }: LayoutProps) {
     {
       fetchOptions: {
         next: {
-          revalidate: 60,
+          revalidate: false,
         },
       }
     }

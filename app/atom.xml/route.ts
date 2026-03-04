@@ -2,7 +2,7 @@ import { getFeedConfig, getSiteUrl } from '@/lib/feed-config';
 import client from '@/tina/__generated__/client';
 import { Feed } from 'feed';
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
 
 export async function GET() {
   const siteUrl = getSiteUrl();

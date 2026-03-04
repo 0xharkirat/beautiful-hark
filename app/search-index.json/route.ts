@@ -1,6 +1,6 @@
 import client from '@/tina/__generated__/client';
 
-export const revalidate = 300; // Same as posts page — 5 min ISR
+export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
 
 export interface SearchIndexEntry {
   title: string;

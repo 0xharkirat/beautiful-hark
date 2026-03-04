@@ -37,7 +37,7 @@ function PoemsContent({ data }: { data: PoemConnectionQuery }) {
     .filter((p): p is NonNullable<typeof p> => p !== null);
 
   return (
-    <div className='mx-auto max-w-2xl py-16'>
+    <div className='mx-auto max-w-4xl py-16'>
       <div className='mb-14 text-center'>
         <h1 className='mb-3 font-serif text-4xl font-semibold tracking-tight md:text-5xl'>Poems</h1>
         <p className='text-lg text-muted-foreground'>Words written in quiet moments, in two languages.</p>
@@ -46,23 +46,24 @@ function PoemsContent({ data }: { data: PoemConnectionQuery }) {
       {poems.length === 0 ? (
         <p className='text-center text-muted-foreground'>No poems yet.</p>
       ) : (
-        <div className='space-y-12'>
+        <div className='grid grid-cols-1 gap-8 sm:grid-cols-2'>
           {poems.map((poem) => (
             <Link key={poem.id} href={poem.url} className='group block'>
-              <article className='border-b border-border pb-12 last:border-0 last:pb-0'>
-                <div className='mb-3 flex flex-wrap items-baseline gap-3'>
-                  <h2 className='font-serif text-2xl font-semibold transition-colors group-hover:text-accent-red'>{poem.title}</h2>
+              <article className='h-full rounded-lg border border-border p-6 transition-all duration-200 hover:-translate-y-1 hover:border-accent-red hover:shadow-lg'>
+                <div className='mb-2 flex flex-wrap items-baseline gap-2'>
+                  <h2 className='font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-accent-red'>{poem.title}</h2>
                   {poem.language === 'Punjabi' && <span className='rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground'>Punjabi</span>}
                 </div>
 
                 {poem.date && <p className='mb-4 text-sm text-muted-foreground'>{poem.date}</p>}
 
-                <div className='space-y-1 font-serif text-base leading-relaxed text-muted-foreground'>
+                <div className='space-y-1 font-serif text-sm leading-relaxed text-muted-foreground'>
                   {poem.previewLines.map((line, i) => (
                     <p key={i}>{line}</p>
                   ))}
-                  <p className='text-sm text-accent-red opacity-0 transition-opacity group-hover:opacity-100'>Read more &rarr;</p>
                 </div>
+
+                <p className='mt-4 text-sm text-accent-red opacity-0 transition-opacity group-hover:opacity-100'>Read &rarr;</p>
               </article>
             </Link>
           ))}

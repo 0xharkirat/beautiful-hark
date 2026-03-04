@@ -66,7 +66,7 @@ export async function GET() {
           heroImg: post.heroImg ?? null,
         } satisfies SearchIndexEntry;
       })
-      .filter((entry): entry is SearchIndexEntry => entry !== null);
+      .filter((entry) => entry !== null);
 
     // ── Poems ──────────────────────────────────────────────────────────────
     let poems = await client.queries.poemConnection({ sort: 'date', first: 100 });
@@ -106,7 +106,7 @@ export async function GET() {
           heroImg: null,
         } satisfies SearchIndexEntry;
       })
-      .filter((entry): entry is SearchIndexEntry => entry !== null);
+      .filter((entry) => entry !== null);
 
     const index: SearchIndexEntry[] = [...postEntries, ...poemEntries];
 

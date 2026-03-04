@@ -98,7 +98,7 @@ For those use cases, it is a genuinely smart system.
 
 **My blog is none of those things.**
 
-I publish a post every few weeks. TinaCMS saves content by committing it to [GitHub](https://github.com/0xharkirat/beautiful-hark). GitHub tells [Vercel](https://vercel.com) to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
+I publish a post every few weeks. [TinaCMS](https://tina.io) saves content by committing it to [GitHub](https://github.com/0xharkirat/beautiful-hark). GitHub tells [Vercel](https://vercel.com) to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
 
 ***
 
@@ -152,7 +152,7 @@ My first question was whether this would break TinaCMS. If the navigation is cac
 
 The agent explained why it was safe. Two reasons.
 
-First, [TinaCMS](https://tina.io) live editing works entirely on the client side. When you are inside the CMS editor, a JavaScript hook called `useTina` takes over and feeds live data directly to the page. The Next.js cache is completely bypassed while you are editing. You always see fresh content in the editor.
+First, TinaCMS live editing works entirely on the client side. When you are inside the CMS editor, a JavaScript hook called `useTina` takes over and feeds live data directly to the page. The Next.js cache is completely bypassed while you are editing. You always see fresh content in the editor.
 
 Second, and this is the key insight: every time I merge a pull request to main, Vercel automatically redeploys the entire site. That redeploy clears the entire cache. Everything is rebuilt fresh from scratch. So "cache forever" in practice means "cache until the next deploy", and a deploy happens every single time I publish anything.
 

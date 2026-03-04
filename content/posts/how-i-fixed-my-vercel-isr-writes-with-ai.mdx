@@ -1,0 +1,204 @@
+---
+title: Vercel Threw an ISR Warning at Me. AI Handled It.
+excerpt: >
+  Vercel emailed me saying I had used 75% of my free ISR write limit. I did not
+  know what ISR was. I asked AI to explain it, find the problem, and fix it.
+  Here is exactly what happened.
+author: ''
+date: 2026-03-04T00:00:00.000Z
+tags:
+  - tag: content/tags/ai.mdx
+  - tag: content/tags/nextjs.mdx
+  - tag: content/tags/tinacms.mdx
+---
+
+I got an email from Vercel.
+
+> *"Your haves used 75% (150,000) of the included free tier usage for ISR Writes (200,000 Writes)."*
+
+**My first thought:** what is an ISR Write?
+
+**My second thought:** why have I used 150,000 of them?
+
+**My third thought**: am I about to get a bill?
+
+I opened my AI coding agent, [OpenCode](https://opencode.ai) (Claude Sonnet 4.6), and typed exactly what I was feeling.
+
+***
+
+## First things first. What even is ISR?
+
+I asked the agent to explain it in plain English.
+
+Here is what I understood.
+
+**ISR stands for Incremental Static Regeneration.**
+
+When you build a website with [Next.js](https://nextjs.org), pages can be pre-built and saved as static HTML files. Think of it like printing a newspaper in advance instead of writing each article fresh every time someone asks for it. Much faster.
+
+But content changes. Blog posts get published. So Next.js has a system called ISR. Instead of rebuilding the entire site every time you change something, it quietly rebuilds individual pages in the background on a timer. Every time it rebuilds a page and saves the result, that is one ISR Write.
+
+Vercel gives you 200,000 of these per month for free.
+
+I had burned through 150,000 of them. In a few weeks. On a personal blog that started a month ago.
+
+Something was very wrong.
+
+***
+
+## But when does the rebuild actually happen?
+
+This was my next question, because I assumed it happened when someone visited the page. It does not.
+
+**The rebuild is triggered by time, not by visitors.**
+
+Here is the exact sequence of what happens:
+
+1. Vercel builds your site. All pages become static HTML files.
+2. A countdown timer starts on every page, based on the `revalidate` number you set.
+3. Once that timer runs out, the page is marked as stale.
+4. The next visitor to that page gets the old cached version instantly. But in the background, Vercel quietly rebuilds a fresh version.
+5. That fresh version is saved. That save is one ISR Write.
+6. The timer resets. The whole thing repeats.
+
+The important thing: **this happens even when nobody is visiting**. The timer runs 24 hours a day. At 3am. On a Sunday. Whether you have one visitor or ten thousand.
+
+That is why I burned through 150,000 writes in less than one month. The clock does not care if anyone is home.
+
+***
+
+## Why does this feature even exist?
+
+Fair question. If ISR just burns credits, why would anyone want it?
+
+For most sites, ISR is actually brilliant. Here is a real example of why.
+
+Imagine you run a news website with 10,000 articles. You cannot rebuild all 10,000 pages from scratch every time one article is updated. That would take too long and cost too much.
+
+With ISR, you set each article to revalidate every 60 seconds. When a journalist updates an article, visitors start seeing the new version within a minute. No full rebuild. No waiting. The site stays fast, and updates still go live quickly.
+
+Or imagine an e-commerce store. Product prices and stock levels change constantly. You want pages to stay fast and cached, but you also want prices to update regularly. ISR with a short timer is perfect for that.
+
+ISR is designed for sites where:
+
+* Content changes frequently and unpredictably
+* You cannot rebuild the whole site every time something changes
+* You want the speed of static pages but the freshness of a live site
+
+For those use cases, it is a genuinely smart system.
+
+**My blog is none of those things.**
+
+I publish a post every few weeks. TinaCMS saves content by committing it to GitHub. GitHub tells Vercel to redeploy. The whole site rebuilds fresh on every publish anyway. ISR was completely unnecessary for my setup. I was burning credits on a timer that was solving a problem I did not have.
+
+***
+
+## Finding the culprit
+
+I asked the agent to look through my codebase and find what was burning all these writes.
+
+It deploys subagents to read every file. Then it came back with a clear answer.
+
+**The problem was one line of code.**
+
+In a file called `layout.tsx`, the wrapper that loads the navigation bar and footer on every single page of the site, there was this:
+
+```ts
+fetchOptions: {
+  next: {
+    revalidate: 60,
+  }
+}
+```
+
+That `60` means: rebuild this every 60 seconds.
+
+The layout runs on every page. So every page on the site was being rebuilt every 60 seconds. Not every 5 minutes. Every single minute.
+
+The agent explained why this was especially bad:
+
+> Next.js uses the lowest revalidate value across everything loaded during a page render. Your pages all said "rebuild me every 5 minutes." But the layout was saying "rebuild me every 60 seconds." Next.js listened to the lowest value. Every page on your site was effectively revalidating every minute, 24 hours a day.
+
+The maths: about 20 pages on the site, rebuilding every 60 seconds, around the clock. That is 28,800 writes per day.
+
+***
+
+## The fix, and why it was safe
+
+The agent suggested two changes.
+
+**Change 1: Set the layout query to cache forever.**
+
+```ts
+fetchOptions: {
+  next: {
+    revalidate: false,
+  }
+}
+```
+
+`false` means: cache this and never rebuild it on a timer.
+
+My first question was whether this would break TinaCMS. If the navigation is cached forever, would my content updates stop showing up?
+
+The agent explained why it was safe. Two reasons.
+
+First, [TinaCMS](https://tina.io) live editing works entirely on the client side. When you are inside the CMS editor, a JavaScript hook called `useTina` takes over and feeds live data directly to the page. The Next.js cache is completely bypassed while you are editing. You always see fresh content in the editor.
+
+Second, and this is the key insight: every time I merge a pull request to main, Vercel automatically redeploys the entire site. That redeploy clears the entire cache. Everything is rebuilt fresh from scratch. So "cache forever" in practice means "cache until the next deploy", and a deploy happens every single time I publish anything.
+
+**Change 2: Raise the timer on all other pages from 5 minutes to 24 hours.**
+
+```ts
+export const revalidate = 86400; // 24 hours
+```
+
+Same logic. Every merge triggers a full redeploy anyway. A 24-hour timer is just a fallback safety net. In practice it never fires, because the deploy always gets there first.
+
+***
+
+## What I learned about my own setup
+
+This conversation taught me something I had not realised about how my site actually works.
+
+The flow for publishing a post is:
+
+1. I write the post in TinaCMS
+2. TinaCMS commits the file to GitHub
+3. GitHub tells Vercel: something changed
+4. Vercel rebuilds and redeploys the entire site
+5. Cache is cleared. Fresh pages. Done.
+
+ISR was never needed for me. I was running a complex background timer system to solve a problem that my deploy pipeline was already solving automatically.
+
+***
+
+## The numbers after the fix
+
+Before: approximately 28,800 ISR writes per day.
+
+After: approximately 20 ISR writes per day at most, and in practice close to zero because deploys beat the 24-hour timer every time.
+
+Monthly: from potentially 864,000 writes down to roughly 600.
+
+I will not come close to the 200,000 limit again.
+
+***
+
+## The whole thing took one conversation
+
+I did not read documentation. I did not Google "what is ISR Next.js". I did not open Stack Overflow.
+
+I described the email I received. The agent explained what it meant, found the exact line of code causing the problem, explained why the fix was safe, and made the change. I reviewed it, checked the Vercel preview, and merged it.
+
+Start to finish: one conversation.
+
+That is the part I keep thinking about. Not that AI wrote the code. The actual code change was two lines. What impressed me is that it took a confusing email about a metric I did not understand, traced it back to a root cause buried in a layout file, and explained the whole thing clearly before touching anything.
+
+That is the skill. Not typing. Thinking.
+
+***
+
+If you are on Vercel with a Next.js and TinaCMS site and you got the same email I did, check your `revalidate` values. Start with your layout file. Chances are, that is where your writes are coming from.
+
+And if you are not sure, just ask.

@@ -50,19 +50,19 @@
 :root {
   --radius: 0.375rem;
   --background: oklch(0.985 0.003 95);
-  --foreground: oklch(0.2 0.01 80);
+  --foreground: oklch(0.16 0.01 80);
   --card: oklch(0.992 0.002 95);
-  --card-foreground: oklch(0.2 0.01 80);
+  --card-foreground: oklch(0.16 0.01 80);
   --popover: oklch(0.992 0.002 95);
-  --popover-foreground: oklch(0.2 0.01 80);
+  --popover-foreground: oklch(0.16 0.01 80);
   --primary: oklch(0.55 0.2 28);
   --primary-foreground: oklch(0.985 0.003 95);
   --secondary: oklch(0.96 0.003 95);
-  --secondary-foreground: oklch(0.2 0.01 80);
+  --secondary-foreground: oklch(0.16 0.01 80);
   --muted: oklch(0.955 0.002 95);
-  --muted-foreground: oklch(0.5 0.01 80);
+  --muted-foreground: oklch(0.36 0.01 80);
   --accent: oklch(0.96 0.003 95);
-  --accent-foreground: oklch(0.2 0.01 80);
+  --accent-foreground: oklch(0.16 0.01 80);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.86 0.006 85);
   --input: oklch(0.86 0.006 85);
@@ -94,19 +94,19 @@
 
 .dark {
   --background: oklch(0.16 0.006 70);
-  --foreground: oklch(0.94 0.006 90);
+  --foreground: oklch(0.97 0.006 90);
   --card: oklch(0.19 0.006 70);
-  --card-foreground: oklch(0.94 0.006 90);
+  --card-foreground: oklch(0.97 0.006 90);
   --popover: oklch(0.19 0.006 70);
-  --popover-foreground: oklch(0.94 0.006 90);
+  --popover-foreground: oklch(0.97 0.006 90);
   --primary: oklch(0.67 0.18 28);
   --primary-foreground: oklch(0.16 0.006 70);
   --secondary: oklch(0.22 0.006 70);
-  --secondary-foreground: oklch(0.9 0.008 90);
+  --secondary-foreground: oklch(0.95 0.008 90);
   --muted: oklch(0.22 0.006 70);
-  --muted-foreground: oklch(0.72 0.008 90);
+  --muted-foreground: oklch(0.82 0.008 90);
   --accent: oklch(0.22 0.006 70);
-  --accent-foreground: oklch(0.9 0.008 90);
+  --accent-foreground: oklch(0.95 0.008 90);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(0.34 0.008 80);
   --input: oklch(0.34 0.008 80);
@@ -179,11 +179,11 @@
   }
 
   :where(.prose) {
-    /* Switch prose body to the sans-serif stack — more legible for long-form reading */
+    /* Switch prose body to the sans-serif stack - more legible for long-form reading */
     font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
     line-height: 1.8;
     color: var(--foreground);
-    /* ~66ch optimal measure — content width is capped by the layout, this is a guard */
+    /* ~66ch optimal measure - content width is capped by the layout, this is a guard */
     max-width: 66ch;
   }
 
@@ -274,7 +274,7 @@
   }
 }
 
-/* Prose link styles — must be outside @layer base to override @tailwindcss/typography plugin */
+/* Prose link styles - must be outside @layer base to override @tailwindcss/typography plugin */
 .prose a {
   color: var(--foreground);
   text-decoration: underline;

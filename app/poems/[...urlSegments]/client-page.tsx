@@ -2,9 +2,11 @@
 
 import ErrorBoundary from '@/components/error-boundary';
 import { Section } from '@/components/layout/section';
+import { GiscusComments } from '@/components/posts/giscus-comments';
 import type { PoemQuery } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { tinaField, useTina } from 'tinacms/dist/react';
 
@@ -19,6 +21,7 @@ interface PoemClientPageProps {
 export default function PoemClientPage(props: PoemClientPageProps) {
   const { data } = useTina({ ...props });
   const poem = data.poem;
+  const pathname = usePathname();
 
   const date = poem.date ? new Date(poem.date) : null;
   const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMMM dd, yyyy') : '';
@@ -71,13 +74,17 @@ export default function PoemClientPage(props: PoemClientPageProps) {
 
               if (isEmpty) {
                 // Blank line = stanza break
-                return <div key={i} className='h-5' aria-hidden='true' />;
+                return (
+                  <div key={i} className='py-3 text-center text-sm tracking-widest text-foreground/35 select-none' aria-hidden='true'>
+                    ...
+                  </div>
+                );
               }
 
               return (
-                <div key={i} className='leading-relaxed'>
+                <div key={i} className='max-w-[90%] leading-relaxed text-left'>
                   <p className='font-serif text-xl text-foreground'>{text}</p>
-                  {translation && translation.trim().length > 0 && <p className='font-serif text-base text-foreground/60 italic'>{translation}</p>}
+                  {translation && translation.trim().length > 0 && <p className='font-serif text-base text-foreground/75 italic dark:text-foreground/85'>{translation}</p>}
                 </div>
               );
             })}
@@ -88,6 +95,8 @@ export default function PoemClientPage(props: PoemClientPageProps) {
               {description}
             </p>
           )}
+
+          <GiscusComments term={pathname} />
         </motion.div>
       </Section>
     </ErrorBoundary>

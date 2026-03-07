@@ -5,10 +5,12 @@ import { Section } from '@/components/layout/section';
 import { GiscusComments } from '@/components/posts/giscus-comments';
 import type { PoemQuery } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
+import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { tinaField, useTina } from 'tinacms/dist/react';
+import { TinaMarkdown } from 'tinacms/dist/rich-text';
 
 interface PoemClientPageProps {
   data: PoemQuery;
@@ -16,6 +18,48 @@ interface PoemClientPageProps {
     relativePath: string;
   };
   query: string;
+}
+
+type RichTextNode = {
+  type: string;
+  children?: RichTextNode[];
+  text?: string;
+};
+
+function isRichTextNode(value: unknown): value is RichTextNode {
+  return Boolean(value && typeof value === 'object' && 'type' in value);
+}
+
+function resolveDescription(primary: unknown, fallback: unknown): { kind: 'text'; value: string } | { kind: 'rich'; value: RichTextNode } | null {
+  const candidates = [primary, fallback];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    if (isRichTextNode(candidate)) {
+      return { kind: 'rich', value: candidate };
+    }
+
+    if (typeof candidate === 'string') {
+      const trimmed = candidate.trim();
+      if (!trimmed || trimmed === '[object Object]') continue;
+
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (isRichTextNode(parsed)) {
+            return { kind: 'rich', value: parsed };
+          }
+        } catch {
+          // Keep plain text fallback below.
+        }
+      }
+
+      return { kind: 'text', value: candidate };
+    }
+  }
+
+  return null;
 }
 
 export default function PoemClientPage(props: PoemClientPageProps) {
@@ -26,9 +70,8 @@ export default function PoemClientPage(props: PoemClientPageProps) {
   const date = poem.date ? new Date(poem.date) : null;
   const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMMM dd, yyyy') : '';
   const isPunjabi = poem.language === 'Punjabi';
-  const description = poem.description?.trim() ?? '';
-  const hasDescription = description.length > 0;
-  const showDescriptionBefore = !hasDescription || (poem.descriptionPosition ?? 'before') === 'before';
+  const description = resolveDescription(poem.description, props.data.poem.description);
+  const hasDescription = Boolean(description);
 
   return (
     <ErrorBoundary>
@@ -60,10 +103,22 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           </div>
 
           {/* Poem body */}
-          {hasDescription && showDescriptionBefore && (
-            <p data-tina-field={tinaField(poem, 'description')} className='mb-8 font-serif text-base leading-relaxed text-foreground/80'>
-              {description}
-            </p>
+          {hasDescription && (
+            <details data-tina-field={tinaField(poem, 'description')} className='group mb-8 rounded-md border border-border bg-card/60'>
+              <summary className='flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-sans text-sm font-medium text-foreground marker:content-none'>
+                <span>Read the story behind this poem</span>
+                <ChevronDown className='size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180' aria-hidden='true' />
+              </summary>
+              <div className='border-t border-border px-4 py-4'>
+                {description?.kind === 'text' ? (
+                  <p className='whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/85'>{description.value}</p>
+                ) : (
+                  <div className='prose prose-sm max-w-none dark:prose-invert'>
+                    <TinaMarkdown content={description?.value ?? { type: 'root', children: [] }} />
+                  </div>
+                )}
+              </div>
+            </details>
           )}
 
           <div data-tina-field={tinaField(poem, 'lines')} className='space-y-0'>
@@ -89,12 +144,6 @@ export default function PoemClientPage(props: PoemClientPageProps) {
               );
             })}
           </div>
-
-          {hasDescription && !showDescriptionBefore && (
-            <p data-tina-field={tinaField(poem, 'description')} className='mt-8 font-serif text-base leading-relaxed text-foreground/80'>
-              {description}
-            </p>
-          )}
 
           <GiscusComments term={pathname} />
         </motion.div>

@@ -40,7 +40,7 @@ function PoemsContent({ data }: { data: PoemConnectionQuery }) {
     <div className='mx-auto max-w-4xl py-16'>
       <div className='mb-14 text-center'>
         <h1 className='mb-3 font-serif text-4xl font-semibold tracking-tight md:text-5xl'>Poems</h1>
-        <p className='text-lg text-muted-foreground'>Simple poems written with heart. Some based on real life, some based on passion, desire & love.</p>
+        <p className='text-lg text-muted-foreground'>Simple poems written with heart. Some based on real life.</p>
       </div>
 
       {poems.length === 0 ? (

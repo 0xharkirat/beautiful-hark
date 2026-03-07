@@ -36,6 +36,14 @@ const Poem: Collection = {
       },
     },
     {
+      type: 'rich-text',
+      label: 'About this poem (optional)',
+      name: 'description',
+      overrides: {
+        toolbar: ['bold', 'italic', 'link'],
+      },
+    },
+    {
       type: 'object',
       label: 'Lines',
       name: 'lines',

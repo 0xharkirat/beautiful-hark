@@ -36,6 +36,32 @@ const Poem: Collection = {
       },
     },
     {
+      type: 'string',
+      label: 'About this poem (optional)',
+      name: 'description',
+      ui: {
+        component: 'textarea',
+      },
+    },
+    {
+      type: 'string',
+      label: 'Description position',
+      name: 'descriptionPosition',
+      options: [
+        {
+          label: 'Before poem',
+          value: 'before',
+        },
+        {
+          label: 'After poem',
+          value: 'after',
+        },
+      ],
+      ui: {
+        defaultValue: 'before',
+      },
+    },
+    {
       type: 'object',
       label: 'Lines',
       name: 'lines',

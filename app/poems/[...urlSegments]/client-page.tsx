@@ -23,6 +23,9 @@ export default function PoemClientPage(props: PoemClientPageProps) {
   const date = poem.date ? new Date(poem.date) : null;
   const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMMM dd, yyyy') : '';
   const isPunjabi = poem.language === 'Punjabi';
+  const description = poem.description?.trim() ?? '';
+  const hasDescription = description.length > 0;
+  const showDescriptionBefore = !hasDescription || (poem.descriptionPosition ?? 'before') === 'before';
 
   return (
     <ErrorBoundary>
@@ -54,6 +57,12 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           </div>
 
           {/* Poem body */}
+          {hasDescription && showDescriptionBefore && (
+            <p data-tina-field={tinaField(poem, 'description')} className='mb-8 font-serif text-base leading-relaxed text-foreground/80'>
+              {description}
+            </p>
+          )}
+
           <div data-tina-field={tinaField(poem, 'lines')} className='space-y-0'>
             {(poem.lines ?? []).map((line, i) => {
               const text = line?.text ?? '';
@@ -73,6 +82,12 @@ export default function PoemClientPage(props: PoemClientPageProps) {
               );
             })}
           </div>
+
+          {hasDescription && !showDescriptionBefore && (
+            <p data-tina-field={tinaField(poem, 'description')} className='mt-8 font-serif text-base leading-relaxed text-foreground/80'>
+              {description}
+            </p>
+          )}
         </motion.div>
       </Section>
     </ErrorBoundary>

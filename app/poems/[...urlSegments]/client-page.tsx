@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { tinaField, useTina } from 'tinacms/dist/react';
-import { TinaMarkdown } from 'tinacms/dist/rich-text';
+import { TinaMarkdown, type TinaMarkdownContent } from 'tinacms/dist/rich-text';
 
 interface PoemClientPageProps {
   data: PoemQuery;
@@ -20,23 +20,23 @@ interface PoemClientPageProps {
   query: string;
 }
 
-type RichTextNode = {
-  type: string;
-  children?: RichTextNode[];
-  text?: string;
-};
+type DescriptionContent = TinaMarkdownContent | TinaMarkdownContent[];
 
-function isRichTextNode(value: unknown): value is RichTextNode {
+function isRichTextContent(value: unknown): value is DescriptionContent {
+  if (Array.isArray(value)) {
+    return value.every((item) => Boolean(item && typeof item === 'object' && 'type' in item));
+  }
+
   return Boolean(value && typeof value === 'object' && 'type' in value);
 }
 
-function resolveDescription(primary: unknown, fallback: unknown): { kind: 'text'; value: string } | { kind: 'rich'; value: RichTextNode } | null {
+function resolveDescription(primary: unknown, fallback: unknown): { kind: 'text'; value: string } | { kind: 'rich'; value: DescriptionContent } | null {
   const candidates = [primary, fallback];
 
   for (const candidate of candidates) {
     if (!candidate) continue;
 
-    if (isRichTextNode(candidate)) {
+    if (isRichTextContent(candidate)) {
       return { kind: 'rich', value: candidate };
     }
 
@@ -47,7 +47,7 @@ function resolveDescription(primary: unknown, fallback: unknown): { kind: 'text'
       if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
         try {
           const parsed = JSON.parse(trimmed);
-          if (isRichTextNode(parsed)) {
+          if (isRichTextContent(parsed)) {
             return { kind: 'rich', value: parsed };
           }
         } catch {
@@ -71,7 +71,6 @@ export default function PoemClientPage(props: PoemClientPageProps) {
   const formattedDate = date && !Number.isNaN(date.getTime()) ? format(date, 'MMMM dd, yyyy') : '';
   const isPunjabi = poem.language === 'Punjabi';
   const description = resolveDescription(poem.description, props.data.poem.description);
-  const hasDescription = Boolean(description);
 
   return (
     <ErrorBoundary>
@@ -103,18 +102,18 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           </div>
 
           {/* Poem body */}
-          {hasDescription && (
+          {description && (
             <details data-tina-field={tinaField(poem, 'description')} className='group mb-8 rounded-md border border-border bg-card/60'>
               <summary className='flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-sans text-sm font-medium text-foreground marker:content-none'>
                 <span>Read the story behind this poem</span>
                 <ChevronDown className='size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180' aria-hidden='true' />
               </summary>
               <div className='border-t border-border px-4 py-4'>
-                {description?.kind === 'text' ? (
+                {description.kind === 'text' ? (
                   <p className='whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/85'>{description.value}</p>
                 ) : (
                   <div className='prose prose-sm max-w-none dark:prose-invert'>
-                    <TinaMarkdown content={description?.value ?? { type: 'root', children: [] }} />
+                    <TinaMarkdown content={description.value} />
                   </div>
                 )}
               </div>

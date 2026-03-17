@@ -79,8 +79,12 @@ export const components: Components<{
   };
   video: PageBlocksVideo;
 }> = {
-  a: (props: { url?: string; href?: string; children?: React.ReactNode }) => {
-    const href = props.url ?? props.href ?? '';
+  a: (props: { url: string; children: JSX.Element } | undefined) => {
+    if (!props) {
+      return <></>;
+    }
+
+    const href = props.url;
     const external = href ? isExternalUrl(href) : false;
 
     return (

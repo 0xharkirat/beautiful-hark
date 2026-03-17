@@ -8,6 +8,10 @@ import { Mermaid } from './blocks/mermaid';
 import { Video } from './blocks/video';
 import { FadeInImage } from './ui/fade-in-image';
 
+function isExternalUrl(url: string): boolean {
+  return /^https?:\/\//i.test(url) || url.startsWith('//');
+}
+
 /** Converts heading text to a URL-safe anchor ID, e.g. "Hello World!" → "hello-world" */
 export function slugify(text: string): string {
   return text
@@ -75,6 +79,16 @@ export const components: Components<{
   };
   video: PageBlocksVideo;
 }> = {
+  a: (props: { url?: string; href?: string; children?: React.ReactNode }) => {
+    const href = props.url ?? props.href ?? '';
+    const external = href ? isExternalUrl(href) : false;
+
+    return (
+      <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>
+        {props.children}
+      </a>
+    );
+  },
   code_block: (props) => {
     if (!props) {
       return <></>;

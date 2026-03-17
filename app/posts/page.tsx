@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Layout from '@/components/layout/layout';
+import { getGiscusCommentCounts } from '@/lib/giscus-comment-counts';
 import client from '@/tina/__generated__/client';
 import PostsClientPage from './client-page';
 
@@ -15,9 +16,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PostsPage() {
+  const commentCounts = await getGiscusCommentCounts();
+
   let posts = await client.queries.postConnection({
     sort: 'date',
-    last: 1
+    last: 1,
   });
   const allPosts = posts;
 
@@ -40,7 +43,7 @@ export default async function PostsPage() {
 
   return (
     <Layout rawPageData={allPosts.data}>
-      <PostsClientPage {...allPosts} />
+      <PostsClientPage {...allPosts} commentCounts={commentCounts} />
     </Layout>
   );
 }

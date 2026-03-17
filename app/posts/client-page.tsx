@@ -16,9 +16,14 @@ interface ClientPostProps {
   data: PostConnectionQuery;
   variables: PostConnectionQueryVariables;
   query: string;
+  commentCounts: Record<string, number>;
 }
 
-function PostsContent({ data }: { data: PostConnectionQuery }) {
+function normalizeDiscussionTerm(term: string): string {
+  return term.replace(/^\/+/, '').replace(/\/+$/, '');
+}
+
+function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; commentCounts: Record<string, number> }) {
   const searchParams = useSearchParams();
   const activeTag = searchParams.get('tag');
 
@@ -37,6 +42,7 @@ function PostsContent({ data }: { data: PostConnectionQuery }) {
         title: post.title,
         tags: (post.tags ?? []).map((t) => t?.tag?.name).filter((n): n is string => Boolean(n)),
         url: `/posts/${post._sys.breadcrumbs.join('/')}`,
+        comments: commentCounts[normalizeDiscussionTerm(`/posts/${post._sys.breadcrumbs.join('/')}`)] ?? 0,
         excerpt: post.excerpt,
         heroImg: post.heroImg,
       };
@@ -94,6 +100,9 @@ function PostsContent({ data }: { data: PostConnectionQuery }) {
                       )}
                       <div className='flex flex-wrap items-center gap-3'>
                         <span className='text-sm text-muted-foreground'>{post.published}</span>
+                        <span className='text-sm text-muted-foreground'>
+                          {post.comments} comment{post.comments === 1 ? '' : 's'}
+                        </span>
                         {post.updatedAt && (
                           <span className='inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground'>
                             Updated {post.updatedAt}
@@ -139,7 +148,7 @@ export default function PostsClientPage(props: ClientPostProps) {
     <ErrorBoundary>
       <Section>
         <Suspense fallback={null}>
-          <PostsContent data={props.data} />
+          <PostsContent data={props.data} commentCounts={props.commentCounts} />
         </Suspense>
       </Section>
     </ErrorBoundary>

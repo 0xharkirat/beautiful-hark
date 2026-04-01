@@ -2,6 +2,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -345,13 +346,18 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                         <ChevronRight className='h-10 w-10' />
                       </button>
 
-                      <div className='relative w-full h-auto max-h-[80vh]'>
-                        <img
-                          src={data.gallery[selectedImageIndex].src || ''}
-                          alt={data.gallery[selectedImageIndex].alt || ''}
-                          className='max-h-[80vh] w-auto mx-auto object-contain rounded-md'
-                        />
-                      </div>
+                      {data.gallery[selectedImageIndex].src && (
+                        <div className='relative w-full max-h-[80vh] flex items-center justify-center'>
+                          <Image
+                            src={data.gallery[selectedImageIndex].src}
+                            alt={data.gallery[selectedImageIndex].alt || ''}
+                            width={1200}
+                            height={800}
+                            sizes='(max-width: 768px) 100vw, 80vw'
+                            className='max-h-[80vh] w-auto mx-auto object-contain rounded-md'
+                          />
+                        </div>
+                      )}
 
                       {data.gallery[selectedImageIndex].caption && (
                         <p className='mt-4 text-white/90 text-lg font-medium text-center italic'>{data.gallery[selectedImageIndex].caption}</p>

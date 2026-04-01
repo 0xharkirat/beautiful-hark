@@ -22,7 +22,7 @@ export async function GET() {
       return new Response(feed.json1(), {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+          'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600',
         },
       });
     }
@@ -74,7 +74,7 @@ export async function GET() {
     return new Response(feed.json1(), {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600',
       },
     });
   } catch (error) {

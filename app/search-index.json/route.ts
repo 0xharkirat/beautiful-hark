@@ -112,7 +112,7 @@ export async function GET() {
 
     return Response.json(index, {
       headers: {
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600',
+        'Cache-Control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=3600',
       },
     });
   } catch (error) {

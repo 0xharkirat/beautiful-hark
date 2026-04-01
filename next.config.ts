@@ -36,6 +36,32 @@ const nextConfig: NextConfig = {
         headers,
       },
       {
+        source: '/admin/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'private, no-store',
+          },
+        ],
+      },
+      {
+        source: '/blocks/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
         source: '/uploads/:file*.webm',
         headers: [
           {

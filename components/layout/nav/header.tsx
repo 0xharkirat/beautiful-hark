@@ -52,10 +52,15 @@ export const Header = () => {
 
   return (
     <header className='font-sans'>
-      <nav data-state={menuState && 'active'} className={`fixed z-20 w-full transition-all duration-300 ${scrolled ? 'border-b bg-background/80 backdrop-blur-lg' : 'border-b border-transparent bg-background/95'}`}>
-        <div className='mx-auto max-w-5xl px-6 transition-all duration-300'>
-          <div className='relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4'>
-            <div className='flex w-full items-center justify-between gap-12'>
+      <nav
+        data-state={menuState && 'active'}
+        className={`fixed z-20 w-full transition-all duration-300 ${
+          scrolled ? 'border-b border-border/70 bg-background/78 backdrop-blur-xl' : 'border-b border-transparent bg-transparent'
+        }`}
+      >
+        <div className='mx-auto max-w-6xl px-6 transition-all duration-300'>
+          <div className='relative flex items-center justify-between gap-12 py-3 lg:py-4'>
+            <div className='flex w-full min-w-0 items-center justify-between gap-12'>
               <Link href='/' aria-label='home' className='flex items-center space-x-2 text-sm tracking-wide'>
                 <HarkLogo className='mr-2 h-16 w-16 lg:h-20 lg:w-20 transition-all duration-300' trackEyes />
                 {' '}
@@ -103,13 +108,18 @@ export const Header = () => {
               </div>
             </div>
 
-            <div className='in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-sm border bg-card p-6 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0'>
-              <div className='lg:hidden'>
+            <div
+              className={`absolute inset-x-0 top-full mt-3 lg:hidden ${
+                menuState ? 'block' : 'hidden'
+              }`}
+            >
+              <div className='rounded-[1.25rem] border border-border/80 bg-card/95 p-6 shadow-[0_24px_60px_-36px_rgba(20,14,10,0.45)] backdrop-blur-xl'>
                 <ul className='space-y-6 text-base'>
                   {header.nav!.map((item, index) => (
                     <li key={index}>
                       <Link
                         href={item!.href!}
+                        onClick={() => setMenuState(false)}
                         className={`block border-b border-transparent pb-1 text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
                       >
                         <span>{item!.label}</span>

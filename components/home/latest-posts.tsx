@@ -1,5 +1,6 @@
 import { ScrollReveal } from '@/components/motion-primitives/scroll-reveal';
 import { Section } from '@/components/layout/section';
+import { richTextToPlainText } from '@/lib/rich-text-utils';
 import type { PostConnectionQuery } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -26,10 +27,11 @@ export function LatestPosts({ posts }: LatestPostsProps) {
   }
 
   const [leadPost, ...supportingPosts] = latestPosts;
+  const leadExcerpt = getExcerptPreview(leadPost.excerpt, 140);
 
   return (
     <Section size='wide' className='pb-24 pt-6 md:pt-10'>
-      <div className='grid gap-8 border-t border-border/70 pt-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:gap-12'>
+      <div className='grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:gap-12'>
         <ScrollReveal>
           <div className='max-w-xl'>
             <h2 className='font-serif text-4xl leading-none tracking-[-0.04em] text-foreground md:text-5xl'>Recent blogs</h2>
@@ -37,7 +39,7 @@ export function LatestPosts({ posts }: LatestPostsProps) {
         </ScrollReveal>
 
         <ScrollReveal delay={0.08}>
-          <div className='flex items-end justify-between gap-4 border-t border-border/60 pt-5 lg:h-full lg:border-t-0 lg:border-l lg:pl-8'>
+          <div className='flex items-end justify-between gap-4 lg:h-full'>
             <Link href='/posts' className='font-sans text-sm font-medium text-link transition-colors hover:text-accent-red'>
               Browse the archive
             </Link>
@@ -47,10 +49,10 @@ export function LatestPosts({ posts }: LatestPostsProps) {
 
       <div className='mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(18rem,0.88fr)] lg:gap-12'>
         <ScrollReveal delay={0.12}>
-          <article className='overflow-hidden rounded-[2rem] border border-border/70 bg-[var(--surface-soft)] shadow-[0_20px_80px_-52px_rgba(44,26,15,0.55)]'>
+          <article className='overflow-hidden rounded-[2rem] bg-[var(--surface-soft)] shadow-[0_20px_80px_-52px_rgba(44,26,15,0.55)]'>
             <Link href={`/posts/${leadPost._sys.breadcrumbs.join('/')}`} className='block'>
               {leadPost.heroImg ? (
-                <div className='relative aspect-[16/10] overflow-hidden border-b border-border/60'>
+                <div className='relative aspect-[16/10] overflow-hidden'>
                   <Image
                     src={leadPost.heroImg}
                     alt={leadPost.title}
@@ -59,7 +61,7 @@ export function LatestPosts({ posts }: LatestPostsProps) {
                   />
                 </div>
               ) : (
-                <div className='aspect-[16/10] border-b border-border/60 bg-[linear-gradient(145deg,color-mix(in_oklab,var(--accent-red)_20%,transparent),transparent_65%),linear-gradient(180deg,var(--surface-soft),var(--surface-strong))]' />
+                <div className='aspect-[16/10] bg-[linear-gradient(145deg,color-mix(in_oklab,var(--accent-red)_20%,transparent),transparent_65%),linear-gradient(180deg,var(--surface-soft),var(--surface-strong))]' />
               )}
             </Link>
 
@@ -77,6 +79,7 @@ export function LatestPosts({ posts }: LatestPostsProps) {
                       {leadPost.title}
                     </Link>
                   </h3>
+                  {leadExcerpt && <p className='mt-4 max-w-md font-sans text-sm leading-7 text-muted-foreground'>{leadExcerpt}</p>}
                 </div>
 
                 <div className='space-y-4 self-end'>
@@ -92,10 +95,11 @@ export function LatestPosts({ posts }: LatestPostsProps) {
         <div className='grid gap-8'>
           {supportingPosts.map((post, index) => {
             const href = `/posts/${post._sys.breadcrumbs.join('/')}`;
+            const excerpt = getExcerptPreview(post.excerpt, 110);
 
             return (
               <ScrollReveal key={post.id} delay={0.18 + index * 0.08}>
-                <article className='grid gap-4 border-t border-border/70 pt-5 md:grid-cols-[auto_minmax(0,1fr)] md:gap-5'>
+                <article className='grid gap-4 pt-3 md:grid-cols-[auto_minmax(0,1fr)] md:gap-5'>
                   <div className='font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
                     {String(index + 2).padStart(2, '0')}
                   </div>
@@ -108,15 +112,16 @@ export function LatestPosts({ posts }: LatestPostsProps) {
                           {post.title}
                         </Link>
                       </h3>
+                      {excerpt && <p className='mt-3 max-w-[34ch] font-sans text-sm leading-6 text-muted-foreground'>{excerpt}</p>}
                     </div>
 
                     <Link href={href} className='group block'>
                       {post.heroImg ? (
-                        <div className='relative aspect-[4/5] overflow-hidden rounded-[1.35rem] border border-border/60 bg-[var(--surface-strong)]'>
+                        <div className='relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-[var(--surface-strong)]'>
                           <Image src={post.heroImg} alt={post.title} fill className='object-cover transition-transform duration-500 ease-out group-hover:scale-105' />
                         </div>
                       ) : (
-                        <div className='aspect-[4/5] rounded-[1.35rem] border border-border/60 bg-[linear-gradient(180deg,var(--surface-soft),var(--surface-strong))]' />
+                        <div className='aspect-[4/5] rounded-[1.35rem] bg-[linear-gradient(180deg,var(--surface-soft),var(--surface-strong))]' />
                       )}
                     </Link>
                   </div>
@@ -142,4 +147,18 @@ function formatPostDate(date?: string | null) {
   }
 
   return format(parsed, 'MMM dd, yyyy');
+}
+
+function getExcerptPreview(excerpt: unknown, maxLength: number) {
+  const plainText = richTextToPlainText(excerpt);
+
+  if (!plainText) {
+    return '';
+  }
+
+  if (plainText.length <= maxLength) {
+    return plainText;
+  }
+
+  return `${plainText.slice(0, maxLength).trimEnd()}...`;
 }

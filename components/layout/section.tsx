@@ -4,12 +4,19 @@ import { cn } from '../../lib/utils';
 interface SectionProps extends React.HTMLProps<HTMLElement> {
   background?: string;
   children: ReactNode;
+  size?: 'default' | 'wide' | 'full';
 }
 
-export const Section: React.FC<SectionProps> = ({ className, children, background, ...props }) => {
+const sizeClasses: Record<NonNullable<SectionProps['size']>, string> = {
+  default: 'mx-auto max-w-5xl px-6 py-14 md:py-16',
+  wide: 'mx-auto max-w-6xl px-6 py-14 md:py-16',
+  full: 'w-full px-0 py-0',
+};
+
+export const Section: React.FC<SectionProps> = ({ className, children, background, size = 'default', ...props }) => {
   return (
     <div className={background || 'bg-default'}>
-      <section className={cn('mx-auto max-w-5xl px-6 py-14 md:py-16', className)} {...props}>
+      <section className={cn(sizeClasses[size], className)} {...props}>
         {children}
       </section>
     </div>

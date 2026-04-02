@@ -3,7 +3,6 @@ import ErrorBoundary from '@/components/error-boundary';
 import { Section } from '@/components/layout/section';
 import { TagChip } from '@/components/posts/tag-chip';
 import { TagSidebar } from '@/components/posts/tag-sidebar';
-import { Card } from '@/components/ui/card';
 import type { PostConnectionQuery, PostConnectionQueryVariables } from '@/tina/__generated__/types';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -64,18 +63,23 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
   const visiblePosts = activeTag ? allPosts.filter((post) => post.tags.includes(activeTag)) : allPosts;
 
   return (
-    <div className='container mx-auto max-w-6xl px-4 py-16'>
-      <div className='mb-12 text-center'>
-        <h1 className='mb-3 text-4xl font-semibold tracking-tight md:text-5xl'>Chronicles of His Holy Harkness</h1>
-        <p className='text-lg text-muted-foreground'>Sacred scriptures of code, tabla beats, and digital adventures from the realm of Hark</p>
+    <div className='py-2 md:py-4'>
+      <div className='max-w-3xl border-b border-border/70 pb-10 md:pb-12'>
+        <p className='font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>The archive</p>
+        <h1 className='mt-4 max-w-[12ch] font-serif text-5xl leading-none tracking-[-0.04em] text-foreground md:text-6xl'>
+          Technical essays, practical notes, and the occasional side quest.
+        </h1>
+        <p className='mt-5 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg'>
+          Writing from Hark Singh on engineering, AI tooling, Azure, interfaces, and whatever else seemed worth understanding well enough to explain clearly.
+        </p>
       </div>
 
-      <div className='flex flex-col gap-10 lg:flex-row lg:gap-12'>
+      <div className='mt-12 flex flex-col gap-10 lg:flex-row lg:gap-14'>
         <TagSidebar tags={sortedTags} activeTag={activeTag} />
 
         <div className='min-w-0 flex-1'>
           {activeTag && (
-            <p className='mb-6 text-sm text-muted-foreground'>
+            <p className='mb-8 border-t border-border/60 pt-5 text-sm text-muted-foreground'>
               Showing {visiblePosts.length} post{visiblePosts.length !== 1 ? 's' : ''} tagged <span className='font-medium text-foreground'>{activeTag}</span>
             </p>
           )}
@@ -84,30 +88,42 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
             <p className='text-muted-foreground'>No posts found for this tag.</p>
           ) : (
             <div className='space-y-10'>
-              {visiblePosts.map((post) => (
-                <Card key={post.id} className='group overflow-hidden border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl'>
-                  <div className='flex flex-col gap-6 p-8 sm:flex-row sm:gap-8'>
-                    <div className='flex-1'>
-                      <Link href={post.url}>
-                        <h2 className='mb-3 text-2xl font-semibold leading-tight tracking-tight transition-colors group-hover:text-accent-red md:text-3xl'>
-                          {post.title}
-                        </h2>
-                      </Link>
-                      {post.excerpt && (
-                        <div className='prose prose-sm mb-4 max-w-none text-muted-foreground'>
-                          <TinaMarkdown content={post.excerpt} />
-                        </div>
-                      )}
-                      <div className='flex flex-wrap items-center gap-3'>
-                        <span className='text-sm text-muted-foreground'>{post.published}</span>
-                        <span className='text-sm text-muted-foreground'>
+              {visiblePosts.map((post, index) => (
+                <article key={post.id} className='grid gap-5 border-t border-border/70 pt-6 md:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_15rem] xl:gap-8'>
+                  <div className='font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+
+                  <div className='grid gap-5 xl:grid-cols-[minmax(0,1fr)_15rem] xl:items-start xl:gap-8'>
+                    <div>
+                      <div className='flex flex-wrap items-center gap-3 font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground'>
+                        <span>{post.published}</span>
+                        <span className='h-1 w-1 rounded-full bg-border' />
+                        <span>
                           {post.comments} comment{post.comments === 1 ? '' : 's'}
                         </span>
                         {post.updatedAt && (
-                          <span className='inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-                            Updated {post.updatedAt}
-                          </span>
+                          <>
+                            <span className='h-1 w-1 rounded-full bg-border' />
+                            <span>Updated {post.updatedAt}</span>
+                          </>
                         )}
+                      </div>
+
+                      <h2 className='mt-3 max-w-[18ch] font-serif text-3xl leading-tight tracking-[-0.035em] text-foreground transition-colors hover:text-accent-red md:text-[2.35rem]'>
+                        <Link href={post.url}>{post.title}</Link>
+                      </h2>
+
+                      {post.excerpt && (
+                        <div className='prose prose-sm mt-4 max-w-none text-muted-foreground'>
+                          <TinaMarkdown content={post.excerpt} />
+                        </div>
+                      )}
+
+                      <div className='mt-5 flex flex-wrap items-center gap-3'>
+                        <Link href={post.url} className='font-sans text-sm font-medium text-link transition-colors hover:text-accent-red'>
+                          Read article
+                        </Link>
                         {post.tags.length > 0 && (
                           <div className='flex flex-wrap gap-1.5'>
                             {post.tags.map((tag) => (
@@ -117,23 +133,22 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
                         )}
                       </div>
                     </div>
+
                     {post.heroImg && (
-                      <div className='shrink-0 sm:w-56'>
-                        <Link href={post.url} className='block'>
-                          <div className='aspect-video overflow-hidden rounded-md border border-border'>
-                            <Image
-                              width={400}
-                              height={225}
-                              src={post.heroImg}
-                              alt={post.title}
-                              className='h-full w-full object-cover transition-transform duration-200 group-hover:scale-105'
-                            />
-                          </div>
-                        </Link>
-                      </div>
+                      <Link href={post.url} className='group block xl:justify-self-end'>
+                        <div className='relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-border/60 bg-[var(--surface-strong)]'>
+                          <Image
+                            width={320}
+                            height={400}
+                            src={post.heroImg}
+                            alt={post.title}
+                            className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105'
+                          />
+                        </div>
+                      </Link>
                     )}
                   </div>
-                </Card>
+                </article>
               ))}
             </div>
           )}
@@ -146,7 +161,7 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
 export default function PostsClientPage(props: ClientPostProps) {
   return (
     <ErrorBoundary>
-      <Section>
+      <Section size='wide'>
         <Suspense fallback={null}>
           <PostsContent data={props.data} commentCounts={props.commentCounts} />
         </Suspense>

@@ -69,7 +69,7 @@ export default function RootLayout({
         <link rel='alternate' type='application/atom+xml' title='Tales of Hark Atom Feed' href='/atom.xml' />
         <link rel='alternate' type='application/json' title='Tales of Hark JSON Feed' href='/feed.json' />
       </head>
-      <body className='min-h-screen bg-background font-serif antialiased'>
+      <body className='min-h-screen bg-background font-sans antialiased'>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
           <SearchProvider>
             <VideoDialogProvider>

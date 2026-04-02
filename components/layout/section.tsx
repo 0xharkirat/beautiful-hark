@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 
-interface SectionProps extends React.HTMLProps<HTMLElement> {
+interface SectionProps extends React.ComponentPropsWithoutRef<'section'> {
   background?: string;
   children: ReactNode;
   size?: 'default' | 'wide' | 'full';

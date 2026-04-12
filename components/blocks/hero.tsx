@@ -67,8 +67,11 @@ export const Hero = ({ data }: { data: PageBlocksHero }) => {
       <div className='flex flex-col items-center py-24 text-center md:py-32'>
 
         {data.image && (
-          <AnimatedGroup variants={skipAnimation ? noAnimVariants : transitionVariants} className='mb-8'>
-            <div className='w-28 overflow-hidden rounded-xl' data-tina-field={tinaField(data, 'image')}>
+          <AnimatedGroup variants={skipAnimation ? noAnimVariants : transitionVariants} className='mb-8 p-4'>
+            <div
+              className='group/video w-28 cursor-pointer overflow-hidden rounded-xl transition-all duration-500 hover:scale-[1.25] hover:drop-shadow-[0_8px_36px_rgba(183,35,1,0.22)]'
+              data-tina-field={tinaField(data, 'image')}
+            >
               <ImageBlock image={data.image} />
             </div>
           </AnimatedGroup>

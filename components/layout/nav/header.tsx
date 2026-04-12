@@ -81,7 +81,7 @@ export const Header = () => {
                   <Link
                     key={index}
                     href={item!.href!}
-                    className={`border-b border-transparent text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
+                    className={`border-b-2 pb-0.5 font-sans text-xs font-medium uppercase tracking-tight no-underline transition-all duration-150 hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-accent-red' : 'border-transparent text-muted-foreground opacity-70 hover:border-accent-red hover:opacity-100 hover:text-accent-red'}`}
                   >
                     <span>{item!.label}</span>
                   </Link>
@@ -120,7 +120,7 @@ export const Header = () => {
                       <Link
                         href={item!.href!}
                         onClick={() => setMenuState(false)}
-                        className={`block border-b border-transparent pb-1 text-muted-foreground no-underline transition-colors duration-150 hover:border-accent-red hover:text-accent-red hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-foreground' : ''}`}
+                        className={`block border-b-2 pb-1 font-sans text-xs font-medium uppercase tracking-tight no-underline transition-all duration-150 hover:no-underline ${isActive(item!.href!) ? 'border-accent-red text-accent-red' : 'border-transparent text-muted-foreground opacity-70 hover:border-accent-red hover:opacity-100 hover:text-accent-red'}`}
                       >
                         <span>{item!.label}</span>
                       </Link>

@@ -96,46 +96,64 @@
   --step-3: clamp(1.84rem, 1.68rem + 0.78vw, 2.34rem);
 }
 
+/* ── Dark theme: "Ember Library" ─────────────────────────────────────────────
+   Deep warm charcoal base. Crimson stays crimson (hue 27, not orange).
+   Warm off-white text. Intimate, restful, like reading by firelight.
+   ─────────────────────────────────────────────────────────────────────────── */
 .dark {
-  --background: oklch(0.24 0.022 28);
-  --foreground: oklch(0.9 0.022 78);
-  --card: oklch(0.28 0.022 28);
-  --card-foreground: oklch(0.9 0.022 78);
-  --popover: oklch(0.28 0.022 28);
-  --popover-foreground: oklch(0.9 0.022 78);
-  --primary: oklch(0.74 0.12 58);
-  --primary-foreground: oklch(0.22 0.02 28);
-  --secondary: oklch(0.33 0.02 28);
-  --secondary-foreground: oklch(0.88 0.02 78);
-  --muted: oklch(0.33 0.02 28);
-  --muted-foreground: oklch(0.72 0.018 72);
-  --accent: oklch(0.38 0.03 38);
-  --accent-foreground: oklch(0.9 0.022 78);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.4 0.02 34);
-  --input: oklch(0.4 0.02 34);
-  --ring: oklch(0.74 0.12 58);
-  --accent-red: oklch(0.74 0.12 58);
-  --link: oklch(0.82 0.06 62);
-  --code-bg: oklch(0.31 0.02 28);
-  --surface-soft: color-mix(in oklab, var(--background) 86%, white);
-  --surface-strong: color-mix(in oklab, var(--background) 74%, var(--primary) 18%);
-  --hero-glow: color-mix(in oklab, var(--primary) 36%, transparent);
-  --grid-line: color-mix(in oklab, var(--foreground) 14%, transparent);
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --background: oklch(0.13 0.020 30);        /* deep warm charcoal, ~#1c1917 */
+  --foreground: oklch(0.92 0.010 60);        /* warm off-white, easy on eyes  */
+  --card: oklch(0.18 0.018 30);              /* raised card surface           */
+  --card-foreground: oklch(0.92 0.010 60);
+  --popover: oklch(0.18 0.018 30);
+  --popover-foreground: oklch(0.92 0.010 60);
 
-  --chart-1: oklch(0.67 0.18 28);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.16 0.006 70);
-  --sidebar-foreground: oklch(0.9 0.008 90);
-  --sidebar-primary: oklch(0.67 0.18 28);
-  --sidebar-primary-foreground: oklch(0.16 0.006 70);
-  --sidebar-accent: oklch(0.22 0.006 70);
-  --sidebar-accent-foreground: oklch(0.9 0.008 90);
-  --sidebar-border: oklch(0.34 0.008 80);
-  --sidebar-ring: oklch(0.67 0.18 28);
+  /* ── Brand — crimson stays crimson ───────────────────────────────────── */
+  --primary: oklch(0.66 0.21 27);            /* vibrant crimson, hue 27 = red */
+  --primary-foreground: oklch(0.10 0.012 30);
+  --accent-red: oklch(0.66 0.21 27);
+  --link: oklch(0.66 0.21 27);
+  --ring: oklch(0.66 0.21 27);
+
+  /* ── UI layers ────────────────────────────────────────────────────────── */
+  --secondary: oklch(0.22 0.018 30);
+  --secondary-foreground: oklch(0.88 0.010 60);
+  --muted: oklch(0.17 0.018 30);
+  --muted-foreground: oklch(0.58 0.022 52);  /* warm mid-tone secondary text  */
+  --accent: oklch(0.21 0.018 30);
+  --accent-foreground: oklch(0.92 0.010 60);
+
+  /* ── States & borders ─────────────────────────────────────────────────── */
+  --destructive: oklch(0.68 0.22 25);
+  --border: oklch(0.27 0.016 32);            /* ghost border, warm not cold   */
+  --input: oklch(0.27 0.016 32);
+
+  /* ── Code ─────────────────────────────────────────────────────────────── */
+  --code-bg: oklch(0.19 0.016 30);
+
+  /* ── Custom surfaces (No-Line Rule system) ────────────────────────────── */
+  --surface-soft: oklch(0.16 0.018 31);      /* barely-there lift from bg     */
+  --surface-strong: oklch(0.21 0.016 31);    /* clear card/tag step           */
+  --hero-glow: color-mix(in oklab, var(--accent-red) 32%, transparent);
+  --grid-line: color-mix(in oklab, var(--foreground) 10%, transparent);
+
+  /* ── Charts ───────────────────────────────────────────────────────────── */
+  --chart-1: oklch(0.66 0.21 27);
+  --chart-2: oklch(0.70 0.15 165);
+  --chart-3: oklch(0.76 0.16 75);
+  --chart-4: oklch(0.65 0.18 300);
+  --chart-5: oklch(0.68 0.19 50);
+
+  /* ── Sidebar ──────────────────────────────────────────────────────────── */
+  --sidebar: oklch(0.11 0.018 30);
+  --sidebar-foreground: oklch(0.88 0.010 60);
+  --sidebar-primary: oklch(0.66 0.21 27);
+  --sidebar-primary-foreground: oklch(0.10 0.012 30);
+  --sidebar-accent: oklch(0.16 0.018 30);
+  --sidebar-accent-foreground: oklch(0.88 0.010 60);
+  --sidebar-border: oklch(0.23 0.016 32);
+  --sidebar-ring: oklch(0.66 0.21 27);
 }
 
 @layer base {
@@ -304,10 +322,10 @@
 
 @keyframes hark-aura {
   0%, 100% {
-    filter: drop-shadow(0 0 6px oklch(0.82 0.04 80 / 0.35));
+    filter: drop-shadow(0 0 6px oklch(0.66 0.21 27 / 0.35));
   }
   50% {
-    filter: drop-shadow(0 0 18px oklch(0.82 0.04 80 / 0.7));
+    filter: drop-shadow(0 0 20px oklch(0.66 0.21 27 / 0.60));
   }
 }
 

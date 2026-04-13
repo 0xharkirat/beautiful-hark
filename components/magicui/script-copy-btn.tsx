@@ -118,7 +118,7 @@ export function ScriptCopyBtn({
                 dangerouslySetInnerHTML={{ __html: highlightedCode }}
               />
             ) : (
-              <pre className="rounded-md border border-border bg-white p-2 px-4 font-mono dark:bg-black">
+              <pre className="rounded-md border border-border bg-code-bg p-2 px-4 font-mono">
                 {command}
               </pre>
             )}

@@ -5,16 +5,16 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border text-sm font-medium font-sans transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-accent-red focus-visible:ring-accent-red/30 focus-visible:ring-[2px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border text-sm font-medium font-sans transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-accent-red focus-visible:ring-accent-red/30 focus-visible:ring-[2px] aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
         default: 'border-accent-red bg-accent-red text-primary-foreground hover:bg-accent-red/90',
         destructive:
-          'border-destructive bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
-        outline: 'border-border bg-background hover:border-accent-red/40 hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+          'border-destructive bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20',
+        outline: 'border-border bg-background hover:border-accent-red/40 hover:text-foreground',
         secondary: 'border-border bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'border-transparent cursor-pointer hover:bg-muted hover:text-foreground dark:hover:bg-accent/50',
+        ghost: 'border-transparent cursor-pointer hover:bg-muted hover:text-foreground',
         link: 'border-transparent px-0 text-link underline-offset-4 hover:text-accent-red hover:underline',
       },
       size: {

@@ -26,7 +26,7 @@ const VideoDialog = () => {
                     >
                         <motion.button
                             onClick={closeVideo}
-                            className="absolute -top-16 right-0 rounded-full bg-neutral-900/50 p-2 text-xl text-white ring-1 backdrop-blur-md dark:bg-neutral-100/50 dark:text-black"
+                            className="absolute -top-16 right-0 rounded-full bg-foreground/60 p-2 text-xl text-background ring-1 backdrop-blur-md"
                         >
                             <XIcon className="size-5" />
                         </motion.button>

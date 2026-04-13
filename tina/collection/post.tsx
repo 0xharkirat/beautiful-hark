@@ -29,6 +29,18 @@ const Post: Collection = {
       uploadDir: () => 'posts',
     },
     {
+      type: 'string',
+      name: 'heroImgWidth',
+      label: 'Hero Image Width',
+      description: 'Max width of hero image. Default: full (full article width). Square/portrait images look better at sm or md.',
+      options: [
+        { label: 'Full', value: 'full' },
+        { label: 'Large (max-w-2xl)', value: 'lg' },
+        { label: 'Medium (max-w-md)', value: 'md' },
+        { label: 'Small (max-w-xs)', value: 'sm' },
+      ],
+    },
+    {
       type: 'rich-text',
       label: 'Excerpt',
       name: 'excerpt',

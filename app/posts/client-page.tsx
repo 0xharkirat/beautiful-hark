@@ -94,7 +94,7 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
                       {String(index + 1).padStart(2, '0')}
                     </div>
 
-                    <div className={hasImage ? 'grid gap-5 xl:grid-cols-[minmax(0,1fr)_15rem] xl:items-start xl:gap-8' : 'grid gap-5'}>
+                    <div className={hasImage ? 'grid gap-5 xl:grid-cols-[minmax(0,1fr)_11rem] xl:items-start xl:gap-8' : 'grid gap-5'}>
                       <div>
                         <div className='flex flex-wrap items-center gap-3 font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground'>
                           <span>{post.published}</span>
@@ -136,10 +136,10 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
 
                       {post.heroImg && (
                         <Link href={post.url} className='group block xl:justify-self-end'>
-                          <div className='relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-[var(--surface-strong)]'>
+                          <div className='relative aspect-square overflow-hidden rounded-[1.25rem] bg-[var(--surface-strong)]'>
                             <Image
-                              width={320}
-                              height={400}
+                              width={240}
+                              height={240}
                               src={post.heroImg}
                               alt={post.title}
                               className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105'

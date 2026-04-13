@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: 'res.cloudinary.com',
         port: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.shields.io',
+        port: '',
+      },
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',

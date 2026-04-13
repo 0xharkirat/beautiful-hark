@@ -34,7 +34,7 @@ const markdownComponents = {
         <FadeInImage src={props.url} alt={props.alt || ''} width={800} height={600} className='rounded-lg w-auto h-auto max-h-[500px] object-contain' />
       </span>
       {(props.caption || props.title) && (
-        <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{props.caption || props.title}</span>
+        <span className='mt-2 text-center text-sm font-serif italic text-muted-foreground'>{props.caption || props.title}</span>
       )}
     </span>
   ),
@@ -43,7 +43,7 @@ const markdownComponents = {
       <span className='overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]'>
         <FadeInImage src={props.url} alt={props.alt || ''} width={800} height={600} className='rounded-lg w-auto h-auto max-h-[500px] object-contain' />
       </span>
-      {props.caption && <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{props.caption}</span>}
+      {props.caption && <span className='mt-2 text-center text-sm font-serif italic text-muted-foreground'>{props.caption}</span>}
     </span>
   ),
   ImagePair: (props: any) => (
@@ -57,7 +57,7 @@ const markdownComponents = {
             <span className='overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]'>
               <FadeInImage src={img.url} alt={img.alt || ''} width={600} height={500} className='rounded-lg w-auto h-auto max-h-[400px] object-contain' />
             </span>
-            {img.caption && <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{img.caption}</span>}
+            {img.caption && <span className='mt-2 text-center text-sm font-serif italic text-muted-foreground'>{img.caption}</span>}
           </span>
         ) : null
       )}
@@ -152,13 +152,13 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         <ScrollReveal>
           <div className='mb-10 pb-8'>
             <h1
-              className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl mb-2 font-serif'
+              className='mb-2 font-sans text-5xl font-bold tracking-tighter text-foreground'
               data-tina-field={tinaField(data, 'title')}
             >
               {data.title}
             </h1>
             {data.subtitle && (
-              <div className='prose dark:prose-invert text-xl text-gray-500 dark:text-gray-400' data-tina-field={tinaField(data, 'subtitle')}>
+              <div className='font-serif text-xl italic text-muted-foreground' data-tina-field={tinaField(data, 'subtitle')}>
                 {typeof data.subtitle === 'string' ? <p>{data.subtitle}</p> : <TinaMarkdown content={data.subtitle} components={markdownComponents} />}
               </div>
             )}
@@ -170,15 +170,15 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* ---------------------------------------------------------------- */}
         <ScrollReveal>
           <div className='mb-8'>
-            <div className='relative flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto'>
+            <div className='relative flex gap-1 border-b border-border/30 overflow-x-auto'>
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   type='button'
                   onClick={() => setActiveTab(tab.id)}
                   className={[
-                    'relative px-4 py-3 text-sm font-medium transition-colors duration-200 focus:outline-none cursor-pointer whitespace-nowrap shrink-0',
-                    activeTab === tab.id ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                    'relative px-4 py-3 font-sans text-xs font-medium uppercase tracking-tight transition-all duration-200 focus:outline-none cursor-pointer whitespace-nowrap shrink-0',
+                    activeTab === tab.id ? 'text-accent-red' : 'text-muted-foreground opacity-70 hover:opacity-100 hover:text-accent-red',
                   ].join(' ')}
                 >
                   {tab.label}
@@ -217,7 +217,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                         sizes='(max-width: 1024px) 100vw, 33vw'
                       />
                     </div>
-                    {data.imageCaption && <div className='text-sm text-center text-gray-500 dark:text-gray-400 italic'>{data.imageCaption}</div>}
+                    {data.imageCaption && <div className='text-center font-serif text-sm italic text-muted-foreground'>{data.imageCaption}</div>}
                   </div>
                 </ScrollReveal>
               )}
@@ -262,8 +262,8 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* ---------------------------------------------------------------- */}
         {data.gallery && data.gallery.length > 0 && (
           <ScrollReveal>
-            <div className='mt-16 pt-8 border-t border-gray-200 dark:border-gray-700'>
-              <h2 className='text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100'>Gallery</h2>
+            <div className='mt-16 pt-8'>
+              <h2 className='mb-6 font-sans text-2xl font-bold tracking-tight text-foreground'>Gallery</h2>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {data.gallery.map((item: any, i: number) => {
                   if (!item?.src) return null;

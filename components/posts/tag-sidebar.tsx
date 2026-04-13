@@ -19,7 +19,7 @@ export function TagSidebar({ tags, activeTag }: TagSidebarProps) {
   return (
     <aside className='hidden lg:block w-56 shrink-0'>
       <div className='sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto'>
-        <h2 className='mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground'>Tags</h2>
+        <h2 className='mb-4 font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>Tags</h2>
         <ul className='space-y-1'>
           {activeTag && (
             <li>

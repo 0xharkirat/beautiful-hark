@@ -40,7 +40,7 @@ const TestimonialCard = ({ testimonial }: { testimonial: PageBlocksTestimonialTe
           <span className="text-muted-foreground block text-sm tracking-wide" data-tina-field={tinaField(testimonial, 'role')}>{testimonial.role}</span>
 
           <blockquote className="mt-3" data-tina-field={tinaField(testimonial, 'quote')}>
-            <p className="text-gray-700 dark:text-gray-300">{testimonial.quote}</p>
+            <p className="text-foreground">{testimonial.quote}</p>
           </blockquote>
         </div>
       </CardContent>

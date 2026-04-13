@@ -72,7 +72,7 @@ export default function PostClientPage(props: ClientPostProps) {
               {formattedUpdatedAt && (
                 <span
                   data-tina-field={tinaField(post, 'updatedAt')}
-                  className='inline-flex items-center rounded-sm border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground'
+                  className='inline-flex items-center rounded-sm bg-[var(--surface-strong)] px-2 py-0.5 text-xs font-medium text-muted-foreground'
                 >
                   Updated {formattedUpdatedAt}
                 </span>
@@ -90,7 +90,7 @@ export default function PostClientPage(props: ClientPostProps) {
 
             {post.heroImg && (
               <div className='mb-12'>
-                <div data-tina-field={tinaField(post, 'heroImg')} className='overflow-hidden rounded-lg border border-border'>
+                <div data-tina-field={tinaField(post, 'heroImg')} className='overflow-hidden rounded-lg bg-[var(--surface-strong)]'>
                   <Image priority src={post.heroImg} alt={post.title} width={1200} height={630} className='h-auto w-full object-cover' />
                 </div>
               </div>

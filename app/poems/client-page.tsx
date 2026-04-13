@@ -39,8 +39,8 @@ function PoemsContent({ data }: { data: PoemConnectionQuery }) {
   return (
     <div className='mx-auto max-w-4xl py-16'>
       <div className='mb-14 text-center'>
-        <h1 className='mb-3 font-serif text-4xl font-semibold tracking-tight md:text-5xl'>Poems</h1>
-        <p className='text-lg text-muted-foreground'>Simple poems written with heart. Some based on real life.</p>
+        <h1 className='mb-3 font-sans text-4xl font-bold tracking-tighter text-foreground md:text-5xl'>Poems</h1>
+        <p className='font-serif text-lg italic text-muted-foreground'>Simple poems written with heart. Some based on real life.</p>
       </div>
 
       {poems.length === 0 ? (
@@ -49,7 +49,7 @@ function PoemsContent({ data }: { data: PoemConnectionQuery }) {
         <div className='grid grid-cols-1 gap-8 sm:grid-cols-2'>
           {poems.map((poem) => (
             <Link key={poem.id} href={poem.url} className='group block'>
-              <article className='h-full rounded-lg border border-border p-6 transition-all duration-200 hover:-translate-y-1 hover:border-accent-red hover:shadow-lg'>
+              <article className='h-full rounded-lg p-6 transition-all duration-200 hover:-translate-y-1 hover:bg-[var(--surface-soft)] hover:shadow-[0_8px_32px_rgba(183,35,1,0.06)]'>
                 <div className='mb-2 flex flex-wrap items-baseline gap-2'>
                   <h2 className='font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-accent-red'>{poem.title}</h2>
                   {poem.language === 'Punjabi' && <span className='rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground'>Punjabi</span>}

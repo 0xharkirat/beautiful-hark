@@ -23,7 +23,7 @@ export async function getGiscusCommentCounts(): Promise<Record<string, number>> 
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
       },
-      next: { revalidate: 600 },
+      next: { revalidate: 86400 },
     });
 
     if (!response.ok) {

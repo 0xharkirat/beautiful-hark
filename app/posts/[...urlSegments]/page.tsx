@@ -6,6 +6,7 @@ import { richTextToPlainText } from '@/lib/rich-text-utils';
 import PostClientPage from './client-page';
 
 export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
+export const dynamicParams = false; // 404 unknown URLs statically — bots probing random slugs were generating ISR writes
 
 export async function generateMetadata({
   params,

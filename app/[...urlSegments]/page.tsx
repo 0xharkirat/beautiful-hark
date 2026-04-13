@@ -7,6 +7,7 @@ import { Section } from '@/components/layout/section';
 import ClientPage from './client-page';
 
 export const revalidate = 86400; // 24hr - cache is busted on every deploy anyway
+export const dynamicParams = false; // 404 unknown URLs statically — bots probing /wp-admin etc. were generating ISR writes
 
 export async function generateMetadata({
   params,

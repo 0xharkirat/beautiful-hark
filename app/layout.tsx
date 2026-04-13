@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/components/theme-provider';
+import { Analytics } from '@vercel/analytics/next';
 import SearchModal from '@/components/ui/SearchModal';
 import { SearchProvider } from '@/components/ui/SearchContext';
 import VideoDialog from '@/components/ui/VideoDialog';
@@ -80,6 +81,7 @@ export default function RootLayout({
           </SearchProvider>
           <TailwindIndicator />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

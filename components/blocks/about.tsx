@@ -23,7 +23,12 @@ const markdownComponents = {
     const url = props.url || props.href;
     const isExternal = url && (url.startsWith('http') || url.startsWith('//'));
     return (
-      <a href={url} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+      <a
+        href={url}
+        target={isExternal ? '_blank' : undefined}
+        rel={isExternal ? 'noopener noreferrer' : undefined}
+        className='text-accent-red underline decoration-accent-red/30 underline-offset-2 transition-all duration-150 hover:decoration-accent-red hover:opacity-80'
+      >
         {props.children}
       </a>
     );
@@ -34,7 +39,7 @@ const markdownComponents = {
         <FadeInImage src={props.url} alt={props.alt || ''} width={800} height={600} className='rounded-lg w-auto h-auto max-h-[500px] object-contain' />
       </span>
       {(props.caption || props.title) && (
-        <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{props.caption || props.title}</span>
+        <span className='mt-2 text-center text-sm font-serif italic text-muted-foreground'>{props.caption || props.title}</span>
       )}
     </span>
   ),
@@ -43,7 +48,7 @@ const markdownComponents = {
       <span className='overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]'>
         <FadeInImage src={props.url} alt={props.alt || ''} width={800} height={600} className='rounded-lg w-auto h-auto max-h-[500px] object-contain' />
       </span>
-      {props.caption && <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{props.caption}</span>}
+      {props.caption && <span className='mt-2 text-center text-sm font-serif italic text-muted-foreground'>{props.caption}</span>}
     </span>
   ),
   ImagePair: (props: any) => (
@@ -57,7 +62,7 @@ const markdownComponents = {
             <span className='overflow-hidden rounded-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.03]'>
               <FadeInImage src={img.url} alt={img.alt || ''} width={600} height={500} className='rounded-lg w-auto h-auto max-h-[400px] object-contain' />
             </span>
-            {img.caption && <span className='mt-2 text-center text-sm text-gray-500 dark:text-gray-400 italic block'>{img.caption}</span>}
+            {img.caption && <span className='mt-2 text-center text-sm font-serif italic text-muted-foreground'>{img.caption}</span>}
           </span>
         ) : null
       )}
@@ -152,13 +157,13 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         <ScrollReveal>
           <div className='mb-10 pb-8'>
             <h1
-              className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl mb-2 font-serif'
+              className='mb-2 font-sans text-5xl font-bold tracking-tighter text-foreground'
               data-tina-field={tinaField(data, 'title')}
             >
               {data.title}
             </h1>
             {data.subtitle && (
-              <div className='prose dark:prose-invert text-xl text-gray-500 dark:text-gray-400' data-tina-field={tinaField(data, 'subtitle')}>
+              <div className='font-serif text-xl italic text-muted-foreground' data-tina-field={tinaField(data, 'subtitle')}>
                 {typeof data.subtitle === 'string' ? <p>{data.subtitle}</p> : <TinaMarkdown content={data.subtitle} components={markdownComponents} />}
               </div>
             )}
@@ -170,15 +175,15 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* ---------------------------------------------------------------- */}
         <ScrollReveal>
           <div className='mb-8'>
-            <div className='relative flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto'>
+            <div className='relative flex gap-1 border-b border-border/30 overflow-x-auto'>
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   type='button'
                   onClick={() => setActiveTab(tab.id)}
                   className={[
-                    'relative px-4 py-3 text-sm font-medium transition-colors duration-200 focus:outline-none cursor-pointer whitespace-nowrap shrink-0',
-                    activeTab === tab.id ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                    'relative px-4 py-3 font-sans text-xs font-medium uppercase tracking-tight transition-all duration-200 focus:outline-none cursor-pointer whitespace-nowrap shrink-0',
+                    activeTab === tab.id ? 'text-accent-red' : 'text-muted-foreground opacity-70 hover:opacity-100 hover:text-accent-red',
                   ].join(' ')}
                 >
                   {tab.label}
@@ -207,7 +212,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
               {data.profileImage && (
                 <ScrollReveal delay={0.2}>
                   <div data-tina-field={tinaField(data, 'profileImage')}>
-                    <div className='relative aspect-square w-full overflow-hidden rounded-t-full mb-4 transition-transform duration-500 hover:scale-[1.03]'>
+                    <div className='relative aspect-square w-full overflow-hidden rounded-t-full mb-4 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_16px_48px_rgba(183,35,1,0.12)]'>
                       <FadeInImage
                         src={data.profileImage}
                         alt={data.title || 'Profile'}
@@ -217,7 +222,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
                         sizes='(max-width: 1024px) 100vw, 33vw'
                       />
                     </div>
-                    {data.imageCaption && <div className='text-sm text-center text-gray-500 dark:text-gray-400 italic'>{data.imageCaption}</div>}
+                    {data.imageCaption && <div className='text-center font-serif text-sm italic text-muted-foreground'>{data.imageCaption}</div>}
                   </div>
                 </ScrollReveal>
               )}
@@ -225,13 +230,13 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
 
             {/* Summary text */}
             <ScrollReveal delay={0.1} className='lg:col-span-2'>
-              <div className='prose dark:prose-invert max-w-none'>
+              <div className='prose max-w-none'>
                 <div data-tina-field={tinaField(data, 'summary')}>
                   <TinaMarkdown content={data.summary} components={markdownComponents} />
                 </div>
               </div>
               <div className='mt-6'>
-                <Link href='/poems' className='inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-accent-red'>
+                <Link href='/poems' className='group inline-flex items-center gap-1.5 font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground transition-all duration-150 hover:gap-2.5 hover:text-accent-red'>
                   Also writes poetry &rarr;
                 </Link>
               </div>
@@ -242,7 +247,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* Career */}
         {activeTab === 'career' && careerSection && (
           <ScrollReveal>
-            <div className='prose dark:prose-invert max-w-none'>
+            <div className='prose max-w-none'>
               <TinaMarkdown content={careerSection.content} components={markdownComponents} />
             </div>
           </ScrollReveal>
@@ -251,7 +256,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* Early Life & Education */}
         {activeTab === 'early-life' && earlyLifeSection && (
           <ScrollReveal>
-            <div className='prose dark:prose-invert max-w-none'>
+            <div className='prose max-w-none'>
               <TinaMarkdown content={earlyLifeSection.content} components={markdownComponents} />
             </div>
           </ScrollReveal>
@@ -262,8 +267,8 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* ---------------------------------------------------------------- */}
         {data.gallery && data.gallery.length > 0 && (
           <ScrollReveal>
-            <div className='mt-16 pt-8 border-t border-gray-200 dark:border-gray-700'>
-              <h2 className='text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100'>Gallery</h2>
+            <div className='mt-16 pt-8'>
+              <h2 className='mb-6 font-sans text-2xl font-bold tracking-tight text-foreground'>Gallery</h2>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {data.gallery.map((item: any, i: number) => {
                   if (!item?.src) return null;

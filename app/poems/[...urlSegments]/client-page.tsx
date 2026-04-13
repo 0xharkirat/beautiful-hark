@@ -82,7 +82,7 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           className='mx-auto max-w-xl py-16'
         >
           {/* Back link */}
-          <Link href='/poems' className='mb-10 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-accent-red'>
+          <Link href='/poems' className='mb-10 inline-flex items-center gap-1 font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-accent-red'>
             &larr; All poems
           </Link>
 
@@ -94,21 +94,21 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           {/* Meta */}
           <div className='mb-10 flex flex-wrap items-center gap-3'>
             {formattedDate && (
-              <span data-tina-field={tinaField(poem, 'date')} className='text-sm text-muted-foreground'>
+              <span data-tina-field={tinaField(poem, 'date')} className='font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground'>
                 {formattedDate}
               </span>
             )}
-            {isPunjabi && <span className='rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground'>Punjabi</span>}
+            {isPunjabi && <span className='rounded-sm bg-[var(--surface-strong)] px-2 py-0.5 text-xs text-muted-foreground'>Punjabi</span>}
           </div>
 
           {/* Poem body */}
           {description && (
-            <details data-tina-field={tinaField(poem, 'description')} className='group mb-8 rounded-md border border-border bg-card/60'>
+            <details data-tina-field={tinaField(poem, 'description')} className='group mb-8 rounded-md bg-[var(--surface-soft)]'>
               <summary className='flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-sans text-sm font-medium text-foreground marker:content-none'>
                 <span>Read the story behind this poem</span>
                 <ChevronDown className='size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180' aria-hidden='true' />
               </summary>
-              <div className='border-t border-border px-4 py-4'>
+              <div className='px-4 py-4'>
                 {description.kind === 'text' ? (
                   <p className='whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/85'>{description.value}</p>
                 ) : (

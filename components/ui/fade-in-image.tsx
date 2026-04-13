@@ -10,8 +10,8 @@ export const FadeInImage = ({ className, alt, ...props }: ImageProps) => {
     return (
         <span className={cn("relative overflow-hidden block", props.fill && "h-full w-full")}>
             {isLoading && (
-                <span className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 block">
-                    <span className="h-full w-full animate-pulse bg-gray-200 dark:bg-gray-700 block" />
+                <span className="absolute inset-0 z-10 flex items-center justify-center bg-muted block">
+                    <span className="h-full w-full animate-pulse bg-[var(--surface-strong)] block" />
                 </span>
             )}
             <Image

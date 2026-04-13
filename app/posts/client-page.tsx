@@ -65,8 +65,8 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
   return (
     <div className='py-2 md:py-4'>
       <div className='mx-auto max-w-3xl pb-8 text-center md:pb-10'>
-        <h1 className='font-serif text-5xl leading-none tracking-[-0.04em] text-foreground md:text-6xl'>All blogs</h1>
-        <p className='mx-auto mt-5 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg'>
+        <h1 className='font-sans text-5xl font-bold tracking-tighter text-foreground md:text-6xl'>All blogs</h1>
+        <p className='mx-auto mt-5 max-w-2xl font-serif text-base italic leading-8 text-muted-foreground md:text-lg'>
           Sharing is caring. Whatever I learn, I try to share clearly.
         </p>
       </div>
@@ -84,12 +84,12 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
           {visiblePosts.length === 0 ? (
             <p className='text-muted-foreground'>No posts found for this tag.</p>
           ) : (
-            <div className='space-y-10'>
+            <div className='space-y-2'>
               {visiblePosts.map((post, index) => {
                 const hasImage = Boolean(post.heroImg);
 
                 return (
-                  <article key={post.id} className='grid gap-5 pt-2 md:grid-cols-[auto_minmax(0,1fr)]'>
+                  <article key={post.id} className='-mx-4 grid gap-5 rounded-lg px-4 py-8 transition-colors hover:bg-[var(--surface-soft)] md:grid-cols-[auto_minmax(0,1fr)]'>
                     <div className='font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
                       {String(index + 1).padStart(2, '0')}
                     </div>
@@ -110,7 +110,7 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
                           )}
                         </div>
 
-                        <h2 className='mt-3 max-w-[18ch] font-serif text-3xl leading-tight tracking-[-0.035em] text-foreground transition-colors hover:text-accent-red md:text-[2.35rem]'>
+                        <h2 className='mt-3 font-serif text-3xl leading-tight tracking-[-0.035em] text-foreground transition-colors hover:text-accent-red md:text-[2.35rem]'>
                           <Link href={post.url}>{post.title}</Link>
                         </h2>
 
@@ -136,7 +136,7 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
 
                       {post.heroImg && (
                         <Link href={post.url} className='group block xl:justify-self-end'>
-                          <div className='relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-border/60 bg-[var(--surface-strong)]'>
+                          <div className='relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-[var(--surface-strong)]'>
                             <Image
                               width={320}
                               height={400}

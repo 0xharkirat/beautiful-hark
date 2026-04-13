@@ -14,10 +14,10 @@ export function TagChip({ name, isActive = false, className }: TagChipProps) {
     <Link
       href={isActive ? '/posts' : `/posts?tag=${encodeURIComponent(name)}`}
       className={cn(
-        'inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-medium transition-colors',
+        'inline-flex items-center rounded-sm px-2 py-0.5 font-sans text-[0.68rem] font-medium uppercase tracking-wide transition-colors',
         isActive
-          ? 'border-accent-red bg-accent-red text-primary-foreground'
-          : 'border-border bg-secondary text-secondary-foreground hover:border-accent-red/60 hover:text-foreground',
+          ? 'bg-accent-red text-primary-foreground'
+          : 'bg-[var(--surface-strong)] text-muted-foreground hover:bg-accent-red/10 hover:text-accent-red',
         className,
       )}
     >

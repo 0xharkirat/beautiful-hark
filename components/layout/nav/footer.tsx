@@ -10,7 +10,7 @@ export const Footer = () => {
   const { header, footer } = globalSettings!;
 
   return (
-    <footer className='border-t bg-background pt-16 font-sans'>
+    <footer className='bg-[var(--surface-soft)] pt-16 font-sans'>
       <div className='mx-auto max-w-6xl px-6'>
         <div className='mt-8 flex flex-col items-center gap-6 py-6 md:flex-row md:justify-between'>
           {/* Poems link: first row on mobile, hidden on md+ (nav handles it there) */}

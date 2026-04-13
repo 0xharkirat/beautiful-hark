@@ -120,7 +120,7 @@
   --secondary: oklch(0.22 0.018 30);
   --secondary-foreground: oklch(0.88 0.010 60);
   --muted: oklch(0.17 0.018 30);
-  --muted-foreground: oklch(0.58 0.022 52);  /* warm mid-tone secondary text  */
+  --muted-foreground: oklch(0.68 0.018 55);  /* warm mid-tone secondary text  */
   --accent: oklch(0.21 0.018 30);
   --accent-foreground: oklch(0.92 0.010 60);
 
@@ -305,6 +305,30 @@
   ::selection {
     background: color-mix(in oklab, var(--accent-red) 18%, transparent);
   }
+}
+
+/* ── Dark prose: override @tailwindcss/typography plugin hardcoded vars ──────
+   Plugin sets --tw-prose-body: gray[700] etc. on .prose — invisible on dark bg.
+   .dark .prose (specificity [0,2,0]) beats plugin's .prose [0,1,0].
+   ─────────────────────────────────────────────────────────────────────────── */
+.dark .prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--foreground);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--accent-red);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-kbd: var(--foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--code-bg);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
 }
 
 /* Prose link styles - must be outside @layer base to override @tailwindcss/typography plugin */

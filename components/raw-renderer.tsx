@@ -68,7 +68,7 @@ export const RawRenderer = ({ rawData, parentColor }) => {
               leaveFrom='opacity-100 scale-100'
               leaveTo='opacity-0 scale-95'
             >
-              <div className='flex-1 w-full prose dark:prose-dark max-w-3xl p-6 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-1000 shadow-xl rounded-xl inline-flex flex-col max-h-full'>
+              <div className='flex-1 w-full prose max-w-3xl p-6 overflow-hidden text-left align-middle transition-all transform bg-background shadow-xl rounded-xl inline-flex flex-col max-h-full'>
                 <pre className='flex-1 overflow-y-auto'>
                   <code>{JSON.stringify(rawData, null, 2)}</code>
                 </pre>

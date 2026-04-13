@@ -112,7 +112,7 @@ export default function PoemClientPage(props: PoemClientPageProps) {
                 {description.kind === 'text' ? (
                   <p className='whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/85'>{description.value}</p>
                 ) : (
-                  <div className='prose prose-sm max-w-none dark:prose-invert'>
+                  <div className='prose prose-sm max-w-none'>
                     <TinaMarkdown content={description.value} />
                   </div>
                 )}
@@ -138,7 +138,7 @@ export default function PoemClientPage(props: PoemClientPageProps) {
               return (
                 <div key={i} className='max-w-[90%] leading-relaxed text-left'>
                   <p className='font-serif text-xl text-foreground'>{text}</p>
-                  {translation && translation.trim().length > 0 && <p className='font-serif text-base text-foreground/75 italic dark:text-foreground/85'>{translation}</p>}
+                  {translation && translation.trim().length > 0 && <p className='font-serif text-base text-foreground/75 italic'>{translation}</p>}
                 </div>
               );
             })}

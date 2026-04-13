@@ -70,7 +70,7 @@ export default function RootLayout({
         <link rel='alternate' type='application/json' title='Tales of Hark JSON Feed' href='/feed.json' />
       </head>
       <body className='min-h-screen bg-background font-sans antialiased'>
-        <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute='class' defaultTheme='dark' disableTransitionOnChange>
           <SearchProvider>
             <VideoDialogProvider>
               {children}

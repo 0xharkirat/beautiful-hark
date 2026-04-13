@@ -23,7 +23,12 @@ const markdownComponents = {
     const url = props.url || props.href;
     const isExternal = url && (url.startsWith('http') || url.startsWith('//'));
     return (
-      <a href={url} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined}>
+      <a
+        href={url}
+        target={isExternal ? '_blank' : undefined}
+        rel={isExternal ? 'noopener noreferrer' : undefined}
+        className='text-accent-red underline decoration-accent-red/30 underline-offset-2 transition-all duration-150 hover:decoration-accent-red hover:opacity-80'
+      >
         {props.children}
       </a>
     );
@@ -207,7 +212,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
               {data.profileImage && (
                 <ScrollReveal delay={0.2}>
                   <div data-tina-field={tinaField(data, 'profileImage')}>
-                    <div className='relative aspect-square w-full overflow-hidden rounded-t-full mb-4 transition-transform duration-500 hover:scale-[1.03]'>
+                    <div className='relative aspect-square w-full overflow-hidden rounded-t-full mb-4 transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_16px_48px_rgba(183,35,1,0.12)]'>
                       <FadeInImage
                         src={data.profileImage}
                         alt={data.title || 'Profile'}
@@ -225,13 +230,13 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
 
             {/* Summary text */}
             <ScrollReveal delay={0.1} className='lg:col-span-2'>
-              <div className='prose dark:prose-invert max-w-none'>
+              <div className='prose max-w-none'>
                 <div data-tina-field={tinaField(data, 'summary')}>
                   <TinaMarkdown content={data.summary} components={markdownComponents} />
                 </div>
               </div>
               <div className='mt-6'>
-                <Link href='/poems' className='inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-accent-red'>
+                <Link href='/poems' className='group inline-flex items-center gap-1.5 font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground transition-all duration-150 hover:gap-2.5 hover:text-accent-red'>
                   Also writes poetry &rarr;
                 </Link>
               </div>
@@ -242,7 +247,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* Career */}
         {activeTab === 'career' && careerSection && (
           <ScrollReveal>
-            <div className='prose dark:prose-invert max-w-none'>
+            <div className='prose max-w-none'>
               <TinaMarkdown content={careerSection.content} components={markdownComponents} />
             </div>
           </ScrollReveal>
@@ -251,7 +256,7 @@ export const About = ({ data }: { data: PageBlocksAbout }) => {
         {/* Early Life & Education */}
         {activeTab === 'early-life' && earlyLifeSection && (
           <ScrollReveal>
-            <div className='prose dark:prose-invert max-w-none'>
+            <div className='prose max-w-none'>
               <TinaMarkdown content={earlyLifeSection.content} components={markdownComponents} />
             </div>
           </ScrollReveal>

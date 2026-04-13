@@ -90,7 +90,17 @@ export default function PostClientPage(props: ClientPostProps) {
 
             {post.heroImg && (
               <div className='mb-12'>
-                <div data-tina-field={tinaField(post, 'heroImg')} className='overflow-hidden rounded-lg bg-[var(--surface-strong)]'>
+                <div
+                  data-tina-field={tinaField(post, 'heroImg')}
+                  className={`overflow-hidden rounded-lg bg-[var(--surface-strong)] ${
+                    {
+                      sm: 'mx-auto max-w-xs',
+                      md: 'mx-auto max-w-md',
+                      lg: 'mx-auto max-w-2xl',
+                      full: '',
+                    }[post.heroImgWidth ?? 'full'] ?? ''
+                  }`}
+                >
                   <Image priority src={post.heroImg} alt={post.title} width={1200} height={630} className='h-auto w-full object-cover' />
                 </div>
               </div>

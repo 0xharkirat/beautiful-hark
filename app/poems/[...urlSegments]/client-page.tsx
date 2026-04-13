@@ -82,7 +82,7 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           className='mx-auto max-w-xl py-16'
         >
           {/* Back link */}
-          <Link href='/poems' className='mb-10 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-accent-red'>
+          <Link href='/poems' className='mb-10 inline-flex items-center gap-1 font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-accent-red'>
             &larr; All poems
           </Link>
 
@@ -94,7 +94,7 @@ export default function PoemClientPage(props: PoemClientPageProps) {
           {/* Meta */}
           <div className='mb-10 flex flex-wrap items-center gap-3'>
             {formattedDate && (
-              <span data-tina-field={tinaField(poem, 'date')} className='text-sm text-muted-foreground'>
+              <span data-tina-field={tinaField(poem, 'date')} className='font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground'>
                 {formattedDate}
               </span>
             )}

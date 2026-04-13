@@ -110,7 +110,7 @@ function PostsContent({ data, commentCounts }: { data: PostConnectionQuery; comm
                           )}
                         </div>
 
-                        <h2 className='mt-3 max-w-[18ch] font-serif text-3xl leading-tight tracking-[-0.035em] text-foreground transition-colors hover:text-accent-red md:text-[2.35rem]'>
+                        <h2 className='mt-3 font-serif text-3xl leading-tight tracking-[-0.035em] text-foreground transition-colors hover:text-accent-red md:text-[2.35rem]'>
                           <Link href={post.url}>{post.title}</Link>
                         </h2>
 

@@ -89,7 +89,7 @@ function TocLink({
       href={`#${item.id}`}
       onClick={onClick}
       className={[
-        'block py-1 text-sm leading-snug transition-colors duration-150',
+        'block py-1 font-sans text-sm leading-snug transition-colors duration-150',
         item.level === 3 ? 'pl-4' : 'pl-0',
         active
           ? 'font-medium text-foreground'
@@ -117,7 +117,7 @@ function MobileToc({ items, activeId }: { items: TocItem[]; activeId: string }) 
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label='Toggle table of contents'
-        className='flex items-center gap-1.5 rounded-md border border-border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-md backdrop-blur-sm transition-colors hover:bg-muted'
+        className='flex items-center gap-1.5 rounded-md bg-background/90 px-3 py-1.5 font-sans text-xs font-medium shadow-[0_2px_12px_rgba(27,27,28,0.08)] backdrop-blur-sm transition-colors hover:bg-[var(--surface-soft)]'
       >
         <span className='sr-only sm:not-sr-only'>On this page</span>
         {/* Hamburger / X icon */}
@@ -158,12 +158,12 @@ function MobileToc({ items, activeId }: { items: TocItem[]; activeId: string }) 
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
             aria-label='Table of contents'
-            className='absolute right-0 top-10 w-64 rounded-lg border border-border bg-background/95 p-4 shadow-xl backdrop-blur-sm'
+            className='absolute right-0 top-10 w-64 rounded-lg bg-background/95 p-4 shadow-[0_8px_32px_rgba(27,27,28,0.1)] backdrop-blur-sm'
           >
-            <p className='mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground'>
+            <p className='mb-2 font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
               On this page
             </p>
-            <div className='space-y-0.5 border-l border-border pl-3'>
+            <div className='space-y-0.5 border-l border-border/20 pl-3'>
               {items.map((item) => (
                 <TocLink
                   key={item.id}
@@ -199,10 +199,10 @@ export function TableOfContents({ articleSelector }: TableOfContentsProps) {
       >
         {items.length > 0 && (
           <>
-            <p className='mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground'>
+            <p className='mb-3 font-sans text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground'>
               On this page
             </p>
-            <div className='space-y-0.5 border-l border-border pl-4'>
+            <div className='space-y-0.5 border-l border-border/20 pl-4'>
               {items.map((item) => (
                 <TocLink key={item.id} item={item} active={activeId === item.id} />
               ))}

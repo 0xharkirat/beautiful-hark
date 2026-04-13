@@ -66,7 +66,7 @@ export default function PostClientPage(props: ClientPostProps) {
             </h1>
 
             <div className='mb-12 flex flex-wrap items-center gap-3'>
-              <span data-tina-field={tinaField(post, 'date')} className='text-sm text-muted-foreground'>
+              <span data-tina-field={tinaField(post, 'date')} className='font-sans text-xs uppercase tracking-[0.18em] text-muted-foreground'>
                 {formattedDate}
               </span>
               {formattedUpdatedAt && (
@@ -96,7 +96,7 @@ export default function PostClientPage(props: ClientPostProps) {
               </div>
             )}
 
-            <div data-tina-field={tinaField(post, '_body')} className='prose dark:prose-invert max-w-none'>
+            <div data-tina-field={tinaField(post, '_body')} className='prose max-w-none'>
               <TinaMarkdown
                 content={post._body}
                 components={{

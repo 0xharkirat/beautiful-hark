@@ -1,0 +1,95 @@
+---
+import Base from '../../layouts/Base.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import PostBody from '../../components/islands/PostBody.astro';
+import { getPost, listPosts } from '../../lib/data';
+import { islands } from '../../lib/islands';
+
+export async function getStaticPaths() {
+  const posts = await listPosts();
+  return posts.map((node, i) => ({
+    params: { slug: node._sys.filename },
+    props: {
+      prev: posts[i + 1]
+        ? { slug: posts[i + 1]._sys.filename, title: posts[i + 1].title }
+        : null,
+      next: posts[i - 1]
+        ? { slug: posts[i - 1]._sys.filename, title: posts[i - 1].title }
+        : null,
+    },
+  }));
+}
+
+const slug = (Astro.params.slug ?? '').toString();
+const { prev, next } = Astro.props as any;
+const post = await getPost(slug);
+const data = post.data?.post;
+if (!data) return new Response('Not Found', { status: 404 });
+
+function flatten(rich: any): string {
+  if (!rich) return '';
+  return (rich.children ?? [])
+    .flatMap((c: any) => c?.children ?? [])
+    .map((c: any) => c?.text ?? '')
+    .join(' ')
+    .trim();
+}
+
+const excerpt = flatten((data as any).excerpt);
+const description = excerpt
+  ? excerpt.slice(0, 200)
+  : `Read "${data.title}" on Tales of Hark.`;
+---
+
+<Base
+  title={data.title ?? 'Post'}
+  description={description}
+  image={(data as any).heroImg ?? undefined}
+>
+  <TinaIsland
+    name="post"
+    wrapper={islands.post.wrapper}
+    params={{ slug }}
+    primary
+  >
+    <PostBody data={data} />
+  </TinaIsland>
+
+  {(prev || next) && (
+    <nav class="column mt-16" aria-label="More writing">
+      <hr class="rule" />
+      <div class="mt-6 flex flex-col gap-4">
+        {next && (
+          <a href={`/posts/${next.slug}`} class="adjacent">
+            <span class="meta">next</span>
+            <span class="serif">{next.title}</span>
+          </a>
+        )}
+        {prev && (
+          <a href={`/posts/${prev.slug}`} class="adjacent">
+            <span class="meta">previous</span>
+            <span class="serif">{prev.title}</span>
+          </a>
+        )}
+      </div>
+    </nav>
+  )}
+</Base>
+
+<style>
+  .adjacent {
+    display: grid;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .adjacent .serif {
+    font-size: 17px;
+    line-height: 1.35;
+    transition: text-decoration-color 0.15s ease;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+  }
+  .adjacent:hover .serif { text-decoration-color: var(--accent); }
+</style>

@@ -1,0 +1,49 @@
+{
+  "header": {
+    "logo": "/uploads/hark-logo.svg",
+    "name": "Tales of Hark",
+    "nav": [
+      { "href": "/", "label": "Home" },
+      { "href": "/about", "label": "About" },
+      { "href": "/posts", "label": "Blog" },
+      { "href": "/poems", "label": "Poems" }
+    ]
+  },
+  "footer": {
+    "columns": [
+      {
+        "heading": "Read",
+        "links": [
+          { "label": "Latest posts", "href": "/posts" },
+          { "label": "Poetry", "href": "/poems" },
+          { "label": "About", "href": "/about" }
+        ]
+      },
+      {
+        "heading": "Follow",
+        "links": [
+          { "label": "RSS", "href": "/feed.xml" },
+          { "label": "Atom", "href": "/atom.xml" },
+          { "label": "JSON Feed", "href": "/feed.json" }
+        ]
+      }
+    ],
+    "social": [
+      { "icon": { "name": "ssw-icon" }, "url": "https://ssw.com.au/people/hark-singh" },
+      { "icon": { "name": "FaLinkedin" }, "url": "https://www.linkedin.com/in/talesofhark" },
+      { "icon": { "name": "FaGithub" }, "url": "https://github.com/0xHARKIRAT" },
+      { "icon": { "name": "FaYoutube" }, "url": "https://www.youtube.com/@TalesofHark" },
+      { "icon": { "name": "FaXTwitter" }, "url": "https://x.com/TalesofHark" }
+    ],
+    "tagline": {
+      "label": "Memento Homo",
+      "url": "https://www.omerisms.com/blog/2022/11/18/memento-homo",
+      "suffix": " — Remember, you are only a man."
+    },
+    "colophon": {
+      "prefix": "Built with ",
+      "label": "TinaCMS",
+      "url": "https://tina.io"
+    }
+  }
+}

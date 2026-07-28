@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import PoemBody from '../../components/islands/PoemBody.astro';
+import { getPoem, listPoems } from '../../lib/data';
+import { islands } from '../../lib/islands';
+
+export async function getStaticPaths() {
+  const poems = await listPoems();
+  const entry = (p: (typeof poems)[number] | undefined) =>
+    p ? { slug: p._sys.filename, title: p.title, lang: p.language } : null;
+
+  return poems.map((node, i) => ({
+    params: { slug: node._sys.filename },
+    props: { prev: entry(poems[i + 1]), next: entry(poems[i - 1]) },
+  }));
+}
+
+const slug = (Astro.params.slug ?? '').toString();
+const { prev, next } = Astro.props as any;
+const poem = await getPoem(slug);
+const data = poem.data?.poem;
+if (!data) return new Response('Not Found', { status: 404 });
+
+const isPa = (lang?: string | null) => (lang ?? '').toLowerCase() === 'punjabi';
+---
+
+<Base title={data.title ?? 'Poem'} description={`A poem — ${data.title}`}>
+  <TinaIsland
+    name="poem"
+    wrapper={islands.poem.wrapper}
+    params={{ slug }}
+    primary
+  >
+    <PoemBody data={data} />
+  </TinaIsland>
+
+  {(prev || next) && (
+    <nav class="column mt-16" aria-label="More poems">
+      <hr class="rule" />
+      <div class="mt-6 flex flex-col gap-4">
+        {next && (
+          <a href={`/poems/${next.slug}`} class="adjacent">
+            <span class="meta">next</span>
+            <span class:list={[isPa(next.lang) ? 'gurmukhi' : 'serif']}>
+              {next.title}
+            </span>
+          </a>
+        )}
+        {prev && (
+          <a href={`/poems/${prev.slug}`} class="adjacent">
+            <span class="meta">previous</span>
+            <span class:list={[isPa(prev.lang) ? 'gurmukhi' : 'serif']}>
+              {prev.title}
+            </span>
+          </a>
+        )}
+      </div>
+    </nav>
+  )}
+</Base>
+
+<style>
+  .adjacent {
+    display: grid;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .adjacent > span:last-child {
+    font-size: 17px;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .adjacent:hover > span:last-child { text-decoration-color: var(--accent); }
+</style>

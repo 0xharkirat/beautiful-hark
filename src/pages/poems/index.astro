@@ -1,0 +1,61 @@
+---
+import Base from '../../layouts/Base.astro';
+import { listPoems } from '../../lib/data';
+
+const poems = await listPoems();
+const shortDate = (d?: string | null) =>
+  d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+---
+
+<Base
+  title="Poems"
+  description="Small poems, mostly written in the morning. Some in English, some in Gurmukhi."
+>
+  <div class="column">
+    <h1>Poems</h1>
+    <p class="serif intro mt-3">
+      Small poems, mostly written in the morning. Some in English, some in
+      Gurmukhi. None of them are very loud.
+    </p>
+
+    <ul class="mt-10 flex flex-col gap-5">
+      {poems.map((p) => {
+        const pa = (p.language ?? '').toLowerCase() === 'punjabi';
+        return (
+          <li>
+            <a href={`/poems/${p._sys.filename}`} class="entry">
+              <span class:list={['title', pa ? 'gurmukhi' : 'serif']}>
+                {p.title}
+              </span>
+              <span class="meta">{shortDate(p.date)}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .intro {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  .entry {
+    display: grid;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .entry .title {
+    font-size: 18px;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .entry:hover .title { text-decoration-color: var(--accent); }
+</style>

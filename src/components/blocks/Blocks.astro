@@ -1,0 +1,23 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import About from './About.astro';
+import Hero from './Hero.astro';
+import type { CmsPage } from '../../lib/data';
+
+interface Props {
+  data?: CmsPage | null;
+}
+
+const { data } = Astro.props;
+const blocks = (data?.blocks ?? []).filter((b) => b !== null);
+---
+
+{blocks.map((block) => {
+  const rendered = (() => {
+    switch (block.__typename) {
+      case 'PageBlocksAbout': return <About data={block} />;
+      case 'PageBlocksHero': return <Hero data={block} />;
+    }
+  })();
+  return <div data-tina-field={tinaField(block)}>{rendered}</div>;
+})}

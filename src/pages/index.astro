@@ -1,0 +1,106 @@
+---
+import Base from '../layouts/Base.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import PageBody from '../components/islands/PageBody.astro';
+import { getPage, listPoems, listPosts } from '../lib/data';
+import { islands } from '../lib/islands';
+
+const home = await getPage('home');
+const data = home.data?.page;
+const posts = (await listPosts()).slice(0, 4);
+const poems = (await listPoems()).slice(0, 3);
+
+const shortDate = (d?: string | null) =>
+  d
+    ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: '2-digit' })
+    : '';
+---
+
+<Base
+  title={data?.title ?? 'Tales of Hark'}
+  description="Code, words, and quiet poems."
+>
+  <TinaIsland
+    name="page"
+    wrapper={islands.page.wrapper}
+    params={{ slug: 'home' }}
+    primary
+  >
+    <PageBody data={data} />
+  </TinaIsland>
+
+  {posts.length > 0 && (
+    <section class="column mt-16">
+      <h2 class="section">Writing</h2>
+      <ul class="mt-4 flex flex-col gap-5">
+        {posts.map((p) => (
+          <li>
+            <a href={`/posts/${p._sys.filename}`} class="entry">
+              <span class="serif title">{p.title}</span>
+              <span class="meta">{shortDate(p.date)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <!-- .tap sets margin-block, so spacing goes on a wrapper, not the link -->
+      <div class="mt-7">
+        <a href="/posts" class="quiet tap">all writing</a>
+      </div>
+    </section>
+  )}
+
+  {poems.length > 0 && (
+    <section class="column mt-14">
+      <h2 class="section">Poems</h2>
+      <ul class="mt-4 flex flex-col gap-5">
+        {poems.map((p) => {
+          const pa = (p.language ?? '').toLowerCase() === 'punjabi';
+          return (
+            <li>
+              <a href={`/poems/${p._sys.filename}`} class="entry">
+                <span class:list={['title', pa ? 'gurmukhi' : 'serif']}>
+                  {p.title}
+                </span>
+                <span class="meta">{shortDate(p.date)}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      <div class="mt-7">
+        <a href="/poems" class="quiet tap">all poems</a>
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .section {
+    font-size: 17px;
+    color: var(--ink-2);
+  }
+
+  .entry {
+    display: grid;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .entry .title {
+    font-size: 18px;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .entry:hover .title { text-decoration-color: var(--accent); }
+
+  .quiet {
+    font-size: 14px;
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .quiet:hover { color: var(--ink); }
+</style>

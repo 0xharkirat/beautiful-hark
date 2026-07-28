@@ -1,0 +1,271 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/newsreader';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/noto-sans-gurmukhi';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Metric-matched Arial fallback so the Inter swap doesn't reflow (CLS). */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}
+
+@theme inline {
+  /* Serif is what Hark wrote. Sans is what the site says. */
+  --font-serif: 'Newsreader Variable', 'Iowan Old Style', Charter, Georgia, serif;
+  --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-gurmukhi: 'Noto Sans Gurmukhi Variable', 'Mukta Mahee', sans-serif;
+
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+}
+
+/*
+  Six greys, one accent. --accent points at --ink today, so the site is
+  black-and-white. Point it somewhere else and every link, focus ring and
+  rule turns with it — no other edit needed.
+*/
+:root {
+  --paper: #faf9f7;
+  --raised: #ffffff;
+  --ink: #161614;      /* 17.2:1 on paper */
+  --ink-2: #5c5b57;    /*  6.5:1 */
+  --ink-3: #6f6e6a;    /*  4.9:1 — the quietest grey that still clears AA */
+  --rule: #e6e5e1;
+  --accent: var(--ink);
+
+  /* One column. Everything lives inside it. */
+  --measure: 640px;
+  --gutter: 24px;
+}
+
+.dark {
+  --paper: #131312;
+  --raised: #1a1a18;
+  --ink: #eceae5;      /* 15.5:1 on paper */
+  --ink-2: #9d9b95;    /*  6.7:1 */
+  --ink-3: #8b8a84;    /*  5.4:1 */
+  --rule: #333330;
+  --accent: var(--ink);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Headings are Hark's voice, so serif. Sizes stay modest on purpose —
+     a title should introduce the writing, not replace it. */
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 { font-size: 32px; }
+  h2 { font-size: 22px; }
+  h3 { font-size: 18px; }
+  h4 { font-size: 16px; }
+
+  a { color: inherit; }
+
+  /* Focus is the accent, so it moves with the theme. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: var(--gutter);
+    z-index: 60;
+    padding: 8px 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 14px;
+    border-radius: 4px;
+  }
+  .skip-link:focus { top: 12px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ── The column ─────────────────────────────────────────────────────── */
+
+.column {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ── Small shared pieces ────────────────────────────────────────────── */
+
+.meta {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.mono { font-family: var(--font-mono); }
+.serif { font-family: var(--font-serif); }
+.gurmukhi { font-family: var(--font-gurmukhi); }
+
+/*
+  Small inline links (nav, footer) render as ~22px of text — under the 24px
+  WCAG 2.2 minimum and well under the 44px comfortable target. Pad the hit
+  area out and pull the same amount back as negative margin, so the box
+  grows to 44px without moving anything on screen.
+
+  Because this sets margin-block, a `mt-*` utility on the SAME element is
+  silently overridden. Put spacing on a wrapper instead.
+*/
+.tap {
+  padding-block: 11px;
+  margin-block: -11px;
+}
+
+/* Quiet link: underline sits close, thickens on hover. No colour change,
+   because there is no colour. */
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--ink-3);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s ease;
+}
+.link:hover { text-decoration-color: var(--accent); }
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+/* ── Reading ────────────────────────────────────────────────────────── */
+
+.prose {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.prose > * + * { margin-top: 1.25em; }
+
+.prose h2 { font-size: 22px; margin-top: 2em; }
+.prose h3 { font-size: 18px; margin-top: 1.75em; }
+
+.prose a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--ink-3);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.prose a:hover { text-decoration-color: var(--accent); }
+
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li + li { margin-top: 0.4em; }
+
+.prose blockquote {
+  border-left: 2px solid var(--rule);
+  padding-left: 1em;
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.prose img,
+.prose video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin-block: 2.5em;
+}
+
+/* Code stays sans-adjacent: mono, small, on a faint raised surface. */
+.prose code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--ink) 6%, transparent);
+}
+
+.prose pre {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 16px;
+  border-radius: 4px;
+  overflow-x: auto;
+  background: color-mix(in oklab, var(--ink) 5%, transparent);
+  border: 1px solid var(--rule);
+}
+.prose pre code { font-size: inherit; }
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.prose th, .prose td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.prose th { font-weight: 600; }

@@ -3,9 +3,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 env:
-  NEXT_PUBLIC_TINA_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_TINA_CLIENT_ID }}
+  # tina/config.ts reads PUBLIC_TINA_CLIENT_ID and GITHUB_BRANCH. The
+  # NEXT_PUBLIC_* names are Next.js-era and are not read by anything now.
+  # Fall back to the old secret name so this keeps working whether or not
+  # the repository secret has been renamed alongside the Vercel variable.
+  PUBLIC_TINA_CLIENT_ID: ${{ secrets.PUBLIC_TINA_CLIENT_ID || secrets.NEXT_PUBLIC_TINA_CLIENT_ID }}
   TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
-  NEXT_PUBLIC_TINA_BRANCH: ${{ github.head_ref }}
+  GITHUB_BRANCH: ${{ github.head_ref }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +25,10 @@ jobs:
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 9
+          # 10, not 9: pnpm-workspace.yaml carries onlyBuiltDependencies, which
+          # is pnpm 10+ syntax. Under 9 that file is ignored and better-sqlite3
+          # and sharp silently skip their build scripts.
+          version: 10
           run_install: false
 
       - name: Get pnpm store directory

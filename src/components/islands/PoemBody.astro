@@ -1,0 +1,66 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { CmsPoem } from '../../lib/data';
+
+interface Props { data?: CmsPoem | null; }
+
+const { data } = Astro.props;
+const isPa = (data?.language ?? '').toLowerCase() === 'punjabi';
+const date = data?.date
+  ? new Date(data.date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+    })
+  : '';
+const lines = (data?.lines ?? []).filter((l) => l !== null);
+---
+
+{data && (
+  <div class="column">
+    <header class="mb-10">
+      <h1
+        data-tina-field={tinaField(data, 'title')}
+        class:list={[isPa ? 'gurmukhi' : 'serif']}
+      >
+        {data.title}
+      </h1>
+      {date && <p class="meta mt-2">{date}</p>}
+    </header>
+
+    <div data-tina-field={tinaField(data, 'lines')} class="poem">
+      {lines.map((line) => {
+        const text = line?.text ?? '';
+        const translation = line?.translation?.trim() ?? '';
+        return (
+          <p class:list={['line', { blank: !text.trim() }]}>
+            <span class:list={[isPa ? 'gurmukhi' : 'serif']}>{text || ' '}</span>
+            {translation && <span class="serif translation">{translation}</span>}
+          </p>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+<style>
+  .poem {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1em;
+  }
+  .line {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .line.blank { min-height: 0.5em; }
+  .translation {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+</style>

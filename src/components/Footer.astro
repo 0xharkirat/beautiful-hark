@@ -1,0 +1,73 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { CmsGlobal } from '../lib/data';
+
+interface Props {
+  config?: CmsGlobal | null;
+}
+
+const LABELS: Record<string, string> = {
+  FaGithub: 'github',
+  FaXTwitter: 'x',
+  FaLinkedin: 'linkedin',
+  FaYoutube: 'youtube',
+  FaFacebookF: 'facebook',
+  AiFillInstagram: 'instagram',
+  'ssw-icon': 'ssw',
+};
+
+function label(raw?: string | null) {
+  if (!raw) return '';
+  if (LABELS[raw]) return LABELS[raw];
+  return raw.replace(/^(Fa6?|Ai(Fill|Outline)?|Bi)/i, '').toLowerCase() || raw;
+}
+
+const { config } = Astro.props;
+const footer = config?.footer ?? null;
+const social = (footer?.social ?? []).filter((s) => s !== null);
+const tagline = footer?.tagline ?? null;
+---
+
+<footer class="column pt-10 pb-16 mt-20">
+  <hr class="rule" />
+
+  <!-- gap-y clears the .tap negative margins so wrapped rows can't overlap -->
+  <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-6">
+    <a href="/feed.xml" class="quiet tap">rss</a>
+    {social.map((s) => (
+      <a
+        href={s.url ?? '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-tina-field={tinaField(s, 'url')}
+        class="quiet tap"
+      >
+        {label(s.icon?.name)}
+      </a>
+    ))}
+  </div>
+
+  {tagline?.label && (
+    <p class="serif mt-6 italic" style="font-size: 15px; color: var(--ink-3);">
+      <a
+        href={tagline.url ?? '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-tina-field={tinaField(tagline, 'label')}
+        class="link"
+      >{tagline.label}</a>{tagline.suffix && (
+        <span data-tina-field={tinaField(tagline, 'suffix')}>{tagline.suffix}</span>
+      )}
+    </p>
+  )}
+</footer>
+
+<style>
+  .quiet {
+    font-size: 14px;
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .quiet:hover { color: var(--ink); }
+</style>

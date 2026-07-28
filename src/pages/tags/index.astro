@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import { listPosts } from '../../lib/data';
+
+const posts = await listPosts();
+const counts = new Map<string, number>();
+for (const p of posts) {
+  for (const t of p.tags ?? []) {
+    const n = t?.tag?.name;
+    if (n) counts.set(n, (counts.get(n) ?? 0) + 1);
+  }
+}
+const all = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '-');
+---
+
+<Base title="Tags" description="Browse writing by tag.">
+  <div class="column">
+    <h1>Tags</h1>
+    <p class="meta mt-2">{all.length} tags across {posts.length} posts</p>
+
+    <ul class="mt-8 flex flex-col gap-3">
+      {all.map(([name, n]) => (
+        <li>
+          <a href={`/tags/${slug(name)}`} class="entry">
+            <span class="serif title">{name}</span>
+            <span class="meta">{n}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .entry {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .entry .title {
+    font-size: 17px;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .entry:hover .title { text-decoration-color: var(--accent); }
+</style>

@@ -1,0 +1,105 @@
+---
+/**
+ * Hark logo with cursor-following eyes.
+ *
+ * Body = a 128px raster. The source /uploads/hark-logo.svg is 2.1MB of traced
+ * geometry (2,602 paths); it was read at build time and inlined into every
+ * page, then rendered at 32px. The viewBox stays at the SVG's original
+ * 2048x2048, so the eye coordinates below are unchanged.
+ *
+ * Eyes = 4 SVG circles drawn on top (pupil + specular highlight, x2). The
+ * artwork has empty eye sockets - these circles are the pupils, which is why
+ * they stay vector while the body does not.
+ */
+interface Props {
+  className?: string;
+  trackEyes?: boolean;
+  size?: number;
+}
+
+const { className = 'size-10', trackEyes = false, size } = Astro.props;
+---
+
+<span class={`hark-logo inline-flex items-center justify-center overflow-hidden rounded-full ${className}`}
+      style={`background: var(--raised); ${size ? `width:${size}px;height:${size}px;` : ''}`}
+      data-track={trackEyes ? 'true' : 'false'}>
+  <svg
+    viewBox="0 0 2048 2048"
+    width="100%"
+    height="100%"
+    aria-hidden="true"
+    style="display:block;"
+  >
+    <image
+      class="hark-body"
+      href="/hark-logo-128.webp"
+      x="0"
+      y="0"
+      width="2048"
+      height="2048"
+      style="transition: transform 0.15s ease-out;"
+    />
+    <g class="hark-eyes" style="transition: transform 0.1s ease-out;">
+      <circle cx="808" cy="1107" r="60" fill="#070A09" />
+      <circle cx="828" cy="1087" r="14" fill="#FFFFFF" />
+      <circle cx="1312" cy="1106" r="60" fill="#070A09" />
+      <circle cx="1332" cy="1086" r="14" fill="#FFFFFF" />
+    </g>
+  </svg>
+</span>
+
+<script is:inline>
+  /*
+    One window listener for the life of the tab, not one per logo per
+    navigation. The previous version re-bound on astro:after-swap, which added
+    a fresh mousemove listener on every page change and leaked the detached
+    node each old listener closed over. Querying the DOM inside the handler
+    costs a rAF-throttled querySelectorAll and needs no bookkeeping, so logos
+    that arrive after a swap are picked up for free.
+  */
+  if (!window.__harkLogoBound) {
+    window.__harkLogoBound = true;
+
+    const MID_X = (808 + 1312) / 2;
+    const MID_Y = (1107 + 1106) / 2;
+    const EYE_MAX = 45;
+    const BODY_MAX = 20;
+
+    // Push toward the cursor, but never further than `max` SVG units.
+    const clamp = (sx, sy, max) => {
+      const dx = sx - MID_X;
+      const dy = sy - MID_Y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      const s = d > 0 ? Math.min(max, d) / d : 0;
+      return { x: dx * s, y: dy * s };
+    };
+
+    let raf = null;
+    window.addEventListener(
+      'mousemove',
+      (e) => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = null;
+          document
+            .querySelectorAll('.hark-logo[data-track="true"]')
+            .forEach((node) => {
+              const svg = node.querySelector('svg');
+              const body = node.querySelector('.hark-body');
+              const eyes = node.querySelector('.hark-eyes');
+              if (!svg || !body || !eyes) return;
+              const r = svg.getBoundingClientRect();
+              if (!r.width) return;
+              const sx = ((e.clientX - r.left) / r.width) * 2048;
+              const sy = ((e.clientY - r.top) / r.height) * 2048;
+              const b = clamp(sx, sy, BODY_MAX);
+              const o = clamp(sx, sy, EYE_MAX);
+              body.style.transform = `translate(${b.x}px, ${b.y}px)`;
+              eyes.style.transform = `translate(${o.x}px, ${o.y}px)`;
+            });
+        });
+      },
+      { passive: true }
+    );
+  }
+</script>

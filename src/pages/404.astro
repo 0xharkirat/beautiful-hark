@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Not found" description="This page drifted away.">
+  <div class="column">
+    <h1>Not found</h1>
+    <p class="serif body mt-3">
+      This page drifted away, or never existed. The parts that do:
+    </p>
+    <ul class="mt-6 flex flex-wrap gap-x-4 gap-y-1">
+      <li><a href="/" class="link">home</a></li>
+      <li><a href="/posts" class="link">writing</a></li>
+      <li><a href="/poems" class="link">poems</a></li>
+      <li><a href="/about" class="link">about</a></li>
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .body {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+</style>

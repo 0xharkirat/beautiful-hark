@@ -1,0 +1,115 @@
+---
+import { Image } from 'astro:assets';
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { AboutBlock } from '../../lib/data';
+
+interface Props { data: AboutBlock }
+
+const { data } = Astro.props;
+const sections = (data.sections ?? []).filter((s) => s !== null);
+const gallery = (data.gallery ?? []).filter((g) => g !== null);
+---
+
+<section class="column">
+  {data.title && <h1 data-tina-field={tinaField(data, 'title')}>{data.title}</h1>}
+
+  {data.subtitle && (
+    <div data-tina-field={tinaField(data, 'subtitle')} class="subtitle mt-3">
+      <TinaMarkdown content={data.subtitle} />
+    </div>
+  )}
+
+  {data.profileImage && (
+    <figure class="portrait" data-tina-field={tinaField(data, 'profileImage')}>
+      <Image
+        src={data.profileImage}
+        alt={data.imageCaption ?? ''}
+        width={1280}
+        height={854}
+        format="webp"
+        quality={82}
+      />
+      {data.imageCaption && (
+        <figcaption
+          data-tina-field={tinaField(data, 'imageCaption')}
+          class="meta mt-2"
+        >
+          {data.imageCaption}
+        </figcaption>
+      )}
+    </figure>
+  )}
+
+  {data.summary && (
+    <div data-tina-field={tinaField(data, 'summary')} class="prose mt-8">
+      <TinaMarkdown content={data.summary} />
+    </div>
+  )}
+
+  {sections.map((section) => (
+    <section class="mt-12" data-tina-field={tinaField(section)}>
+      {section.title && <h2>{section.title}</h2>}
+      {section.content && (
+        <div class="prose mt-3">
+          <TinaMarkdown content={section.content} />
+        </div>
+      )}
+    </section>
+  ))}
+
+  {gallery.length > 0 && (
+    <div data-tina-field={tinaField(data, 'gallery')} class="gallery mt-12">
+      {gallery.map((g) => (
+        <figure>
+          {g.url && (
+            <Image
+              src={g.url}
+              alt={g.alt ?? ''}
+              width={800}
+              height={600}
+              format="webp"
+              quality={80}
+            />
+          )}
+          {g.caption && <figcaption class="meta mt-2">{g.caption}</figcaption>}
+        </figure>
+      ))}
+    </div>
+  )}
+</section>
+
+<style>
+  .subtitle {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.6;
+    font-style: italic;
+    color: var(--ink-2);
+  }
+
+  .portrait { margin: 32px 0 0; }
+  .portrait :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .gallery {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gallery figure { margin: 0; }
+  .gallery :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 520px) {
+    .gallery { grid-template-columns: 1fr; }
+  }
+</style>

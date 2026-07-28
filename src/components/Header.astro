@@ -1,0 +1,76 @@
+---
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { CmsGlobal } from '../lib/data';
+import ThemeToggle from './ThemeToggle.astro';
+import HarkLogo from './HarkLogo.astro';
+
+interface Props {
+  config?: CmsGlobal | null;
+}
+
+const { config } = Astro.props;
+const header = config?.header ?? null;
+const nav = (header?.nav ?? []).filter((n) => n !== null);
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path.startsWith(href);
+---
+
+<header class="column pt-10 pb-8">
+  <a href="/" class="wordmark" aria-label="Home">
+    <HarkLogo trackEyes={true} className="size-8" />
+    <span class="serif">{header?.name ?? 'Tales of Hark'}</span>
+  </a>
+
+  <div class="mt-3 flex items-baseline gap-4">
+    <nav aria-label="Primary" class="flex items-baseline gap-4">
+      {nav.map((item) => (
+        <a
+          href={item.href ?? '#'}
+          data-tina-field={tinaField(item, 'label')}
+          class:list={['nav', 'tap', { 'is-active': isActive(item.href ?? '') }]}
+          aria-current={isActive(item.href ?? '') ? 'page' : undefined}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .wordmark span {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .nav {
+    font-size: 15px;
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .nav:hover { color: var(--ink); }
+  .nav.is-active {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  /* The toggle is furniture. Keep it the same weight as a nav link and let
+     it sit on the same baseline rather than floating off to the right. */
+  header :global(button) {
+    color: var(--ink-3);
+    transition: color 0.15s ease;
+  }
+  header :global(button:hover) { color: var(--ink); }
+</style>

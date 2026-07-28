@@ -1,0 +1,224 @@
+---
+import { Image } from 'astro:assets';
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { HeroBlock } from '../../lib/data';
+
+interface Props { data: HeroBlock }
+
+const { data } = Astro.props;
+const actions = (data.actions ?? []).filter((a) => a !== null);
+const videoSrc = (data.image as any)?.videoSrc as string | undefined;
+const videoUrl = (data.image as any)?.videoUrl as string | undefined;
+const imgSrc = data.image?.src;
+---
+
+<section class="column">
+  {data.headline && (
+    <h1 data-tina-field={tinaField(data, 'headline')}>{data.headline}</h1>
+  )}
+
+  {data.tagline && (
+    <p
+      data-tina-field={tinaField(data, 'tagline')}
+      class="tagline mt-3 whitespace-pre-line"
+    >
+      {data.tagline}
+    </p>
+  )}
+
+  {actions.length > 0 && (
+    <div class="mt-5 flex flex-wrap items-center gap-4">
+      {actions.map((action) => (
+        <a
+          href={action.link ?? '#'}
+          data-tina-field={tinaField(action)}
+          class="cta tap"
+        >
+          {action.label}
+        </a>
+      ))}
+    </div>
+  )}
+
+  {videoSrc && (
+    <figure class="hero-media" data-tina-field={tinaField(data, 'image')}>
+      <video
+        src={videoSrc}
+        poster={videoSrc.replace(/\.webm$/, '-poster.jpg')}
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-label={data.image?.alt ?? 'Hark, sitting still'}
+      ></video>
+      <button type="button" class="sound" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="sound-label">sound</span>
+      </button>
+    </figure>
+  )}
+
+  {!videoSrc && videoUrl && (
+    <figure class="hero-media" data-tina-field={tinaField(data, 'image')}>
+      <iframe
+        src={videoUrl}
+        title={data.image?.alt ?? 'Video'}
+        frameborder="0"
+        allowfullscreen
+      ></iframe>
+    </figure>
+  )}
+
+  {!videoSrc && !videoUrl && imgSrc && (
+    <figure class="hero-media" data-tina-field={tinaField(data, 'image')}>
+      <Image
+        src={imgSrc}
+        alt={data.image?.alt ?? ''}
+        width={1280}
+        height={854}
+        format="webp"
+        quality={82}
+      />
+    </figure>
+  )}
+</section>
+
+<style>
+  .tagline {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  .cta {
+    font-size: 15px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--ink-3);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .cta:hover { text-decoration-color: var(--accent); }
+
+  /* The video sits in the column like a figure, not a billboard.
+     Spacing lives here rather than as a `mt-*` class: this rule has to
+     zero the UA figure margin, and a scoped element rule outranks a
+     Tailwind utility, so the utility would silently do nothing. */
+  .hero-media {
+    position: relative;
+    margin: 40px 0 0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--ink) 5%, transparent);
+    line-height: 0;
+  }
+  .hero-media :is(video, iframe, img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  /* Sound is a click, not a hover — browsers refuse to play audio without a
+     real user gesture, and mouseenter does not count as one. */
+  .sound {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    /* 44px tall so it is a real tap target, not just a label. */
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: rgba(255, 255, 255, 0.9);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .hero-media:hover .sound,
+  .sound:focus-visible { opacity: 1; }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .sound[aria-pressed='true'] .dot {
+    background: #8fe3b8;
+    box-shadow: 0 0 0 3px rgba(143, 227, 184, 0.25);
+  }
+
+  /* Touch has no hover, so keep the control permanently visible there. */
+  @media (hover: none) {
+    .sound { opacity: 1; }
+  }
+</style>
+
+<script>
+  function wireHeroSound() {
+    document
+      .querySelectorAll<HTMLElement>('.hero-media')
+      .forEach((media) => {
+        if (media.dataset.soundBound) return;
+        media.dataset.soundBound = '1';
+
+        const video = media.querySelector('video');
+        const button = media.querySelector<HTMLButtonElement>('.sound');
+        const label = media.querySelector<HTMLElement>('.sound-label');
+        if (!video || !button) return;
+
+        let raf = 0;
+        const fadeTo = (target: number, done?: () => void) => {
+          cancelAnimationFrame(raf);
+          const step = () => {
+            const delta = target - video.volume;
+            if (Math.abs(delta) < 0.02) {
+              video.volume = target;
+              done?.();
+              return;
+            }
+            video.volume = Math.min(1, Math.max(0, video.volume + delta * 0.15));
+            raf = requestAnimationFrame(step);
+          };
+          step();
+        };
+
+        button.addEventListener('click', () => {
+          const turningOn = video.muted;
+          button.setAttribute('aria-pressed', String(turningOn));
+          if (label) label.textContent = turningOn ? 'sound on' : 'sound';
+
+          if (turningOn) {
+            video.volume = 0;
+            video.muted = false;
+            // Unmuting can pause the element under autoplay policy; nudge it.
+            void video.play().catch(() => {});
+            fadeTo(1);
+          } else {
+            fadeTo(0, () => {
+              video.muted = true;
+            });
+          }
+        });
+      });
+  }
+
+  wireHeroSound();
+  document.addEventListener('astro:after-swap', wireHeroSound);
+</script>

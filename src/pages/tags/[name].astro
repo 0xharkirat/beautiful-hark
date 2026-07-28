@@ -1,0 +1,70 @@
+---
+import Base from '../../layouts/Base.astro';
+import { listPosts } from '../../lib/data';
+
+const slugify = (s: string) => s.toLowerCase().replace(/\s+/g, '-');
+
+export async function getStaticPaths() {
+  const posts = await listPosts();
+  const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, '-');
+  const names = new Set<string>();
+  for (const p of posts) {
+    for (const t of p.tags ?? []) {
+      if (t?.tag?.name) names.add(toSlug(t.tag.name));
+    }
+  }
+  return [...names].map((name) => ({ params: { name } }));
+}
+
+const name = (Astro.params.name ?? '').toString();
+const posts = (await listPosts()).filter((p) =>
+  (p.tags ?? []).some((t) => t?.tag?.name && slugify(t.tag.name) === name)
+);
+
+const pretty =
+  posts
+    .flatMap((p) => p.tags ?? [])
+    .find((t) => t?.tag?.name && slugify(t.tag.name) === name)?.tag?.name ?? name;
+
+const shortDate = (d?: string | null) =>
+  d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' }) : '';
+---
+
+<Base title={pretty} description={`Writing tagged ${pretty}.`}>
+  <div class="column">
+    <p class="meta">
+      <a href="/tags" class="link">tags</a> / {name}
+    </p>
+    <h1 class="mt-2">{pretty}</h1>
+    <p class="meta mt-2">{posts.length} {posts.length === 1 ? 'post' : 'posts'}</p>
+
+    <ul class="mt-8 flex flex-col gap-5">
+      {posts.map((p) => (
+        <li>
+          <a href={`/posts/${p._sys.filename}`} class="entry">
+            <span class="serif title">{p.title}</span>
+            <span class="meta">{shortDate(p.date)}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .entry {
+    display: grid;
+    gap: 2px;
+    text-decoration: none;
+  }
+  .entry .title {
+    font-size: 18px;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .entry:hover .title { text-decoration-color: var(--accent); }
+</style>

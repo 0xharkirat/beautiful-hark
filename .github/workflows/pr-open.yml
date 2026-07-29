@@ -50,3 +50,10 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # After the build, not before: astro check needs tina/__generated__,
+      # which is gitignored and written by `tinacms build`. Without this step
+      # type errors reach main unnoticed, because `astro build` does not
+      # typecheck - that is how a dangling type export shipped once already.
+      - name: Typecheck
+        run: pnpm exec astro check

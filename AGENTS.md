@@ -1,166 +1,166 @@
 # AGENTS.md
-Operational guide for coding agents working in `/Users/hark/ssw/beautiful-hark`.
+
+Operational guide for coding agents working in this repository.
 
 ## Scope and instruction precedence
+
 - Applies to the entire repository.
 - If multiple instruction files exist, the most specific file for the edited path wins.
-- Rule sources checked for this repo:
-  - `.github/copilot-instructions.md` (present; must be followed)
-  - `.cursorrules` (not present)
-  - `.cursor/rules/` (not present)
+- `~/AGENTS.md` (Hark's personal instructions) takes precedence over this file.
 
 ## Project snapshot
-- Framework: Next.js 15 (App Router) + React 18 + TypeScript.
-- CMS: TinaCMS (query + visual editing workflow).
-- Package manager: pnpm.
-- Node runtime: `v22` (`.nvmrc`).
-- Lint/format tool: Biome (`biome.json`).
-- Path alias: `@/*` -> repository root (`tsconfig.json`).
-- Styling stack: Tailwind CSS v4 + shadcn/ui conventions.
+
+- Framework: **Astro 6**. Static output with the Vercel adapter.
+- CMS: TinaCMS 3, queried at build time.
+- Package manager: pnpm. Vercel builds with pnpm 10.
+- Node: 22 locally (`.nvmrc`), 24.x on Vercel. `engines.node` is `>=22.12.0`.
+- Lint/format: Biome (`biome.json`). 2-space indent, single quotes, semicolons, line width 160.
+- Styling: Tailwind CSS v4 via `@tailwindcss/vite`, with the design system in `src/styles/global.css`.
+- No path alias. Use relative imports.
+
+### There is no React
+
+This is the single most important constraint in the repository.
+
+The site was rebuilt on Astro specifically to remove React.
+Do not add `react`, `react-dom`, `@astrojs/react`, or any dependency that pulls them in.
+Interactivity is plain JavaScript in `<script>` tags, and it is expected to stay small enough to read.
+
+Anything describing `'use client'`, `useTina`, server/client component splits, or `page.tsx` + `client-page.tsx` pairs is describing the old Next.js app and does not apply.
 
 ## Repository map
-- `app/`: App Router pages/routes.
-- `components/`: reusable UI and block components.
-- `content/`: CMS-backed markdown/json data.
-- `tina/`: Tina config and generated artifacts.
-- `public/`: static files and Tina admin output.
 
-## Setup, build, lint, and quality commands
-Run all commands from repository root.
+- `src/pages/` - routes. Thin by design; logic lives in components.
+- `src/components/` - components. `blocks/` are Tina page blocks, `islands/` are editable regions.
+- `src/layouts/` - `Base.astro`, the page shell.
+- `src/content/` - CMS content. **This is the only content directory.** A root `content/` existed as a Next.js-era duplicate and was deleted.
+- `src/lib/` - `data.ts` wraps Tina queries, `islands.ts` registers editable regions.
+- `src/styles/global.css` - design tokens and base styles.
+- `tina/` - Tina config, collections, and generated artifacts.
+- `public/` - static files, plus the built Tina admin.
+- `tools/` - build-time tooling not shipped to the browser.
 
-### Install dependencies
+## Commands
+
+Run from the repository root.
+
 ```bash
 pnpm install
 ```
 
-### Local development
+### Development
+
 ```bash
 pnpm dev
 ```
-Runs Tina dev and Next.js dev server (`next dev --turbopack -p 3001`).
 
-### Production build
-```bash
-pnpm build
-```
-Runs Tina build first, then Next build.
+Runs Tina's dev server alongside `astro dev` on port 4321.
+If it fails with `ECONNREFUSED ::1:4001`, prefix with `NODE_OPTIONS="--dns-result-order=ipv4first"`.
 
-### Local build fallback (no Tina cloud checks)
-```bash
-pnpm build-local
-```
-Use when Tina cloud credentials are unavailable in local/dev CI context.
+### Build
 
-### Start production server
 ```bash
-pnpm start
+pnpm build        # tinacms build --content=local && astro build
+pnpm build:local  # skips Tina cloud checks; use when credentials are unavailable
 ```
 
-### Lint
-```bash
-pnpm lint
-```
-Equivalent to `biome lint`.
-
-### Format
-```bash
-pnpm exec biome format --write .
-```
-No dedicated `format` script exists.
+Note the colon. There is no `build-local`.
 
 ### Typecheck
+
 ```bash
-pnpm exec tsc --noEmit
+pnpm exec astro check
 ```
-No dedicated `typecheck` script exists.
 
-### Tina code generation
+There is no `tsc --noEmit` script and no `lint` script.
+For Biome, use `pnpm exec biome lint` and `pnpm exec biome format --write .`.
+
+### Preview a production build
+
+`astro preview` **does not work** with the Vercel adapter; it throws "preview is not supported".
+Serve the output directly instead:
+
 ```bash
-pnpm exec tinacms codegen
+python3 -m http.server 4322 --directory dist/client
 ```
-Run after Tina schema/collection/field changes.
 
-## Test guidance (important)
-- No test runner is currently configured in `package.json`.
-- No `*.test.*` / `*.spec.*` tests are currently present.
-- CI for pull requests currently validates by building (`pnpm build`).
+## Architecture notes
 
-### Running a single test
-- Currently not possible because no test framework is wired.
-- If tests are added later, prefer file-targeted commands, e.g.:
-  - Vitest: `pnpm exec vitest run path/to/file.test.ts -t "case name"`
-  - Jest: `pnpm exec jest path/to/file.test.ts -t "case name"`
-  - Playwright: `pnpm exec playwright test tests/foo.spec.ts --grep "case name"`
+### Rendering
 
-## CI behavior to mirror locally
-- `.github/workflows/pr-open.yml` runs:
-  1. `pnpm install`
-  2. `pnpm build`
-- Match that baseline before opening/updating PRs.
+`output: 'static'`. Every content page prerenders to a file.
 
-## Copilot instruction highlights to preserve
-From `.github/copilot-instructions.md`, keep the Tina server/client split:
-1. Server `page.tsx` fetches data using `await client.queries.*(...)`.
-2. Server passes all of `{ query, data, variables }` to client component.
-3. Client `client-page.tsx` uses `useTina({ query, data, variables })`.
-4. Editable elements include `data-tina-field={tinaField(...)}`.
+Exactly one route sets `prerender = false`: `src/pages/tina-island/[name].ts`.
+It exists so the Tina admin iframe can re-render an edited section, and no visitor request ever reaches it.
+Removing it would remove inline visual editing and save a visitor nothing.
 
-Hard rule: do not call Tina queries directly from client components.
+No ISR is involved, so ISR reads and writes are zero.
 
-## Code style and implementation guidelines
+### TinaCMS in Astro
 
-### Imports and module boundaries
-- Prefer `@/` absolute imports over deep relative imports.
-- Use `import type` for type-only imports.
-- Keep imports organized (Biome organize-imports is enabled).
-- Remove unused imports and dead exports when touching files.
+- Query at build time through `src/lib/data.ts`, which wraps the generated client.
+- Mark editable values with `data-tina-field={tinaField(data, 'field')}`.
+- Wrap editable regions in `<TinaIsland>` and register them in `src/lib/islands.ts`.
+- Render rich text with `<TinaMarkdown>`.
+- Never edit `tina/__generated__/` by hand.
 
-### Formatting and lint rules
-- Follow `biome.json` as the source of truth.
-- Defaults: 2 spaces, single quotes, semicolons, ES5 trailing commas, line width 160.
-- JSON is ignored by Biome formatting in this repo; keep JSON manually tidy.
-- Use `pnpm lint` and `pnpm exec biome format --write .` after meaningful edits.
+## Gotchas that have already cost time
 
-### TypeScript expectations
-- `strict` + `strictNullChecks` are enabled; keep code fully strict-safe.
-- Prefer explicit interfaces/types at component boundaries.
-- Prefer Tina generated types from `@/tina/__generated__/types`.
-- Avoid `any`; if unavoidable, keep scope narrow and document why.
-- Avoid non-null assertions (`!`) unless safety is obvious and local.
+**Regenerate `tina/tina-lock.json` after any schema change.**
+Tina Cloud treats the committed lock file as the branch's remote schema, so a stale lock fails the build with `ERR_CLOUD_CHECK_FAILED` and re-indexing cannot help.
+`tinacms build` does **not** write it - its own output lists only `client.ts`, `types.ts` and `admin/index.html`.
+Use `pnpm exec tinacms dev --no-server`, which runs the indexer and does.
 
-### Naming conventions
-- Components and type names: PascalCase.
-- Variables, functions, props: camelCase.
-- Multiword filenames: kebab-case.
-- Route pair naming: `page.tsx` (server) + `client-page.tsx` (client).
+**`astro check` needs `public/admin` excluded in `tsconfig.json`.**
+That directory holds the 11 MB minified Tina admin SPA, and the checker dies with SIGABRT trying to parse it.
+It only appears after a build, so a clean tree hides the problem.
 
-### React and Next.js conventions
-- Use server components by default; add `'use client';` only when required.
-- Keep data fetching on the server whenever possible.
-- Align caching/revalidation behavior with nearby route conventions.
-- Use `notFound()` for missing route content where appropriate.
+**CI does not typecheck.**
+`.github/workflows/pr-open.yml` runs `pnpm build`, and `astro build` does not run `astro check`.
+Type errors reach `main` unnoticed. Run `astro check` yourself before opening a PR.
 
-### TinaCMS-specific conventions
-- Always preserve server/client split for Tina-backed pages.
-- Always pass full `{ query, data, variables }` into `useTina`.
-- Keep `tinaField` references aligned to exact schema paths.
-- Use `TinaMarkdown` for rich-text content rendering.
-- Never manually edit `tina/__generated__/` output.
+**Vercel's Framework Preset is pinned per project and does not re-detect.**
+It must be Astro. It will not change because `package.json` changed.
 
-### Error handling
-- Wrap failure-prone server fetches in `try/catch`.
-- Fail gracefully (`notFound`, fallback UI, or boundary) instead of crashing.
-- Log actionable context when catching errors; do not silently swallow failures.
+**`SITE_URL` must be set in production.**
+`astro.config.mjs` feeds it to canonical URLs, `og:url`, the sitemap and the RSS feed.
+Without it the build falls back to `VERCEL_PROJECT_PRODUCTION_URL`, and previously to `VERCEL_URL`, which is per-deployment and would publish a different canonical on every deploy.
 
-### Change scope and safety
-- Make minimal, surgical changes consistent with nearby patterns.
-- Do not refactor unrelated areas unless requested.
-- Do not commit secrets (`.env`, tokens, credentials).
-- Do not revert unrelated local changes you did not create.
+**Scoped Astro styles outrank Tailwind utilities.**
+A scoped element rule beats a utility class on the same element, so the utility silently does nothing.
+`.hero-media { margin: 40px 0 0 }` and `.tap { margin-block: -11px }` both bit this way.
 
-## Agent checklist before handoff
-1. Run `pnpm lint`.
-2. Run `pnpm exec tsc --noEmit`.
-3. Run `pnpm build` (or `pnpm build-local` if cloud checks cannot run).
-4. If Tina schema changed, run `pnpm exec tinacms codegen`.
-5. Verify Tina pages still follow the required server/client split.
+## Code style
+
+- Relative imports. There is no `@/` alias.
+- `import type` for type-only imports.
+- Keep imports organised; Biome's organize-imports is enabled.
+- `strict` and `strictNullChecks` are on. Avoid `any` and non-null assertions.
+- Components and types: PascalCase. Variables and props: camelCase. Multiword filenames: kebab-case.
+- Prefer Tina's generated types via `src/lib/data.ts`.
+
+## Design constraints
+
+The site is one 640px column, six greys, and a single `--accent` that currently resolves to ink.
+Tokens live in `src/styles/global.css` and colour should come from them, not literals.
+
+WCAG AA is a floor, not an aspiration: 4.5:1 for body text, and no interactive target under 24px.
+Small inline links use the `.tap` helper to reach a comfortable hit area without moving anything visually.
+
+## Testing
+
+No test runner is configured and no tests exist.
+Verification is `astro check`, a production build, and checking the built output in a browser.
+
+If tests are added later, prefer file-targeted commands:
+
+- Vitest: `pnpm exec vitest run path/to/file.test.ts -t "case name"`
+- Playwright: `pnpm exec playwright test tests/foo.spec.ts --grep "case name"`
+
+## Before handing off
+
+1. `pnpm exec astro check` - expect 0 errors.
+2. `CI=true pnpm build:local`.
+3. Serve `dist/client` and check the pages you touched actually render.
+4. If the Tina schema changed, regenerate `tina/tina-lock.json` as described above.
+5. Do not push. Hark decides when anything is pushed, and whether it is "push as it is" or "squash commit".

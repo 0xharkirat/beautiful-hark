@@ -56,10 +56,9 @@ GROUND_Y = 27  # talons sit here; the ash pile shares the baseline
 # rather than pigeon once colour is gone.
 RETURN = [
     "................................",  # 0
-    "................................",  # 1
-    "............KK..................",  # 2   crest: grown out of the head's
-    ".............KKK................",  # 3   top-left so it cannot detach.
-
+    "..............F.F...............",  # 1   FLAME CREST. The monochrome
+    ".............FFFFF..............",  # 2   version read as a dove. Fire is
+    "............FFFFFF..............",  # 3   what says phoenix, not shape.
     "...............KKKKKKK..........",  # 4   head top
     "..............KWWWWWWWK.........",  # 5
     ".............KWWWWWWWWWK........",  # 6
@@ -75,15 +74,15 @@ RETURN = [
     "........KWWWWWWWWWWWWK..........",  # 16  back
     ".......KWWWWWWWWWWWWWK..........",  # 17
     "......KWWWWWWKWWWWWWWK..........",  # 18  folded wing edge
-    ".....KWWWWWKWWWWWWWWK...........",  # 19  tail leaves the body here
-    "...KKWWWWKWWWWWWWWWK............",  # 20
-    "..KKWWWKWWWWWWWWWWK.............",  # 21
-    "..KKKKKWWWWWWWWWWK..............",  # 22  tail tip
-    "......KWWWWWWWWWK...............",  # 23  belly
-    ".......KWWWWWWWK................",  # 24
-    "........KKWWWKK.................",  # 25
-    "...........K...K................",  # 26  legs
-    "..........KKK.KKK...............",  # 27  TALONS - ground anchor
+    "....FFKWWWWWKWWWWWWWK...........",  # 19  FLAME TAIL sweeping down-left,
+    "..FFFFKWWWWKWWWWWWWWK...........",  # 20  carrying the other half of the
+    ".FFFFFFKWWWKWWWWWWWK............",  # 21  phoenix silhouette.
+    "FFFFFFFFKWWWWWWWWWK.............",  # 22
+    ".FFFFFF.KWWWWWWWWK..............",  # 23  belly
+    "..FFFF...KWWWWWWK...............",  # 24
+    "...FF.....KKWWWKK...............",  # 25
+    "............K...K...............",  # 26  legs
+    "...........KKK.KKK..............",  # 27  TALONS - ground anchor
     "................................",  # 28
     "................................",  # 29
     "................................",  # 30

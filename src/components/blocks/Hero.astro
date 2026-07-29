@@ -51,7 +51,7 @@ const imgSrc = data.image?.src;
       >
         <span class="chip" aria-hidden="true">
           <span class="dot"></span>
-          <span class="chip-label">sound off</span>
+          <span class="chip-label">click</span>
         </span>
       </button>
     </figure>
@@ -234,12 +234,16 @@ const imgSrc = data.image?.src;
         Every route into sound goes through here - click, keyboard, and the
         observer below - so the chip can never disagree with the video's
         real muted state. The chip is the only signal the reader has, and a
-        chip reading "sound on" over a silent video is worse than no chip.
+        chip reading "click again" over a silent video is worse than no chip.
       */
       const setSound = (on: boolean) => {
         button.setAttribute('aria-pressed', String(on));
         button.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
-        if (label) label.textContent = on ? 'sound on' : 'sound off';
+        // The chip invites rather than narrates - it never says "sound". State
+        // still reads two ways without relying on colour: the words differ,
+        // and the dot goes green. The aria-label above stays explicit, so
+        // screen readers are told plainly what the control does.
+        if (label) label.textContent = on ? 'click again' : 'click';
 
         if (on) {
           video.volume = 0;

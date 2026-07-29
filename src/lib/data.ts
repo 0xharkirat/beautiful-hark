@@ -65,7 +65,6 @@ export type SplitBlock = Extract<PageBlock, { __typename: 'PageBlocksSplit' }>;
 export type CmsGlobalNav = NonNullable<NonNullable<NonNullable<CmsGlobal['header']>['nav']>[number]>;
 export type CmsGlobalSocial = NonNullable<NonNullable<NonNullable<CmsGlobal['footer']>['social']>[number]>;
 
-export type Action = NonNullable<NonNullable<HeroBlock['actions']>[number]>;
 export type ImageField = NonNullable<HeroBlock['image']>;
 export type FeatureItem = NonNullable<NonNullable<FeaturesBlock['items']>[number]>;
 export type StatItem = NonNullable<NonNullable<StatsBlock['stats']>[number]>;

@@ -26,6 +26,7 @@ const { config } = Astro.props;
 const footer = config?.footer ?? null;
 const social = (footer?.social ?? []).filter((s) => s !== null);
 const tagline = footer?.tagline ?? null;
+const colophon = footer?.colophon ?? null;
 ---
 
 <footer class="column pt-10 pb-16 mt-20">
@@ -47,18 +48,40 @@ const tagline = footer?.tagline ?? null;
     ))}
   </div>
 
-  {tagline?.label && (
-    <p class="serif mt-6 italic" style="font-size: 15px; color: var(--ink-3);">
-      <a
-        href={tagline.url ?? '#'}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-tina-field={tinaField(tagline, 'label')}
-        class="link"
-      >{tagline.label}</a>{tagline.suffix && (
-        <span data-tina-field={tinaField(tagline, 'suffix')}>{tagline.suffix}</span>
+  <!-- Tagline left, colophon right. flex-wrap means a narrow viewport puts
+       each on its own line, and a lone item on a wrapped line sits at the
+       start, so the colophon left-aligns instead of hanging off the right
+       edge against nothing. -->
+  {(tagline?.label || colophon?.label) && (
+    <div class="mt-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+      {tagline?.label && (
+        <p class="serif italic tagline">
+          <a
+            href={tagline.url ?? '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-tina-field={tinaField(tagline, 'label')}
+            class="link"
+          >{tagline.label}</a>{tagline.suffix && (
+            <span data-tina-field={tinaField(tagline, 'suffix')}>{tagline.suffix}</span>
+          )}
+        </p>
       )}
-    </p>
+
+      {colophon?.label && (
+        <p class="colophon">
+          {colophon.prefix && (
+            <span data-tina-field={tinaField(colophon, 'prefix')}>{colophon.prefix}</span>
+          )}<a
+            href={colophon.url ?? '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-tina-field={tinaField(colophon, 'label')}
+            class="link"
+          >{colophon.label}</a>
+        </p>
+      )}
+    </div>
   )}
 </footer>
 
@@ -70,4 +93,18 @@ const tagline = footer?.tagline ?? null;
     transition: color 0.15s ease;
   }
   .quiet:hover { color: var(--ink); }
+
+  .tagline {
+    font-size: 15px;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  /* Sans and a step down: this is machine credit, not Hark's voice. */
+  .colophon {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--ink-3);
+    margin: 0;
+  }
 </style>

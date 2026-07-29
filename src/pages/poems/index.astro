@@ -13,10 +13,6 @@ const shortDate = (d?: string | null) =>
 >
   <div class="column">
     <h1>Poems</h1>
-    <p class="serif intro mt-3">
-      Small poems, mostly written in the morning. Some in English, some in
-      Gurmukhi. None of them are very loud.
-    </p>
 
     <ul class="mt-10 flex flex-col gap-5">
       {poems.map((p) => {
@@ -37,12 +33,6 @@ const shortDate = (d?: string | null) =>
 </Base>
 
 <style>
-  .intro {
-    font-size: 18px;
-    line-height: 1.6;
-    color: var(--ink-2);
-  }
-
   .entry {
     display: grid;
     gap: 2px;

@@ -6,7 +6,6 @@ import type { HeroBlock } from '../../lib/data';
 interface Props { data: HeroBlock }
 
 const { data } = Astro.props;
-const actions = (data.actions ?? []).filter((a) => a !== null);
 const videoSrc = (data.image as any)?.videoSrc as string | undefined;
 const videoUrl = (data.image as any)?.videoUrl as string | undefined;
 const imgSrc = data.image?.src;
@@ -26,20 +25,6 @@ const imgSrc = data.image?.src;
     </p>
   )}
 
-  {actions.length > 0 && (
-    <div class="mt-5 flex flex-wrap items-center gap-4">
-      {actions.map((action) => (
-        <a
-          href={action.link ?? '#'}
-          data-tina-field={tinaField(action)}
-          class="cta tap"
-        >
-          {action.label}
-        </a>
-      ))}
-    </div>
-  )}
-
   {videoSrc && (
     <figure class="hero-media" data-tina-field={tinaField(data, 'image')}>
       <video
@@ -52,9 +37,22 @@ const imgSrc = data.image?.src;
         preload="metadata"
         aria-label={data.image?.alt ?? 'Hark, sitting still'}
       ></video>
-      <button type="button" class="sound" aria-pressed="false">
-        <span class="dot" aria-hidden="true"></span>
-        <span class="sound-label">sound</span>
+      <!--
+        The whole figure is the hit area, so this is one real <button> at
+        inset:0 rather than a small control in the corner. That buys
+        click-anywhere, keyboard access and a correct screen-reader
+        announcement from a single element. The chip inside is decoration.
+      -->
+      <button
+        type="button"
+        class="sound-toggle"
+        aria-pressed="false"
+        aria-label="Turn sound on"
+      >
+        <span class="chip" aria-hidden="true">
+          <span class="dot"></span>
+          <span class="chip-label">sound off</span>
+        </span>
       </button>
     </figure>
   )}
@@ -92,17 +90,6 @@ const imgSrc = data.image?.src;
     color: var(--ink-2);
   }
 
-  .cta {
-    font-size: 15px;
-    color: var(--ink);
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-decoration-color: var(--ink-3);
-    text-underline-offset: 3px;
-    transition: text-decoration-color 0.15s ease;
-  }
-  .cta:hover { text-decoration-color: var(--accent); }
-
   /* The video sits in the column like a figure, not a billboard.
      Spacing lives here rather than as a `mt-*` class: this rule has to
      zero the UA figure margin, and a scoped element rule outranks a
@@ -123,102 +110,171 @@ const imgSrc = data.image?.src;
     object-fit: cover;
   }
 
-  /* Sound is a click, not a hover — browsers refuse to play audio without a
-     real user gesture, and mouseenter does not count as one. */
-  .sound {
+  /* Sound is a click, not a hover: browsers refuse to play audio without a
+     real user gesture, and mouseenter does not count as one. The button is
+     the entire surface and carries no look of its own. */
+  .sound-toggle {
     position: absolute;
-    right: 10px;
-    bottom: 10px;
+    inset: 0;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* The global ring is 2px var(--accent) at +3px offset. --accent is
+     near-black and an outward offset lands on the page rather than the
+     media, so it would be low-contrast and in the wrong place. Inset it,
+     and white clears 3:1 against every frame of this clip. Recheck if the
+     hero is ever swapped for a lighter one. */
+  .sound-toggle:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: -4px;
+    border-radius: 4px;
+  }
+
+  /* The chip is an indicator, not the control, so it is free to be small:
+     the 44px target is the figure itself. 4px radius and the sans stack
+     match the rest of the site rather than inventing a pill. */
+  .chip {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    /* 44px tall so it is a real tap target, not just a label. */
-    min-height: 44px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    color: rgba(255, 255, 255, 0.9);
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 4px;
+    /* Must stay legible over a photograph, so it cannot use --paper. */
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: rgba(255, 255, 255, 0.92);
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    opacity: 0.6;
+    transition: opacity 0.18s ease, transform 0.18s ease;
   }
-  .hero-media:hover .sound,
-  .sound:focus-visible { opacity: 1; }
+
+  /* The chip moves; the video does not. It is already a moving, meditative
+     thing, and scaling video tends to look cheap. */
+  .sound-toggle:hover .chip,
+  .sound-toggle:focus-visible .chip {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 
   .dot {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.55);
-    transition: background 0.2s ease, box-shadow 0.2s ease;
+    background: rgba(255, 255, 255, 0.5);
+    transition: background 0.18s ease, box-shadow 0.18s ease;
   }
-  .sound[aria-pressed='true'] .dot {
+  .sound-toggle[aria-pressed='true'] .dot {
     background: #8fe3b8;
     box-shadow: 0 0 0 3px rgba(143, 227, 184, 0.25);
   }
 
-  /* Touch has no hover, so keep the control permanently visible there. */
+  /* Touch has no hover to reveal it, so show it at full strength. */
   @media (hover: none) {
-    .sound { opacity: 1; }
+    .chip { opacity: 1; }
   }
 </style>
 
 <script>
-  function wireHeroSound() {
-    document
-      .querySelectorAll<HTMLElement>('.hero-media')
-      .forEach((media) => {
-        if (media.dataset.soundBound) return;
-        media.dataset.soundBound = '1';
+  function wireHero() {
+    document.querySelectorAll<HTMLElement>('.hero-media').forEach((media) => {
+      const video = media.querySelector('video');
+      if (!video) return;
 
-        const video = media.querySelector('video');
-        const button = media.querySelector<HTMLButtonElement>('.sound');
-        const label = media.querySelector<HTMLElement>('.sound-label');
-        if (!video || !button) return;
+      /*
+        Revive the video after a client-side navigation.
 
-        let raf = 0;
-        const fadeTo = (target: number, done?: () => void) => {
-          cancelAnimationFrame(raf);
-          const step = () => {
-            const delta = target - video.volume;
-            if (Math.abs(delta) < 0.02) {
-              video.volume = target;
-              done?.();
-              return;
-            }
-            video.volume = Math.min(1, Math.max(0, video.volume + delta * 0.15));
-            raf = requestAnimationFrame(step);
-          };
-          step();
-        };
+        Measured: first load gives paused:false, readyState:4. After
+        navigating away and back it is paused:true, currentTime:0,
+        readyState:0. readyState 0 is HAVE_NOTHING - the resource never
+        began loading, because a <video> put into the DOM by a script does
+        not reliably re-run the media load algorithm, so the autoplay
+        attribute never fires. Kick it by hand.
+      */
+      if (video.autoplay && video.readyState === 0) {
+        video.load();
+        void video.play().catch(() => {});
+      }
 
-        button.addEventListener('click', () => {
-          const turningOn = video.muted;
-          button.setAttribute('aria-pressed', String(turningOn));
-          if (label) label.textContent = turningOn ? 'sound on' : 'sound';
+      if (media.dataset.soundBound) return;
+      media.dataset.soundBound = '1';
 
-          if (turningOn) {
-            video.volume = 0;
-            video.muted = false;
-            // Unmuting can pause the element under autoplay policy; nudge it.
-            void video.play().catch(() => {});
-            fadeTo(1);
-          } else {
-            fadeTo(0, () => {
-              video.muted = true;
-            });
+      const button = media.querySelector<HTMLButtonElement>('.sound-toggle');
+      const label = media.querySelector<HTMLElement>('.chip-label');
+      if (!button) return;
+
+      let raf = 0;
+      const fadeTo = (target: number, done?: () => void) => {
+        cancelAnimationFrame(raf);
+        const step = () => {
+          const delta = target - video.volume;
+          if (Math.abs(delta) < 0.02) {
+            video.volume = target;
+            done?.();
+            return;
           }
-        });
-      });
+          video.volume = Math.min(1, Math.max(0, video.volume + delta * 0.15));
+          raf = requestAnimationFrame(step);
+        };
+        step();
+      };
+
+      /*
+        Every route into sound goes through here - click, keyboard, and the
+        observer below - so the chip can never disagree with the video's
+        real muted state. The chip is the only signal the reader has, and a
+        chip reading "sound on" over a silent video is worse than no chip.
+      */
+      const setSound = (on: boolean) => {
+        button.setAttribute('aria-pressed', String(on));
+        button.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
+        if (label) label.textContent = on ? 'sound on' : 'sound off';
+
+        if (on) {
+          video.volume = 0;
+          video.muted = false;
+          // Unmuting can pause the element under autoplay policy; nudge it.
+          void video.play().catch(() => {});
+          fadeTo(1);
+        } else {
+          fadeTo(0, () => {
+            video.muted = true;
+          });
+        }
+      };
+
+      // Enter and Space come free with a real <button>.
+      button.addEventListener('click', () => setSound(video.muted));
+
+      /*
+        Audio trailing a reader down into a poem is the failure case being
+        designed out, so leaving view mutes. Coming back does not unmute:
+        turning sound on is always deliberate.
+      */
+      new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting && !video.muted) setSound(false);
+          }
+        },
+        { threshold: 0.5 }
+      ).observe(media);
+    });
   }
 
-  wireHeroSound();
-  document.addEventListener('astro:after-swap', wireHeroSound);
+  // Fires on the initial load and after every swap, so this is the only
+  // registration needed - calling wireHero() directly as well would double
+  // the readyState fix and restart the video.
+  document.addEventListener('astro:page-load', wireHero);
 </script>

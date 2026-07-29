@@ -93,10 +93,15 @@ def find_sprites(im):
         return out
 
     boxes = []
-    for y0, y1 in bands(0, h, lambda y: any(not is_magenta(px[x, y]) for x in range(0, w, 3))):
+    for band, (y0, y1) in enumerate(
+        bands(0, h, lambda y: any(not is_magenta(px[x, y]) for x in range(0, w, 3)))
+    ):
         for x0, x1 in bands(0, w, lambda x: any(not is_magenta(px[x, y]) for y in range(y0, y1 + 1))):
             ys = [y for y in range(y0, y1 + 1) if any(not is_magenta(px[x, y]) for x in range(x0, x1 + 1))]
-            boxes.append((x0, ys[0], x1, ys[-1]))
+            # Band index matters: a raw 2x4 sheet has two source rows sitting at
+            # different heights on the page, and a ground baseline computed
+            # across both would tell the upper row it was 30px in the air.
+            boxes.append((x0, ys[0], x1, ys[-1], band))
     return boxes
 
 
@@ -132,6 +137,10 @@ def main():
                     help="reuse the recorded profile instead of fitting this row")
     ap.add_argument("--ref-frame", type=int, default=0,
                     help="index of the neutral perched pose in this row")
+    ap.add_argument("--anchor", choices=("baseline", "centre"), default="baseline",
+                    help="baseline: lowest frame sits on the ground anchor and "
+                         "others keep their height above it. centre: no ground "
+                         "contact, frames are centred in the cell.")
     args = ap.parse_args()
 
     pal = load_palette()
@@ -142,7 +151,7 @@ def main():
         return 1
 
     avail = GROUND_Y - TOP_MARGIN + 1
-    tallest = max(y1 - y0 + 1 for _, y0, _, y1 in boxes)
+    tallest = max(y1 - y0 + 1 for _, y0, _, y1, _ in boxes)
     ref_h = boxes[args.ref_frame][3] - boxes[args.ref_frame][1] + 1
 
     if args.use_profile:
@@ -160,15 +169,52 @@ def main():
         scale = avail / tallest
         print(f"  clamped to {scale:.4f}: tallest pose would have breached the cell")
 
+    # Vertical placement.
+    #
+    # Seating every frame's bottom on GROUND_Y is right while the bird is on
+    # the ground, and wrong the moment it leaves. A hop whose every frame is
+    # pinned to the baseline never actually hops.
+    #
+    # "baseline" therefore anchors the row's LOWEST frame to GROUND_Y and
+    # preserves each other frame's height above it, so lift-off is carried
+    # from the drawing rather than flattened out. For a fully grounded row
+    # every frame shares the same bottom, so this reduces to the old
+    # behaviour exactly.
+    #
+    # "centre" is for rows with no ground contact at all, where the spec asks
+    # for a consistent body centre between views rather than a false baseline.
+    band_bottom: dict[int, int] = {}
+    for _, _, _, y1, band in boxes:
+        band_bottom[band] = max(band_bottom.get(band, 0), y1)
+
+    # For an airborne row the body centre must sit at one constant height, or
+    # the loop bobs when played. Naive centring in the cell is not enough: a
+    # tall frame then dips below the ground anchor, which is meant to be the
+    # floor even when nothing is standing on it. So pick the lowest shared
+    # centre that still keeps every frame clear of the baseline.
+    centre_y = min(
+        GROUND_Y - (round((y1 - y0 + 1) * scale) + 1) // 2
+        for _, y0, _, y1, _ in boxes
+    )
+
     sheet = Image.new("RGBA", (CELL * 8, CELL), (0, 0, 0, 0))
-    for i, (x0, y0, x1, y1) in enumerate(boxes):
+    for i, (x0, y0, x1, y1, band) in enumerate(boxes):
         w, h = x1 - x0 + 1, y1 - y0 + 1
         tw, th = max(1, round(w * scale)), max(1, round(h * scale))
         small = flood_key(src.crop((x0, y0, x1 + 1, y1 + 1)).convert("RGBA")).resize((tw, th), Image.LANCZOS)
         sp = small.load()
         cell = Image.new("RGBA", (CELL, CELL), (0, 0, 0, 0))
         cp = cell.load()
-        ox, oy = (CELL - tw) // 2, GROUND_Y - th + 1
+        ox = (CELL - tw) // 2
+        if args.anchor == "centre":
+            oy = max(TOP_MARGIN, centre_y - th // 2)
+        else:
+            lift = round((band_bottom[band] - y1) * scale)
+            oy = GROUND_Y - th + 1 - lift
+            if oy < TOP_MARGIN:            # never let lift push a frame off the top
+                oy = TOP_MARGIN
+            if lift:
+                print(f"     frame {i} airborne, {lift}px above the baseline")
         for y in range(th):
             for x in range(tw):
                 if sp[x, y][3] < 128:

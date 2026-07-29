@@ -24,6 +24,8 @@ import sys as _sys
 # Any row can be validated; the ash rule applies only to the rebirth row.
 _ARGS = [a for a in _sys.argv[1:] if not a.startswith("-")]
 CHECK_ASH = (_ARGS[0] if _ARGS else "rebirth") == "rebirth"
+# A flight row never touches the ground; every other row should.
+GROUNDED_ROW = (_ARGS[0] if _ARGS else "rebirth") != "flight"
 
 
 # Which row to validate. The ash rule applies only to the rebirth row, so it
@@ -34,6 +36,7 @@ PREVIEW = OUTPUT_DIR / f"phoenix-{ROW}-preview.png"
 GRID = OUTPUT_DIR / f"phoenix-{ROW}-grid.png"
 
 CELL = 32
+FRAMES = 8
 FRAME_COUNT = 8
 PREVIEW_SCALE = 8
 GROUND_Y = 27
@@ -156,31 +159,45 @@ def main() -> int:
         fails.check(filled > 0, f"{label}: frame is empty")
 
     # --- ground anchor -----------------------------------------------------
-    return_index = FRAME_NAMES.index("return")
-    ox = return_index * CELL
-    talons = [x for x in range(CELL) if px[ox + x, GROUND_Y] == ink]
-    fails.check(
-        bool(talons),
-        f"frame {return_index} (return): no ink pixels on the y={GROUND_Y} ground anchor",
-    )
+    #
+    # Rows differ in how much of them touches the ground. A perched row has
+    # every frame on the baseline; a launch row has crouches on it and a bird
+    # climbing away well above it; a flight row never touches it at all.
+    #
+    # So the invariant is not "a named frame has talons on y=27" - that was a
+    # rebirth-row assumption that failed the moment a frame was airborne by
+    # design. It is: nothing may ever sit BELOW the baseline, and a row that
+    # claims ground contact must have at least one frame ON it.
     below = [
-        x
+        (i, x)
+        for i in range(FRAMES)
         for x in range(CELL)
         for y in range(GROUND_Y + 1, CELL)
-        if px[ox + x, y][3] != 0
+        if px[i * CELL + x, y][3] != 0
     ]
     fails.check(
         not below,
-        f"frame {return_index} (return): pixels below the y={GROUND_Y} baseline at x={sorted(set(below))}",
+        f"pixels below the y={GROUND_Y} baseline in frames {sorted({i for i, _ in below})}",
     )
 
-    ash_index = FRAME_NAMES.index("ash")
-    ash_ox = ash_index * CELL
-    ash_base = [x for x in range(CELL) if px[ash_ox + x, GROUND_Y][3] != 0]
-    fails.check(
-        bool(ash_base),
-        f"frame {ash_index} (ash): pile does not reach the y={GROUND_Y} baseline",
-    )
+    grounded = [
+        i for i in range(FRAMES)
+        if any(px[i * CELL + x, GROUND_Y][3] != 0 for x in range(CELL))
+    ]
+    if GROUNDED_ROW:
+        fails.check(
+            bool(grounded),
+            f"row claims ground contact but no frame reaches y={GROUND_Y}",
+        )
+    talons = [x for x in range(CELL) if grounded and px[grounded[0] * CELL + x, GROUND_Y] == ink]
+
+    if CHECK_ASH:
+        ash_index = FRAME_NAMES.index("ash")
+        ash_base = [x for x in range(CELL) if px[ash_index * CELL + x, GROUND_Y][3] != 0]
+        fails.check(
+            bool(ash_base),
+            f"frame {ash_index} (ash): pile does not reach the y={GROUND_Y} baseline",
+        )
 
     # --- preview is an exact nearest-neighbour multiple ---------------------
     preview = Image.open(PREVIEW).convert("RGBA")

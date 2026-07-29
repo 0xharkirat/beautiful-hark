@@ -74,3 +74,6 @@ _legacy-next/
 # Reference sprite sheets. Study only - provenance is not ours to redistribute.
 # eagle-astonishia.png is a ripped PSP game asset ("Rip by Davias").
 tools/phoenix/reference/
+
+# Implementation plans are working notes, not project docs. Specs stay.
+docs/superpowers/plans/

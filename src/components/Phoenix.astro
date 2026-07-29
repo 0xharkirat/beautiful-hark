@@ -22,7 +22,26 @@
     window.__phoenix = true;
 
     const CELL = 32;
-    const ROW = { perched: 0, launch: 1, flight: 2, rebirth: 3 };
+    const ROW = { perched: 0, launch: 1, flight: 2, rebirth: 3, front: 4, quarter: 5 };
+
+    // Heading picks a flight aspect, not one of eight drawn directions.
+    //
+    // oneko draws all eight because a cat's outline changes a lot with heading:
+    // from behind you get tail and ears, from the front a face. A bird's does
+    // not. Flying directly away is a blob with two lumps and flying at you is
+    // nearly the same blob, so three aspects mirrored cover every heading and
+    // the two that would read worst are never drawn at all.
+    //
+    //   within 30 degrees of horizontal -> side view
+    //   within 30 degrees of vertical   -> front view
+    //   anything between                -> three-quarter
+    const aspectFor = (dx, dy) => {
+      const a = Math.abs(Math.atan2(dy, dx));          // 0 = right, PI/2 = down
+      const off = Math.abs(a - Math.PI / 2);           // distance from vertical
+      if (off > Math.PI / 3) return ROW.flight;        // near horizontal
+      if (off < Math.PI / 6) return ROW.front;         // near vertical
+      return ROW.quarter;
+    };
 
     // Distance thresholds. Landing whenever the cursor stops and taking off
     // whenever it moves would spam takeoff and landing on every twitch of the
@@ -241,7 +260,7 @@
         const speed = SPEED_FLY;
         x += (dx / dist) * speed;
         y += (dy / dist) * speed;
-        setFrame(ROW.flight, Math.floor(tick / 3) % 6);
+        setFrame(aspectFor(dx, dy), Math.floor(tick / 3) % 6);
       }
       draw();
     };

@@ -24,8 +24,11 @@ import sys as _sys
 # Any row can be validated; the ash rule applies only to the rebirth row.
 _ARGS = [a for a in _sys.argv[1:] if not a.startswith("-")]
 CHECK_ASH = (_ARGS[0] if _ARGS else "rebirth") == "rebirth"
-# A flight row never touches the ground; every other row should.
-GROUNDED_ROW = (_ARGS[0] if _ARGS else "rebirth") != "flight"
+# Airborne rows never touch the ground; every other row should. These are the
+# flight aspects - side, front and three-quarter - which between them cover all
+# eight headings by angle and mirroring.
+AIRBORNE_ROWS = {"flight", "front", "quarter"}
+GROUNDED_ROW = (_ARGS[0] if _ARGS else "rebirth") not in AIRBORNE_ROWS
 
 
 # Which row to validate. The ash rule applies only to the rebirth row, so it

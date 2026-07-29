@@ -183,11 +183,18 @@ def main():
         scale = avail / tallest
         print(f"  scale {scale:.4f} fitted from tallest source sprite ({tallest}px)")
 
-    # Never let a tall pose breach the cell. Shrinking the whole row keeps the
-    # relative sizes intact, which is the property worth protecting.
-    if round(tallest * scale) > avail:
-        scale = avail / tallest
-        print(f"  clamped to {scale:.4f}: tallest pose would have breached the cell")
+    # Never let a pose breach the cell, in either axis. Shrinking the whole row
+    # keeps the relative sizes intact, which is the property worth protecting.
+    #
+    # Width matters as much as height and is easy to forget: a three-quarter
+    # flight pose is much wider than it is tall, because the flame tail trails
+    # behind the body. Fitted on height alone that row came out 34px wide in a
+    # 32px cell and two frames sat on the left edge.
+    widest = max(x1 - x0 + 1 for x0, _, x1, _, _ in boxes)
+    max_w = CELL - 2 * TOP_MARGIN
+    if round(tallest * scale) > avail or round(widest * scale) > max_w:
+        scale = min(avail / tallest, max_w / widest)
+        print(f"  clamped to {scale:.4f}: a pose would have breached the cell")
 
     # Vertical placement.
     #

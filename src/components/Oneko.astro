@@ -1,0 +1,73 @@
+---
+/**
+ * oneko - the cat that follows the cursor.
+ *
+ * public/oneko.js is adryd325/oneko.js (MIT) vendored unmodified. It is
+ * deliberately unmaintained upstream, so vendoring beats a dependency.
+ *
+ * Not the rozbrajaczpoziomow fork. Measured on a long post: its "scroll
+ * handling" is `nekoPosY += event.deltaY / 10` on `wheel` only, so the cat
+ * drifted 47.5px while the mouse sat still, then ran back. That breaks the
+ * one property that makes a cat on every page safe - a parked mouse means a
+ * sleeping cat. It also sets z-index to Number.MAX_VALUE, which is not an
+ * integer, so the browser rejects it and the cat computes to z-index auto.
+ * Upstream drifted 0.0px under the same test and keeps a valid z-index.
+ */
+---
+
+<script is:inline>
+  (() => {
+    // No cursor to follow on touch, so it would just sit in a corner looking
+    // broken. Skip the fetch entirely rather than hiding it with CSS.
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    // oneko.js bails on reduced motion by itself, but checking here too means
+    // we do not even request the script.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    if (window.__onekoLoaded) return;
+    window.__onekoLoaded = true;
+
+    const script = document.createElement('script');
+    script.src = '/oneko.js';
+    // Required, not optional. The script defaults to "./oneko.gif", which is
+    // relative - on /posts/some-slug/ that resolves to
+    // /posts/some-slug/oneko.gif and 404s.
+    script.dataset.cat = '/oneko.gif';
+    script.onload = () => {
+      document.getElementById('oneko')?.setAttribute('aria-hidden', 'true');
+    };
+    document.body.appendChild(script);
+
+    /*
+      Surviving navigation.
+
+      oneko appends its element to document.body, which ClientRouter replaces
+      on every swap, so the cat vanishes. Its listeners are on document and
+      window, which persist, and its state lives in a closure - so carrying
+      the same node across and re-appending it restores the cat exactly as it
+      was. Re-running the script instead would add a second mousemove listener
+      and a second cat.
+    */
+    let carried = null;
+    document.addEventListener('astro:before-swap', () => {
+      carried = document.getElementById('oneko');
+    });
+    document.addEventListener('astro:after-swap', () => {
+      if (carried && !document.getElementById('oneko')) {
+        document.body.appendChild(carried);
+      }
+    });
+  })();
+</script>
+
+<style is:global>
+  /*
+    oneko sets these inline, so the z-index override needs !important. 20 sits
+    above the page and below the skip link at 60, which must always win.
+  */
+  #oneko {
+    z-index: 20 !important;
+    pointer-events: none;
+  }
+</style>

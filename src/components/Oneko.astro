@@ -28,6 +28,42 @@
     if (window.__onekoLoaded) return;
     window.__onekoLoaded = true;
 
+    /*
+      Start the cat beside the wordmark instead of oneko's hardcoded 32,32.
+
+      Done by seeding the localStorage entry the script already restores from
+      on init, so oneko.js stays byte-identical to upstream. nekoPos is the
+      cat's centre (it renders at nekoPos - 16), and setting mousePos to the
+      same point means it arrives asleep rather than sprinting in from the
+      corner.
+
+      Only seeded when nothing is stored, so oneko's own persistence still
+      wins on later visits and the cat resumes where the reader left it.
+    */
+    if (!localStorage.getItem('oneko')) {
+      const brand = document.querySelector('header .wordmark');
+      if (brand) {
+        const r = brand.getBoundingClientRect();
+        const x = r.right + 28;
+        const y = r.top + r.height / 2;
+        localStorage.setItem(
+          'oneko',
+          JSON.stringify({
+            nekoPosX: x,
+            nekoPosY: y,
+            mousePosX: x,
+            mousePosY: y,
+            frameCount: 0,
+            idleTime: 0,
+            idleAnimation: null,
+            idleAnimationFrame: 0,
+            // spriteSets.idle is [[-3,-3]], and frames are 32px.
+            bgPos: '-96px -96px',
+          })
+        );
+      }
+    }
+
     const script = document.createElement('script');
     script.src = '/oneko.js';
     // Required, not optional. The script defaults to "./oneko.gif", which is
@@ -63,11 +99,19 @@
 
 <style is:global>
   /*
-    oneko sets these inline, so the z-index override needs !important. 20 sits
-    above the page and below the skip link at 60, which must always win.
+    Behind the content: the cat slides under text and images and is fully
+    visible in the wide margins either side of the 640px column, so it can
+    never cover a word being read.
+
+    -1 works here because body's background propagates to the canvas (html
+    sets none), which paints before negative z-index. If a background is ever
+    put on html, or an opaque one on a wrapper around the content, the cat
+    disappears - check this rule first.
+
+    oneko sets z-index inline, hence !important.
   */
   #oneko {
-    z-index: 20 !important;
+    z-index: -1 !important;
     pointer-events: none;
   }
 </style>

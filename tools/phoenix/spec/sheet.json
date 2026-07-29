@@ -1,0 +1,11 @@
+{
+  "cell": 32,
+  "rows": {
+    "perched": 0,
+    "launch": 1,
+    "flight": 2,
+    "rebirth": 3
+  },
+  "ground_y": 27,
+  "note": "frame index = row*8 + col; right-facing, mirror for leftward travel"
+}

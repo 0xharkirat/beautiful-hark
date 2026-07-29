@@ -2,7 +2,7 @@
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Oneko from '../components/Oneko.astro';
+import Phoenix from '../components/Phoenix.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
 import { getGlobal } from '../lib/data';
 import { islands } from '../lib/islands';
@@ -34,6 +34,6 @@ const config = (await getGlobal()).data?.global ?? null;
       <Footer config={config} />
     </TinaIsland>
 
-    <Oneko />
+    <Phoenix />
   </body>
 </html>

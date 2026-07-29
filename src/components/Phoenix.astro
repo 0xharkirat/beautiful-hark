@@ -1,0 +1,287 @@
+---
+/**
+ * The phoenix that perches on the T and follows the cursor.
+ *
+ * Its own engine rather than a patch on oneko: oneko walks in a straight line
+ * at the cursor and that is the whole algorithm. This has to perch on a glyph,
+ * hop or fly depending on distance, sleep on demand, and burn on the hour.
+ *
+ * Sprite sheet is public/phoenix.png, 256x128, four rows of eight 32px frames:
+ * perched, launch, flight, rebirth. Frames are drawn facing right and mirrored
+ * for leftward travel, so nothing is drawn twice.
+ */
+---
+
+<script is:inline>
+  (() => {
+    // No cursor to follow on touch, so it would sit in a corner looking broken.
+    if (window.matchMedia('(hover: none)').matches) return;
+    // Continuous motion, so it is removed outright rather than reduced.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.__phoenix) return;
+    window.__phoenix = true;
+
+    const CELL = 32;
+    const ROW = { perched: 0, launch: 1, flight: 2, rebirth: 3 };
+
+    // Distance thresholds. Landing whenever the cursor stops and taking off
+    // whenever it moves would spam takeoff and landing on every twitch of the
+    // mouse, which reads as twitchy on a site built to be calm.
+    const DEADZONE = 32;    // below this it does not react at all
+    const HOP_MAX = 100;    // 32..100 hops; beyond that it flies
+    const SETTLE_MS = 2000; // stationary this long and it perches
+    // Per 100ms tick. oneko moves ~10px/frame and reads as lively; 4px/tick
+    // is 40px/s and reads as broken, so the bird never catches up.
+    const SPEED_HOP = 4;
+    const SPEED_FLY = 11;
+
+    const REBIRTH_MS = 5200;
+    const GRACE_MS = 20000;  // no rebirth this soon after load
+    const CLOCK_POLL_MS = 20000;
+    const DOUBLE_CLICK_MS = 250;
+
+    const el = document.createElement('div');
+    el.id = 'phoenix';
+    el.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(el);
+
+    // --- state ---------------------------------------------------------
+    let x = 0, y = 0;                 // sprite centre, viewport coords
+    let mx = 0, my = 0;               // cursor
+    let facing = 1;                   // 1 right, -1 left
+    let mode = 'perched';             // perched | hop | fly | sleep | rebirth
+    let tick = 0;
+    let idleFrames = 0;
+    let rebirthUntil = 0;
+    let started = Date.now();
+
+    const perch = () => {
+      // Measure the T itself, not the whole wordmark: a Range over the first
+      // character gives the glyph box, so the bird sits on the letter rather
+      // than near it.
+      // span.serif specifically: the wordmark also contains HarkLogo, which
+      // renders its own span, and a bare `span` selector matches the logo
+      // first and measures a 32px empty box.
+      const span = document.querySelector('header .wordmark span.serif');
+      const text = span && [...span.childNodes].find(
+        (n) => n.nodeType === 3 && n.textContent.trim()
+      );
+      if (!text) return null;
+      try {
+        const lead = text.textContent.length - text.textContent.trimStart().length;
+        const r = document.createRange();
+        r.setStart(text, lead);
+        r.setEnd(text, lead + 1);
+        const box = r.getBoundingClientRect();
+        if (!box.width) return null;
+        return { x: box.left + box.width / 2, y: box.top - CELL / 2 + 4 };
+      } catch {
+        return null;
+      }
+    };
+
+    const home = perch();
+    if (home) { x = home.x; y = home.y; } else { x = 40; y = 40; }
+    mx = x; my = y;
+
+    const setFrame = (row, col) => {
+      el.style.backgroundPosition = `${-col * CELL}px ${-row * CELL}px`;
+    };
+    const draw = () => {
+      el.style.left = `${Math.round(x - CELL / 2)}px`;
+      el.style.top = `${Math.round(y - CELL / 2)}px`;
+      el.style.transform = facing < 0 ? 'scaleX(-1)' : '';
+    };
+
+    // --- rebirth -------------------------------------------------------
+    const hourKey = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}-${d.getHours()}`;
+    };
+    // sessionStorage, not localStorage. localStorage is shared across tabs, so
+    // the first tab to poll would write the key and every other open tab would
+    // silently skip its own rebirth. sessionStorage is per-tab and survives a
+    // reload, which is exactly the semantics wanted.
+    const alreadyBurned = (k) => {
+      try { return sessionStorage.getItem('phoenix:hour') === k; } catch { return false; }
+    };
+    const markBurned = (k) => {
+      try { sessionStorage.setItem('phoenix:hour', k); } catch {}
+    };
+
+    let wasAsleep = false;
+    const beginRebirth = () => {
+      if (mode === 'rebirth') return;          // never interruptible
+      wasAsleep = mode === 'sleep';
+      mode = 'rebirth';
+      tick = 0;
+      rebirthUntil = Date.now() + REBIRTH_MS;
+      // Lift above the content for the burn only. The bird otherwise sits
+      // behind everything so it can never cover a word, but that would put the
+      // one moment worth watching behind a paragraph.
+      el.setAttribute('data-burning', '');
+    };
+    const endRebirth = () => {
+      el.removeAttribute('data-burning');
+      // Sleep is an explicit instruction from the reader, so it is restored
+      // rather than overridden. A phoenix reborn straight back into a nap.
+      mode = wasAsleep ? 'sleep' : 'perched';
+      tick = 0;
+    };
+
+    let pending = null;
+    const checkClock = () => {
+      if (Date.now() - started < GRACE_MS) return;
+      const k = hourKey();
+      if (alreadyBurned(k)) return;
+      if (document.hidden) { pending = k; return; }   // nobody is watching
+      markBurned(k);
+      beginRebirth();
+    };
+    // Poll rather than schedule. A setTimeout to the next hour breaks on
+    // laptop sleep, DST and clock changes; comparing the wall clock every 20s
+    // is immune to all of it and costs nothing.
+    setInterval(checkClock, CLOCK_POLL_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && pending) {
+        // One rebirth on return, not one per missed hour.
+        markBurned(pending);
+        pending = null;
+        beginRebirth();
+      }
+    });
+
+    // --- input ---------------------------------------------------------
+    document.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+
+    let clickTimer = null;
+    document.addEventListener('click', (e) => {
+      const r = el.getBoundingClientRect();
+      const pad = 8;   // small target, and the click is coordinate-tested
+      const hit = e.clientX >= r.left - pad && e.clientX <= r.right + pad &&
+                  e.clientY >= r.top - pad && e.clientY <= r.bottom + pad;
+      if (!hit) return;
+      const t = e.target;
+      if (t && typeof t.closest === 'function' &&
+          t.closest('a, button, input, textarea, select, summary, [role="button"]')) return;
+      if (mode === 'rebirth') return;
+
+      // A double click fires click, click, dblclick. Handled naively the first
+      // click would toggle sleep and the second undo it before the rebirth ran,
+      // so single click is debounced and a second click inside the window wins.
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        beginRebirth();
+        return;
+      }
+      clickTimer = setTimeout(() => {
+        clickTimer = null;
+        mode = mode === 'sleep' ? 'perched' : 'sleep';
+        tick = 0;
+      }, DOUBLE_CLICK_MS);
+    });
+
+    // --- loop ----------------------------------------------------------
+    const step = () => {
+      tick += 1;
+
+      if (mode === 'rebirth') {
+        const left = rebirthUntil - Date.now();
+        const p = 1 - Math.max(0, left) / REBIRTH_MS;
+        setFrame(ROW.rebirth, Math.min(7, Math.floor(p * 8)));
+        if (left <= 0) endRebirth();
+        draw();
+        return;
+      }
+
+      if (mode === 'sleep') {
+        // frames 6 and 7 of the perched row are asleep and waking
+        setFrame(ROW.perched, 6);
+        draw();
+        return;
+      }
+
+      const dx = mx - x, dy = my - y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < DEADZONE) {
+        idleFrames += 1;
+        if (idleFrames > SETTLE_MS / 100) {
+          mode = 'perched';
+          // idle, blink, look up, look back, ruffle, preen - slow and quiet
+          const cycle = [0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 5];
+          setFrame(ROW.perched, cycle[Math.floor(tick / 6) % cycle.length]);
+        } else {
+          setFrame(ROW.perched, 0);
+        }
+        draw();
+        return;
+      }
+
+      idleFrames = 0;
+      if (dx !== 0) facing = dx > 0 ? 1 : -1;
+
+      if (dist <= HOP_MAX) {
+        mode = 'hop';
+        const speed = SPEED_HOP;
+        x += (dx / dist) * speed;
+        y += (dy / dist) * speed;
+        setFrame(ROW.launch, 1 + (Math.floor(tick / 4) % 4));
+      } else {
+        mode = 'fly';
+        const speed = SPEED_FLY;
+        x += (dx / dist) * speed;
+        y += (dy / dist) * speed;
+        setFrame(ROW.flight, Math.floor(tick / 3) % 6);
+      }
+      draw();
+    };
+
+    setInterval(step, 100);
+    draw();
+    setFrame(ROW.perched, 0);
+
+    // --- survive client-side navigation ---------------------------------
+    // The element lives on document.body, which ClientRouter replaces. Its
+    // listeners are on document and its state is in this closure, both of
+    // which persist, so carrying the node across restores the same bird.
+    // Re-running the script would give two.
+    let carried = null;
+    document.addEventListener('astro:before-swap', () => { carried = el; });
+    document.addEventListener('astro:after-swap', () => {
+      if (carried && !document.getElementById('phoenix')) document.body.appendChild(carried);
+      const h = perch();
+      if (h && mode === 'perched') { x = h.x; y = h.y; draw(); }
+    });
+  })();
+</script>
+
+<style is:global>
+  #phoenix {
+    position: fixed;
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    background-image: url('/phoenix.png');
+    background-repeat: no-repeat;
+    pointer-events: none;
+    /*
+      Behind the content, so it slides under text and can never cover a word
+      being read. It stays visible in the wide margins either side of the 640px
+      column, which on this layout is most of the time.
+
+      This works only because html sets no background, so body's propagates to
+      the canvas, which paints before negative z-index. Put a background on
+      html, or an opaque one on a wrapper around the content, and the bird
+      disappears - check this rule first.
+    */
+    z-index: -1;
+  }
+
+  /* The burn is the one moment worth watching, so it comes to the front for
+     its five seconds rather than happening behind a paragraph. */
+  #phoenix[data-burning] {
+    z-index: 20;
+  }
+</style>

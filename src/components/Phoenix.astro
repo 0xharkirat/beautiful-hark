@@ -177,7 +177,7 @@
       }
       clickTimer = setTimeout(() => {
         clickTimer = null;
-        mode = mode === 'sleep' ? 'perched' : 'sleep';
+        mode = mode === 'sleep' ? 'waking' : 'sleep';
         tick = 0;
       }, DOUBLE_CLICK_MS);
     });
@@ -196,8 +196,16 @@
       }
 
       if (mode === 'sleep') {
-        // frames 6 and 7 of the perched row are asleep and waking
-        setFrame(ROW.perched, 6);
+        setFrame(ROW.perched, 6);   // tucked, with the zZ
+        draw();
+        return;
+      }
+
+      if (mode === 'waking') {
+        // Hold the alert frame briefly so waking reads as a startle rather
+        // than the bird simply resuming.
+        setFrame(ROW.perched, 7);
+        if (tick > 4) { mode = 'perched'; tick = 0; }
         draw();
         return;
       }

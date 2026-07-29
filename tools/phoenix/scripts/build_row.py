@@ -96,7 +96,27 @@ def find_sprites(im):
     for band, (y0, y1) in enumerate(
         bands(0, h, lambda y: any(not is_magenta(px[x, y]) for x in range(0, w, 3)))
     ):
-        for x0, x1 in bands(0, w, lambda x: any(not is_magenta(px[x, y]) for y in range(y0, y1 + 1))):
+        cols = bands(0, w, lambda x: any(not is_magenta(px[x, y]) for y in range(y0, y1 + 1)))
+
+        # Merge detached accessories back into their sprite. A frame can contain
+        # something separated from the body by background - the zZ above a
+        # sleeping bird - and a column gap alone would count it as its own
+        # sprite. Measured on that sheet: the z's sit 19px from the bird while
+        # every real gap between sprites is 104-141px. A detached accessory is
+        # always far closer to its own sprite than sprites are to each other,
+        # so a fraction of the median gap separates the two cases cleanly.
+        if len(cols) > 1:
+            gaps = sorted(cols[i + 1][0] - cols[i][1] for i in range(len(cols) - 1))
+            median = gaps[len(gaps) // 2]
+            merged = [list(cols[0])]
+            for c in cols[1:]:
+                if c[0] - merged[-1][1] < median * 0.4:
+                    merged[-1][1] = c[1]
+                else:
+                    merged.append(list(c))
+            cols = [tuple(c) for c in merged]
+
+        for x0, x1 in cols:
             ys = [y for y in range(y0, y1 + 1) if any(not is_magenta(px[x, y]) for x in range(x0, x1 + 1))]
             # Band index matters: a raw 2x4 sheet has two source rows sitting at
             # different heights on the page, and a ground baseline computed

@@ -99,9 +99,9 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
             });
         });
       },
-      // Capture, so this runs before the document-phase blocker Oneko.astro
-      // uses to put the cat to sleep. The eyes keep tracking the cursor even
-      // while the cat is deliberately ignoring it.
+      // Capture, so this runs ahead of any document-phase mousemove listener
+      // that might stop propagation - Phoenix.astro has one. The eyes keep
+      // tracking the cursor even while the bird is asleep and ignoring it.
       { passive: true, capture: true }
     );
   }

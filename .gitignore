@@ -77,3 +77,7 @@ tools/phoenix/reference/
 
 # Implementation plans are working notes, not project docs. Specs stay.
 docs/superpowers/plans/
+
+# Python bytecode from the sprite pipeline in tools/phoenix/scripts.
+__pycache__/
+*.pyc

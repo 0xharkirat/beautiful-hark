@@ -19,7 +19,10 @@ const data = page.data?.page;
 if (!data) return new Response('Not Found', { status: 404 });
 ---
 
-<Base title={data.title ?? 'Tales of Hark'} description="">
+<Base
+  title={data.title ?? 'Tales of Hark'}
+  description={(data as any).description ?? ''}
+>
   <TinaIsland name="page" wrapper={islands.page.wrapper} params={{ slug }} primary>
     <PageBody data={data} />
   </TinaIsland>

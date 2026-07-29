@@ -1,0 +1,39 @@
+---
+title: Hawky
+description: >
+  The phoenix that lives on this site: what it does, and how to make it do it.
+---
+
+Hawky is a phoenix that lives on this website. It starts perched on the T of the wordmark, follows your cursor, and burns itself to ash on the hour before hatching again.
+
+I stole the idea from my colleague Brook, whose site [brookjeynes.dev](https://brookjeynes.dev) has a cat that chases your cursor. That cat is [oneko.js](https://github.com/adryd325/oneko.js), which has been passed around the web since a 1990s Windows toy called Neko. I built a cat first, then decided a bird that sets itself on fire suited a site called Tales of Hark better.
+
+Hawky is on every page here, including this one, so you can try these while you read them.
+
+## What it responds to
+
+**Move your cursor.** Hawky comes after it. Anything under about 30 pixels it ignores, so it does not twitch every time your hand moves. Past that it walks, and past about 100 pixels it takes off and flies, with a shadow underneath telling you how high it is. Stop for two seconds and it lands and goes back to perching.
+
+**Click Hawky.** It falls asleep and stops following, with a small zZ over its head. Click again and it startles awake. A click that was meant for a link or a button underneath goes to the link, not the bird.
+
+**Leave it alone.** After about twenty-five seconds of nobody touching the mouse it dozes off by itself. Moving the cursor wakes it. A nap you asked for by clicking works the other way round and only a click ends it, since you cannot avoid moving the mouse eventually.
+
+**Double-click Hawky.** It catches fire, burns down to a pile of ash, and hatches out of it again as a chick. The whole thing runs about five seconds and cannot be interrupted.
+
+**Rest your cursor on it.** After a moment a bubble appears counting down to the next rebirth.
+
+**Wait for the hour.** It burns on its own every time the clock strikes. If you have put it to sleep, it burns anyway and then goes back to sleep, because you asked for it to be asleep.
+
+## Every frame
+
+Fifty-six frames at 32 by 32 pixels, in four colours: transparent, white, black, and one orange that only the fire uses. Seven rows of eight, reading down as perching, leaving the ground, side-on flight, the rebirth, head-on flight, three-quarter flight, and the walk.
+
+![The Hawky sprite sheet: seven rows of eight frames showing perching, taking off, three flight angles, the rebirth cycle, and the walk.](/phoenix.png)
+
+Everything is drawn facing right and mirrored for the other direction, and the three flight angles cover all eight compass headings between them. A cat is worth drawing from eight angles because its outline changes a lot with heading. A bird flying straight away from you is a blob with two lumps on it, so those angles were not worth drawing.
+
+## When it stays away
+
+Hawky does not load at all on a touch device. There is no cursor to follow, so it would sit in a corner doing nothing. It also does not load if your system asks for reduced motion, since there is no version of it that holds still.
+
+It renders behind the writing, so it can never cover a word you are reading. The rebirth is the exception and comes to the front for those few seconds, because otherwise the one part worth watching would happen behind a paragraph.

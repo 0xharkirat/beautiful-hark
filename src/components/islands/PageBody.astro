@@ -1,4 +1,6 @@
 ---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
 import Blocks from '../blocks/Blocks.astro';
 import type { CmsPage } from '../../lib/data';
 
@@ -7,5 +9,52 @@ interface Props {
 }
 
 const { data } = Astro.props;
+
+// A page is blocks, or prose, or both. Home and About are block pages and must
+// keep rendering exactly as before, so the heading is drawn only for a prose
+// page: a block page gets its title from inside a block, and adding an h1 here
+// would give those two pages a second one.
+const blocks = (data as any)?.blocks ?? null;
+const hasBlocks = Array.isArray(blocks) && blocks.length > 0;
+const body = (data as any)?.body ?? null;
 ---
-{data && <Blocks data={data} />}
+{data && (
+	<>
+		{hasBlocks && <Blocks data={data} />}
+
+		{body && (
+			<article class="column">
+				{!hasBlocks && data.title && (
+					<h1 data-tina-field={tinaField(data, 'title')}>{data.title}</h1>
+				)}
+				<div data-tina-field={tinaField(data, 'body')} class="prose mt-6">
+					<TinaMarkdown content={body} />
+				</div>
+			</article>
+		)}
+	</>
+)}
+
+<style>
+	/*
+	  The sprite sheet is the one image on the site that must not be smoothed.
+	  Browsers interpolate by default, which turns 32px pixel art into a smear,
+	  and the point of showing the sheet is that the pixels are countable.
+
+	  Selected by filename because it is genuinely the only pixel-art image here,
+	  and the alternative is a custom rich-text embed so an author can tick a
+	  "pixelated" box on one image that will never move. If a second pixel image
+	  ever appears, that embed becomes worth building - until then this is one
+	  selector instead of a schema, a component and a registration.
+	*/
+	.prose :global(img[src$='phoenix.png']) {
+		width: 512px;
+		max-width: 100%;
+		image-rendering: pixelated;
+		border-radius: 0;
+		padding: 20px;
+		border: 1px solid var(--rule);
+		border-radius: 4px;
+		background: color-mix(in oklab, var(--ink) 4%, transparent);
+	}
+</style>

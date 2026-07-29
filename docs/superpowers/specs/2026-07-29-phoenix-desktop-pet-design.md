@@ -89,9 +89,22 @@ If the hour passes while `document.hidden`, hold it and fire on the next `visibi
 **Fire once, not once per missed hour.**
 A tab hidden for six hours gets one rebirth on return.
 
-**Persist the fired hour.**
-The site is client-side routed, so without persistence every navigation inside the same hour would refire.
-Store the key as `YYYY-MM-DD-HH` in localStorage, which also handles date rollover.
+**Persist the fired hour in `sessionStorage`, not `localStorage`.**
+Store the key as `YYYY-MM-DD-HH`, which also handles date rollover.
+
+The storage choice is load-bearing, not incidental.
+`localStorage` is shared across tabs, so the first tab to poll would write the key and every other open tab would see the hour already fired and silently skip its own rebirth.
+`sessionStorage` is per-tab and survives reloads within that tab, which is exactly the semantics wanted: a hard refresh at 3:05 does not refire, and a second tab still gets its own bird.
+
+Soft navigation would in fact be covered by an in-memory variable, since ClientRouter keeps the same document and JS context.
+Storage exists for the hard-reload case.
+
+### One pet per page, one bird per tab
+
+The pet appears on every page and is the same bird throughout, carried across client-side navigation the way the cat already is.
+
+Separate browser tabs are separate JS contexts and therefore separate birds.
+Two tabs both burning at the hour is accepted rather than coordinated: only one tab is ever being looked at, and cross-tab locking would add a `storage` event listener and a race for the privilege of catching fire.
 
 **Grace period.**
 No rebirth within ~20s of load.
@@ -236,7 +249,6 @@ Automated, run on every stage:
 
 - Whether the site acknowledges a rebirth at all, or the bird just does it.
 - Whether the spawn perch is recalculated after a client-side navigation, given the header already uses `transition:persist` so the T does not move.
-- Whether two open tabs burning simultaneously at the hour is charming or noisy. Assumed charming; they are separate pets.
 - Exact hysteresis thresholds, to be tuned against the real site.
 
 ## Out of scope

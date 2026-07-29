@@ -99,7 +99,10 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
             });
         });
       },
-      { passive: true }
+      // Capture, so this runs before the document-phase blocker Oneko.astro
+      // uses to put the cat to sleep. The eyes keep tracking the cursor even
+      // while the cat is deliberately ignoring it.
+      { passive: true, capture: true }
     );
   }
 </script>

@@ -64,6 +64,56 @@
       }
     }
 
+    /*
+      Click the cat to put it to sleep; click again to wake it.
+
+      There is no oneko API for this - its state is sealed in a closure - so
+      sleep is done by hiding the mouse from it. This listener is on document
+      in the CAPTURE phase, which runs before oneko's own bubble-phase
+      listener on the same node, so stopping propagation means the cat simply
+      stops hearing about the cursor. Its idle timer then runs on and it
+      curls up and sleeps on its own, using its own animation.
+
+      HarkLogo listens on window in capture, which fires earlier still, so the
+      logo's eyes keep tracking while the cat ignores everything.
+    */
+    // State lives on the element, not in this closure. A closure variable can
+    // desync if this script ever runs twice (dev HMR does exactly that),
+    // leaving one blocker that thinks the cat is awake.
+    const sleeping = () => !!document.getElementById('oneko')?.hasAttribute('data-asleep');
+
+    document.addEventListener(
+      'mousemove',
+      (e) => {
+        if (sleeping()) e.stopImmediatePropagation();
+      },
+      true
+    );
+
+    /*
+      Hit-tested by coordinate rather than by a click on the element: the cat
+      is pointer-events:none at z-index -1, so a click can never actually land
+      on it. Interactive targets are excluded so the cat sitting behind a link
+      cannot swallow it.
+    */
+    document.addEventListener('click', (e) => {
+      const el = document.getElementById('oneko');
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const hit =
+        e.clientX >= r.left && e.clientX <= r.right &&
+        e.clientY >= r.top && e.clientY <= r.bottom;
+      if (!hit) return;
+      // Duck-typed: e.target is not always an Element (a click dispatched on
+      // document itself has no closest()).
+      const t = e.target;
+      if (t && typeof t.closest === 'function' &&
+          t.closest('a, button, input, textarea, select, summary, [role="button"]')) {
+        return;
+      }
+      el.toggleAttribute('data-asleep');
+    });
+
     const script = document.createElement('script');
     script.src = '/oneko.js';
     // Required, not optional. The script defaults to "./oneko.gif", which is

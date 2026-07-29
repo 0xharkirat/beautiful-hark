@@ -32,6 +32,15 @@ const auto = !!autoPlay;
 
 {safe && (
   <figure class="fig">
+    {/*
+      controls stays even on autoplay. An autoplaying loop longer than five
+      seconds needs a way to stop it (WCAG 2.2.2), and this one runs 33s. That
+      requirement is also the honest argument against shipping the same thing as
+      a GIF: a GIF cannot be paused at all.
+
+      preload is metadata, not auto, when there is no autoplay - no reason to
+      pull a megabyte for a video nobody has asked to watch.
+    */}
     <video
       src={safe}
       autoplay={auto || undefined}
@@ -39,10 +48,37 @@ const auto = !!autoPlay;
       loop={loop || undefined}
       playsinline
       controls
-      preload="metadata"
+      preload={auto ? 'auto' : 'metadata'}
+      data-autoplay={auto ? '' : undefined}
     ></video>
     {caption && <FigCaption caption={caption} />}
   </figure>
+)}
+
+{safe && auto && (
+  <script is:inline>
+    /*
+      Do not autoplay for a reader who asked for less motion. The site already
+      takes this seriously enough to not load the phoenix at all under
+      prefers-reduced-motion, so a 33s loop starting by itself would contradict
+      that. The video stays, with its controls, and waits to be asked.
+
+      Written as plain text, not {`...`}. is:inline passes a script body through
+      verbatim, so a JSX expression is not evaluated - it reached the browser as
+      a literal backtick-brace and threw a syntax error, which is a silent
+      failure: the video kept autoplaying and nothing in the console said why.
+
+      Runs immediately rather than on DOMContentLoaded, because autoplay starts
+      as soon as the element is parsed and a listener would fire too late.
+    */
+    (() => {
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      for (const v of document.querySelectorAll('video[data-autoplay]')) {
+        v.removeAttribute('autoplay');
+        v.pause();
+      }
+    })();
+  </script>
 )}
 
 <style>

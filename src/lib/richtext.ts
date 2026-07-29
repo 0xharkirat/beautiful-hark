@@ -19,5 +19,8 @@ export const richTextComponents = {
   // schema.
   a: MarkdownLink,
   img: MarkdownImage,
+  // Same renderer as `img`. Only the source of the path differs: see
+  // tina/templates/figure.ts for why a build asset cannot use `img`.
+  Figure: MarkdownImage,
   Video,
 };

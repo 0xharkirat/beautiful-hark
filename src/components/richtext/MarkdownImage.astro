@@ -17,17 +17,25 @@
 import FigCaption from './FigCaption.astro';
 
 interface Props {
+  /** From a markdown image node. Tina rewrites this to its media CDN. */
   url?: string | null;
+  /**
+   * From the Figure template, which uses a plain string field so Tina leaves it
+   * alone. That difference is the whole reason the template exists: see
+   * tina/templates/figure.ts.
+   */
+  src?: string | null;
   alt?: string | null;
   caption?: string | null;
 }
 
-const { url, alt, caption } = Astro.props;
+const { url, src: srcProp, alt, caption } = Astro.props;
+const url_ = url ?? srcProp;
 
 // Same guard the package applies. An image URL comes from content, and content
 // is editable, so a javascript: or data: URL must not become an src.
 const safe =
-  url && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(url) ? url : null;
+  url_ && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(url_) ? url_ : null;
 
 // The sprite sheet is the one image here that must not be smoothed. Browsers
 // interpolate by default, which turns 32px pixel art into a smear, and the

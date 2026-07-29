@@ -1,5 +1,6 @@
 import type { Collection } from 'tinacms';
 import { videoTemplate } from '../templates/video';
+import { figureTemplate } from '../templates/figure';
 
 export const PostCollection: Collection = {
   label: 'Blog Posts',

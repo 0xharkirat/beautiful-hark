@@ -198,7 +198,9 @@
     const paintBubble = () => {
       if (!bubbleOn) return;
       bubble.textContent =
-        mode === 'rebirth' ? 'reborn' : `next rebirth ${untilNextHour()}`;
+        // "in" matters: without it "next rebirth 19:46" reads as a clock
+        // time rather than a countdown, which is exactly how it was misread.
+        mode === 'rebirth' ? 'reborn' : `rebirth in ${untilNextHour()}`;
       // Sit above the bird, clamped so it never leaves the viewport.
       const bx = Math.min(Math.max(4, x - bubble.offsetWidth / 2), innerWidth - bubble.offsetWidth - 4);
       const by = Math.max(4, y - CELL / 2 - bubble.offsetHeight - 6);

@@ -1,0 +1,143 @@
+---
+import Base from '../layouts/Base.astro';
+
+/**
+ * The page that explains the bird. It is deliberately short: the pet is
+ * already on this page, so the reader can try each thing as they read it.
+ */
+
+const interactions = [
+  {
+    action: 'Move your cursor',
+    result:
+      'Hawky follows. Small movements it ignores, medium ones it hops, longer ones it flies. Stop moving and it settles back into perching.',
+  },
+  {
+    action: 'Click Hawky',
+    result:
+      'It goes to sleep and stops following. Click again and it startles awake. It will not take a click meant for a link or a button underneath it.',
+  },
+  {
+    action: 'Double-click Hawky',
+    result: 'It burns, collapses to ash, and is reborn. This takes about five seconds and cannot be interrupted.',
+  },
+  {
+    action: 'Rest on Hawky',
+    result: 'A small bubble appears with the time until the next rebirth.',
+  },
+  {
+    action: 'Wait for the hour',
+    result:
+      'It burns on its own, once an hour, every hour. If you have put it to sleep it burns anyway and then goes back to sleep.',
+  },
+];
+---
+
+<Base
+  title="Hawky"
+  description="The phoenix that lives on this site: what it does, and how to make it do it."
+>
+  <section class="column">
+    <h1>Hawky</h1>
+
+    <p class="lede mt-4">
+      Hawky is a phoenix. It starts perched on the T of the wordmark at the top
+      of the page, follows your cursor around, and burns itself to ash on the
+      hour before rising again.
+    </p>
+
+    <p class="mt-4">
+      It is on every page of this site, including this one, so you can try each
+      of these as you read.
+    </p>
+
+    <dl class="mt-10">
+      {interactions.map((i) => (
+        <div class="row">
+          <dt>{i.action}</dt>
+          <dd>{i.result}</dd>
+        </div>
+      ))}
+    </dl>
+
+    <h2 class="mt-14">Every frame</h2>
+    <p class="mt-3">
+      Forty-eight frames of 32 by 32 pixels, in four colours. Perching, leaving
+      the ground, three flight angles, and the rebirth.
+    </p>
+
+    <figure class="sheet mt-6">
+      <img
+        src="/phoenix.png"
+        alt="The Hawky sprite sheet: six rows of eight frames showing perching, hopping and taking off, three flight angles, and the rebirth cycle."
+        width="256"
+        height="192"
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+
+    <h2 class="mt-14">When it stays away</h2>
+    <p class="mt-3">
+      Hawky never loads on a touch device, because there is no cursor to follow
+      and it would sit in a corner looking broken. It also never loads if your
+      system asks for reduced motion. It is a bird made entirely of movement, so
+      it is removed rather than slowed down.
+    </p>
+    <p class="mt-4">
+      It renders behind the writing, so it can never cover a word you are
+      reading. The one exception is the rebirth, which comes to the front for
+      those few seconds.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .lede {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .row {
+    display: grid;
+    gap: 4px;
+  }
+  dt {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  dd {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  /* Shown at 2x so the pixels stay square and countable rather than smoothed
+     into a smear by the browser's default filtering. */
+  .sheet {
+    margin: 0;
+    padding: 20px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--ink) 4%, transparent);
+    overflow-x: auto;
+  }
+  .sheet img {
+    display: block;
+    width: 512px;
+    max-width: none;
+    height: auto;
+    image-rendering: pixelated;
+  }
+</style>

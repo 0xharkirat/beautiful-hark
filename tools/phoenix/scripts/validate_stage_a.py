@@ -28,7 +28,7 @@ FRAME_COUNT = 8
 PREVIEW_SCALE = 8
 GROUND_Y = 27
 MAX_VISIBLE_COLOURS = 4
-LAST_EMBER_FRAME = 6  # ember may not appear in any frame after this one
+ASH_FRAME = 3  # the one dead frame: no fire anywhere in it
 
 FRAME_NAMES = [
     "burn1",
@@ -129,12 +129,15 @@ def main() -> int:
             f"{label}: content on the cell edge at {sorted(set(edge_hits))[:6]}",
         )
 
-        # ember only during burn and rebirth
+        # Flames are permanent on the phoenix - the earlier rule that ember
+        # must vanish after the burn was reversed, because a monochrome bird
+        # read as a dove. The invariant that still means something is that the
+        # ash frame is the one dead moment, so it carries no fire at all.
         has_ember = any(
             px[ox + x, y] == ember for y in range(CELL) for x in range(CELL)
         )
-        if index > LAST_EMBER_FRAME:
-            fails.check(not has_ember, f"{label}: ember must not appear after frame {LAST_EMBER_FRAME}")
+        if index == ASH_FRAME:
+            fails.check(not has_ember, f"{label}: the ash frame must contain no ember")
 
         # the frame must not be empty
         filled = sum(
@@ -217,7 +220,7 @@ def main() -> int:
     print(f"  visible colours {len(visible)} / {MAX_VISIBLE_COLOURS}: " + ", ".join(
         name for name, value in palette.items() if tuple(value) in visible
     ))
-    print(f"  ember          frames 0-{LAST_EMBER_FRAME} only, absent from frame {return_index}")
+    print(f"  ember          permanent; absent only from the ash frame {ASH_FRAME}")
     print(f"  cell edges     clear on all {FRAME_COUNT} frames")
     print(f"  ground anchor  talons at y={GROUND_Y} x={talons}; ash on the same baseline")
     print(f"  preview        {preview.width}x{preview.height}, exact {PREVIEW_SCALE}x nearest-neighbour")

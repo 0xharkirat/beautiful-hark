@@ -19,16 +19,26 @@ ROOT = Path(__file__).resolve().parents[1]
 PALETTE_PATH = ROOT / "spec" / "palette.json"
 OUTPUT_DIR = ROOT / "output"
 
-SHEET = OUTPUT_DIR / "phoenix-rebirth.png"
-PREVIEW = OUTPUT_DIR / "phoenix-rebirth-preview.png"
-GRID = OUTPUT_DIR / "phoenix-rebirth-grid.png"
+import sys as _sys
+
+# Any row can be validated; the ash rule applies only to the rebirth row.
+_ARGS = [a for a in _sys.argv[1:] if not a.startswith("-")]
+CHECK_ASH = (_ARGS[0] if _ARGS else "rebirth") == "rebirth"
+
+
+# Which row to validate. The ash rule applies only to the rebirth row, so it
+# is disabled automatically for any other.
+ROW = next((a for a in _ARGS), "rebirth")
+SHEET = OUTPUT_DIR / f"phoenix-{ROW}.png"
+PREVIEW = OUTPUT_DIR / f"phoenix-{ROW}-preview.png"
+GRID = OUTPUT_DIR / f"phoenix-{ROW}-grid.png"
 
 CELL = 32
 FRAME_COUNT = 8
 PREVIEW_SCALE = 8
 GROUND_Y = 27
 MAX_VISIBLE_COLOURS = 4
-ASH_FRAME = 3  # the one dead frame: no fire anywhere in it
+ASH_FRAME = 3  # rebirth row only: the one dead frame, no fire in it
 
 FRAME_NAMES = [
     "burn1",
@@ -56,7 +66,7 @@ def main() -> int:
     ink = tuple(palette["ink"])
     allowed = {tuple(v) for v in palette.values()}
 
-    for path in (SHEET, PREVIEW, GRID):
+    for path in (SHEET, PREVIEW) + ((GRID,) if GRID.exists() else ()):
         if not path.exists():
             print(f"FAIL: missing {path}", file=sys.stderr)
             return 1
@@ -136,7 +146,7 @@ def main() -> int:
         has_ember = any(
             px[ox + x, y] == ember for y in range(CELL) for x in range(CELL)
         )
-        if index == ASH_FRAME:
+        if index == ASH_FRAME and CHECK_ASH:
             fails.check(not has_ember, f"{label}: the ash frame must contain no ember")
 
         # the frame must not be empty
@@ -201,11 +211,14 @@ def main() -> int:
             f"preview is interpolated, not nearest-neighbour: {interpolated}",
         )
 
-    grid = Image.open(GRID)
-    fails.check(
-        grid.size == preview.size,
-        f"grid is {grid.size}, expected to match the preview at {preview.size}",
-    )
+    # The grid overlay is a review aid produced only for the rebirth row, so
+    # its absence is not a failure for other rows.
+    if GRID.exists():
+        grid = Image.open(GRID)
+        fails.check(
+            grid.size == preview.size,
+            f"grid is {grid.size}, expected to match the preview at {preview.size}",
+        )
 
     # --- report ------------------------------------------------------------
     if fails:
@@ -214,7 +227,7 @@ def main() -> int:
             print(f"  - {message}", file=sys.stderr)
         return 1
 
-    print("Stage A OK")
+    print(f"Row '{ROW}' OK")
     print(f"  sheet          {width}x{height}, {FRAME_COUNT} frames of {CELL}x{CELL}")
     print(f"  alpha          binary, no partial transparency")
     print(f"  visible colours {len(visible)} / {MAX_VISIBLE_COLOURS}: " + ", ".join(

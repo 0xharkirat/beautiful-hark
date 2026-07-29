@@ -44,35 +44,46 @@ GROUND_Y = 27  # talons sit here; the ash pile shares the baseline
 # at y=19 and sweeps down to the baseline. Remove either and it is a pigeon.
 # ---------------------------------------------------------------------------
 
+# Proportions follow a studied reference small bird rather than invention.
+# The first draft read as a duck: tiny beak, small head merging into the
+# body, and a long thin 45-degree tail wedge. The corrections, in order of
+# how much they matter at 32px:
+#   1. a big chunky wedge beak - the primary bird-identifier at this size
+#   2. a larger head with a real neck notch separating it from the body
+#   3. a rounded compact body instead of a tall rectangle
+#   4. a shorter, thicker tail that continues the body line
+# The crest is two swept plumes, which with the tail is what says phoenix
+# rather than pigeon once colour is gone.
 RETURN = [
     "................................",  # 0
     "................................",  # 1
-    "..............K.K...............",  # 2   crest tips
-    "..............KKKK..............",  # 3   crest, swept back off the nape
-    "...............KKKK.............",  # 4
-    "................KKKKKKK.........",  # 5   head top
-    "................KWWWWWWK........",  # 6
-    "................KWWWWWWK........",  # 7
-    "................KWWWKWWK........",  # 8   eye
-    "................KWWWWWWKKK......",  # 9   beak
-    "................KWWWWWWKK.......",  # 10
-    ".................KWWWWWK........",  # 11  nape notch
-    "................KWWWWWWK........",  # 12  neck
-    "...............KWWWWWWWK........",  # 13
-    "..............KWWWWWWWWK........",  # 14  shoulder
-    ".............KWWWWWWWWWK........",  # 15
-    "............KWWWWWKWWWWK........",  # 16  folded wing edge
-    "............KWWWWKWWWWWK........",  # 17
-    "...........KWWWWKWWWWWWK........",  # 18
-    ".........KKWWWWWKWWWWWK.........",  # 19  tail leaves the body here
-    ".......KKWWWWKWWWKWWWK..........",  # 20
-    ".....KKWWKWWK.KWWWWWK...........",  # 21
-    "...KKWWWKWWK...KWWWK............",  # 22
-    "..KWWWKWWWK.....KKK.............",  # 23  belly
-    "..KWWKWWWK......K.K.............",  # 24  legs
-    "...KWKWWK.......K.K.............",  # 25
-    "....KKKK........K.K.............",  # 26
-    "..............KKK.KKK...........",  # 27  TALONS - ground anchor
+    "............KK..................",  # 2   crest: grown out of the head's
+    ".............KKK................",  # 3   top-left so it cannot detach.
+
+    "...............KKKKKKK..........",  # 4   head top
+    "..............KWWWWWWWK.........",  # 5
+    ".............KWWWWWWWWWK........",  # 6
+    ".............KWWWWWKWWWK........",  # 7   eye
+    ".............KWWWWWWWWKKK.......",  # 8   beak: a solid wedge, not an
+    ".............KWWWWWWWWKKKKK.....",  # 9   outline. Chunky is what makes
+    ".............KWWWWWWWWKKKK......",  # 10  it read as a bird at 32px.
+    ".............KWWWWWWWWK.........",  # 11  jaw
+    "..............KWWWWWWK..........",  # 12  neck notch
+    ".............KWWWWWWWK..........",  # 13
+    "............KWWWWWWWWK..........",  # 14  shoulder
+    "..........KWWWWWWWWWWK..........",  # 15
+    "........KWWWWWWWWWWWWK..........",  # 16  back
+    ".......KWWWWWWWWWWWWWK..........",  # 17
+    "......KWWWWWWKWWWWWWWK..........",  # 18  folded wing edge
+    ".....KWWWWWKWWWWWWWWK...........",  # 19  tail leaves the body here
+    "...KKWWWWKWWWWWWWWWK............",  # 20
+    "..KKWWWKWWWWWWWWWWK.............",  # 21
+    "..KKKKKWWWWWWWWWWK..............",  # 22  tail tip
+    "......KWWWWWWWWWK...............",  # 23  belly
+    ".......KWWWWWWWK................",  # 24
+    "........KKWWWKK.................",  # 25
+    "...........K...K................",  # 26  legs
+    "..........KKK.KKK...............",  # 27  TALONS - ground anchor
     "................................",  # 28
     "................................",  # 29
     "................................",  # 30

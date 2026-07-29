@@ -70,3 +70,7 @@ dist
 # P0 spike: parked Next.js source for reference; delete at cutover
 _legacy-next/
 .DS_Store
+
+# Reference sprite sheets. Study only - provenance is not ours to redistribute.
+# eagle-astonishia.png is a ripped PSP game asset ("Rip by Davias").
+tools/phoenix/reference/

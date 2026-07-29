@@ -48,7 +48,7 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
   </svg>
 </span>
 
-<script is:inline>
+<script>
   /*
     One window listener for the life of the tab, not one per logo per
     navigation. The previous version re-bound on astro:after-swap, which added
@@ -56,7 +56,25 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
     node each old listener closed over. Querying the DOM inside the handler
     costs a rAF-throttled querySelectorAll and needs no bookkeeping, so logos
     that arrive after a swap are picked up for free.
+
+    Not is:inline, deliberately. is:inline pins a script where it is written,
+    and the header renders this logo inside its <a class="wordmark">, so the
+    script element became a child of that link: invalid nesting, and assistive
+    tech can read the script source as part of the link's name. Astro hoists a
+    plain script out of the markup, which is the whole fix. Nothing here depends
+    on its position - the listener is on window and finds logos by selector, so
+    it works from wherever it is loaded.
   */
+  // A hoisted script is a module and gets typechecked, unlike an inline one, so
+  // the flag needs declaring. It has to live on window rather than in module
+  // scope: ClientRouter re-executes this on navigation, which would reset a
+  // module-scoped variable and bind a second listener every time.
+  declare global {
+    interface Window {
+      __harkLogoBound?: boolean;
+    }
+  }
+
   if (!window.__harkLogoBound) {
     window.__harkLogoBound = true;
 
@@ -66,7 +84,7 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
     const BODY_MAX = 20;
 
     // Push toward the cursor, but never further than `max` SVG units.
-    const clamp = (sx, sy, max) => {
+    const clamp = (sx: number, sy: number, max: number) => {
       const dx = sx - MID_X;
       const dy = sy - MID_Y;
       const d = Math.sqrt(dx * dx + dy * dy);
@@ -74,7 +92,7 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
       return { x: dx * s, y: dy * s };
     };
 
-    let raf = null;
+    let raf: number | null = null;
     window.addEventListener(
       'mousemove',
       (e) => {
@@ -82,11 +100,13 @@ const { className = 'size-10', trackEyes = false, size } = Astro.props;
         raf = requestAnimationFrame(() => {
           raf = null;
           document
-            .querySelectorAll('.hark-logo[data-track="true"]')
+            .querySelectorAll<HTMLElement>('.hark-logo[data-track="true"]')
             .forEach((node) => {
               const svg = node.querySelector('svg');
-              const body = node.querySelector('.hark-body');
-              const eyes = node.querySelector('.hark-eyes');
+              // SVGGraphicsElement, not Element: the transform is written to
+              // .style, which only the typed interface exposes.
+              const body = node.querySelector<SVGGraphicsElement>('.hark-body');
+              const eyes = node.querySelector<SVGGraphicsElement>('.hark-eyes');
               if (!svg || !body || !eyes) return;
               const r = svg.getBoundingClientRect();
               if (!r.width) return;

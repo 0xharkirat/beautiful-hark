@@ -12,8 +12,15 @@ const { config } = Astro.props;
 const header = config?.header ?? null;
 const nav = (header?.nav ?? []).filter((n) => n !== null);
 const path = Astro.url.pathname;
-const isActive = (href: string) =>
-  href === '/' ? path === '/' : path.startsWith(href);
+
+// Trailing slashes vary by host and by dev vs build, so '/about/' has to count
+// as '/about'. Home is compared exactly, or it would match every path.
+const isActive = (href: string) => {
+  if (!href) return false;
+  const p = path.replace(/\/+$/, '') || '/';
+  const h = href.replace(/\/+$/, '') || '/';
+  return h === '/' ? p === '/' : p === h || p.startsWith(h + '/');
+};
 ---
 
 <!-- Persist across swaps so the nav does not flash on every navigation. The
@@ -42,6 +49,37 @@ const isActive = (href: string) =>
   </div>
 </header>
 
+<script is:inline>
+  /*
+    Recompute which tab is current after every client-side navigation.
+
+    transition:persist above carries this header across swaps as the same DOM
+    node, which is what stops it flashing - but it also means the is-active
+    class baked in at build time is the one for whatever page the reader first
+    landed on, and it never changes again. Going Home -> /hawky left Home lit;
+    going About -> /hawky left About lit. A fresh load of /hawky was always
+    correct, which is why this hid: it only shows up when you click.
+
+    Reads each link's own href and applies the same rule as the server, so the
+    two cannot drift apart into different answers.
+  */
+  (() => {
+    const sync = () => {
+      const p = location.pathname.replace(/\/+$/, '') || '/';
+      for (const a of document.querySelectorAll('header a.nav')) {
+        const h = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
+        const on = h === '/' ? p === '/' : p === h || p.startsWith(h + '/');
+        a.classList.toggle('is-active', on);
+        if (on) a.setAttribute('aria-current', 'page');
+        else a.removeAttribute('aria-current');
+      }
+    };
+    // page-load fires on first load and after every view transition.
+    document.addEventListener('astro:page-load', sync);
+    sync();
+  })();
+</script>
+
 <style>
   .wordmark {
     display: inline-flex;
@@ -61,7 +99,7 @@ const isActive = (href: string) =>
     text-decoration: none;
     transition: color 0.15s ease;
   }
-  .nav:hover { color: var(--ink); }
+  .nav:hover { color: var(--accent); }
   .nav.is-active {
     color: var(--ink);
     text-decoration: underline;

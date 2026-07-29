@@ -32,18 +32,27 @@
 }
 
 /*
-  Six greys, one accent. --accent points at --ink today, so the site is
-  black-and-white. Point it somewhere else and every link, focus ring and
-  rule turns with it — no other edit needed.
+  Six greys, one accent. Every link, focus ring and rule reads --accent, so this
+  is the only place the site's colour is decided.
+
+  The accent is the phoenix's ember, the one colour the site already owned: the
+  sprite's fire is rgb(214,106,42) and nothing else on the page is not grey.
+  Borrowing it means the hover state and the bird agree instead of introducing a
+  second colour that has to be justified on its own.
+
+  It is a different shade per theme because no single one clears AA on both. The
+  ember at #d66a2a is 5.27:1 on the dark paper but only 3.35:1 on the light,
+  which fails normal text; darkening it far enough for light (4.69:1) drops it to
+  3.77:1 on dark. Same hue, tuned to its background, exactly as the greys are.
 */
 :root {
   --paper: #faf9f7;
   --raised: #ffffff;
   --ink: #161614;      /* 17.2:1 on paper */
   --ink-2: #5c5b57;    /*  6.5:1 */
-  --ink-3: #6f6e6a;    /*  4.9:1 — the quietest grey that still clears AA */
+  --ink-3: #6f6e6a;    /*  4.9:1 - the quietest grey that still clears AA */
   --rule: #e6e5e1;
-  --accent: var(--ink);
+  --accent: #b4551e;   /*  4.7:1 - ember, darkened for the light paper */
 
   /* One column. Everything lives inside it. */
   --measure: 640px;
@@ -57,7 +66,7 @@
   --ink-2: #9d9b95;    /*  6.7:1 */
   --ink-3: #8b8a84;    /*  5.4:1 */
   --rule: #333330;
-  --accent: var(--ink);
+  --accent: #d66a2a;   /*  5.3:1 - the ember as the sprite draws it */
 }
 
 ::selection {
@@ -172,16 +181,29 @@
   margin-block: -11px;
 }
 
-/* Quiet link: underline sits close, thickens on hover. No colour change,
-   because there is no colour. */
+/* Quiet link: underline sits close, and the whole link takes the accent on
+   hover.
+
+   The text colour has to move, not just the underline. This rule used to change
+   text-decoration-color alone, which shifted a 1px line from #6f6e6a to #161614
+   and was invisible in practice - two greys, one pixel tall, on an 18px serif
+   line. Colouring the word is what makes the state legible.
+
+   Only colours are animated. text-decoration-thickness would be the obvious
+   thing to grow on hover, but it reflows the line box by a fraction and the
+   text jitters. */
 .link {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-decoration-color: var(--ink-3);
   text-underline-offset: 2px;
-  transition: text-decoration-color 0.15s ease;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
-.link:hover { text-decoration-color: var(--accent); }
+.link:hover,
+.link:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
 
 .rule {
   border: 0;
@@ -202,14 +224,21 @@
 .prose h2 { font-size: 22px; margin-top: 2em; }
 .prose h3 { font-size: 18px; margin-top: 1.75em; }
 
+/* Body links read as ink with a grey underline, and turn accent on hover. See
+   the .link rule above for why the text colour moves and the thickness does
+   not. */
 .prose a {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-decoration-color: var(--ink-3);
   text-underline-offset: 3px;
-  transition: text-decoration-color 0.15s ease;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
-.prose a:hover { text-decoration-color: var(--accent); }
+.prose a:hover,
+.prose a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
 
 .prose ul, .prose ol { padding-left: 1.4em; }
 .prose ul { list-style: disc; }

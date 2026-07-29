@@ -2,33 +2,39 @@
 import Base from '../layouts/Base.astro';
 
 /**
- * The page that explains the bird. It is deliberately short: the pet is
- * already on this page, so the reader can try each thing as they read it.
+ * The page that explains the bird. Deliberately short: Hawky is on this page
+ * too, so each thing can be tried while it is being read about.
  */
 
 const interactions = [
   {
     action: 'Move your cursor',
     result:
-      'Hawky follows. Small movements it ignores, medium ones it hops, longer ones it flies. Stop moving and it settles back into perching.',
+      'Hawky comes after it. Anything under about 30 pixels it ignores, so it does not twitch every time your hand moves. Past that it walks, and past about 100 pixels it takes off and flies, with a shadow underneath telling you how high it is. Stop for two seconds and it lands and goes back to perching.',
   },
   {
     action: 'Click Hawky',
     result:
-      'It goes to sleep and stops following. Click again and it startles awake. It will not take a click meant for a link or a button underneath it.',
+      'It falls asleep and stops following, with a small zZ over its head. Click again and it startles awake. A click that was meant for a link or a button underneath goes to the link, not the bird.',
+  },
+  {
+    action: 'Leave it alone',
+    result:
+      'After about twenty-five seconds of nobody touching the mouse it dozes off by itself. Moving the cursor wakes it. A nap you asked for by clicking works the other way round and only a click ends it, since you cannot avoid moving the mouse eventually.',
   },
   {
     action: 'Double-click Hawky',
-    result: 'It burns, collapses to ash, and is reborn. This takes about five seconds and cannot be interrupted.',
+    result:
+      'It catches fire, burns down to a pile of ash, and hatches out of it again as a chick. The whole thing runs about five seconds and cannot be interrupted.',
   },
   {
-    action: 'Rest on Hawky',
-    result: 'A small bubble appears with the time until the next rebirth.',
+    action: 'Rest your cursor on it',
+    result: 'After a moment a bubble appears counting down to the next rebirth.',
   },
   {
     action: 'Wait for the hour',
     result:
-      'It burns on its own, once an hour, every hour. If you have put it to sleep it burns anyway and then goes back to sleep.',
+      'It burns on its own every time the clock strikes. If you have put it to sleep, it burns anyway and then goes back to sleep, because you asked for it to be asleep.',
   },
 ];
 ---
@@ -41,14 +47,24 @@ const interactions = [
     <h1>Hawky</h1>
 
     <p class="lede mt-4">
-      Hawky is a phoenix. It starts perched on the T of the wordmark at the top
-      of the page, follows your cursor around, and burns itself to ash on the
-      hour before rising again.
+      Hawky is a phoenix that lives on this website. It starts perched on the T
+      of the wordmark, follows your cursor, and burns itself to ash on the hour
+      before hatching again.
     </p>
 
     <p class="mt-4">
-      It is on every page of this site, including this one, so you can try each
-      of these as you read.
+      I stole the idea from my colleague Brook, whose site
+      <a class="link" href="https://brookjeynes.dev" target="_blank" rel="noopener noreferrer">brookjeynes.dev</a>
+      has a cat that chases your cursor. That cat is
+      <a class="link" href="https://github.com/adryd325/oneko.js" target="_blank" rel="noopener noreferrer">oneko.js</a>,
+      which has been passed around the web since a 1990s Windows toy called
+      Neko. I built a cat first, then decided a bird that sets itself on fire
+      suited a site called Tales of Hark better.
+    </p>
+
+    <p class="mt-4">
+      Hawky is on every page here, including this one, so you can try these
+      while you read them.
     </p>
 
     <dl class="mt-10">
@@ -62,16 +78,25 @@ const interactions = [
 
     <h2 class="mt-14">Every frame</h2>
     <p class="mt-3">
-      Forty-eight frames of 32 by 32 pixels, in four colours. Perching, leaving
-      the ground, three flight angles, and the rebirth.
+      Fifty-six frames at 32 by 32 pixels, in four colours: transparent,
+      white, black, and one orange that only the fire uses. Seven rows of
+      eight, reading down as perching, leaving the ground, side-on flight, the
+      rebirth, head-on flight, three-quarter flight, and the walk.
+    </p>
+    <p class="mt-4">
+      Everything is drawn facing right and mirrored for the other direction, and
+      the three flight angles cover all eight compass headings between them. A
+      cat is worth drawing from eight angles because its outline changes a lot
+      with heading. A bird flying straight away from you is a blob with two
+      lumps on it, so those angles were not worth drawing.
     </p>
 
     <figure class="sheet mt-6">
       <img
         src="/phoenix.png"
-        alt="The Hawky sprite sheet: six rows of eight frames showing perching, hopping and taking off, three flight angles, and the rebirth cycle."
+        alt="The Hawky sprite sheet: seven rows of eight frames showing perching, taking off, three flight angles, the rebirth cycle, and the walk."
         width="256"
-        height="192"
+        height="224"
         loading="lazy"
         decoding="async"
       />
@@ -79,15 +104,16 @@ const interactions = [
 
     <h2 class="mt-14">When it stays away</h2>
     <p class="mt-3">
-      Hawky never loads on a touch device, because there is no cursor to follow
-      and it would sit in a corner looking broken. It also never loads if your
-      system asks for reduced motion. It is a bird made entirely of movement, so
-      it is removed rather than slowed down.
+      Hawky does not load at all on a touch device. There is no cursor to
+      follow, so it would sit in a corner doing nothing. It also does not load
+      if your system asks for reduced motion, since there is no version of it
+      that holds still.
     </p>
     <p class="mt-4">
       It renders behind the writing, so it can never cover a word you are
-      reading. The one exception is the rebirth, which comes to the front for
-      those few seconds.
+      reading. The rebirth is the exception and comes to the front for those few
+      seconds, because otherwise the one part worth watching would happen behind
+      a paragraph.
     </p>
   </section>
 </Base>

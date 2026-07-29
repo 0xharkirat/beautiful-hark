@@ -4,12 +4,14 @@
  *
  * Its own engine rather than a patch on oneko: oneko walks in a straight line
  * at the cursor and that is the whole algorithm. This has to perch on a glyph,
- * hop or fly depending on distance, sleep on demand, and burn on the hour.
+ * walk or fly depending on distance, sleep on demand or when ignored, and
+ * burn on the hour.
  *
- * Sprite sheet is public/phoenix.png, 256x192, six rows of eight 32px frames:
- * perched, launch, flight (side), rebirth, front, quarter. Frames are drawn
- * facing right and mirrored for leftward travel, so nothing is drawn twice,
- * and the three flight aspects cover all eight headings by angle.
+ * Sprite sheet is public/phoenix.png, 256x224, seven rows of eight 32px
+ * frames: perched, launch, flight (side), rebirth, front, quarter, walk.
+ * Frames are drawn facing right and mirrored for leftward travel, so nothing
+ * is drawn twice, and the three flight aspects cover all eight headings by
+ * angle.
  */
 ---
 
@@ -23,7 +25,7 @@
     window.__phoenix = true;
 
     const CELL = 32;
-    const ROW = { perched: 0, launch: 1, flight: 2, rebirth: 3, front: 4, quarter: 5 };
+    const ROW = { perched: 0, launch: 1, flight: 2, rebirth: 3, front: 4, quarter: 5, walk: 6 };
 
     // Heading picks a flight aspect, not one of eight drawn directions.
     //
@@ -48,22 +50,41 @@
     // whenever it moves would spam takeoff and landing on every twitch of the
     // mouse, which reads as twitchy on a site built to be calm.
     const DEADZONE = 32;    // below this it does not react at all
-    const HOP_MAX = 100;    // 32..100 hops; beyond that it flies
+    const WALK_MAX = 100;   // 32..100 it walks; beyond that it flies
     const SETTLE_MS = 2000; // stationary this long and it perches
-    // Per 100ms tick. oneko moves ~10px/frame and reads as lively; 4px/tick
-    // is 40px/s and reads as broken, so the bird never catches up.
-    const SPEED_HOP = 4;
-    const SPEED_FLY = 11;
+    const IDLE_SLEEP_MS = 25000;  // cursor untouched this long and it dozes off
 
-    // Launch-row columns, in play order. Landing is not the takeoff reversed:
-    // it runs descent, crouch, settle, because a bird arrives feet-first and
-    // then folds, where a reversed takeoff would unfold its wings on the way
-    // down.
-    const TAKEOFF = [5, 6, 7];
-    const LANDING = [7, 4, 5, 0];
+    // Per 100ms tick.
+    //
+    // The walk speed is not a taste setting, it is derived. The cycle is eight
+    // frames covering two strides, and the frame advances once per tick, so
+    // SPEED_WALK is also the pixels covered per frame: 3px a frame is a 12px
+    // stride, which is about right under a bird this size. Raise it and the
+    // feet slide because the body outruns the legs.
+    const SPEED_WALK = 3;
+    // 110px/s read as darting rather than flying. This is closer to the
+    // cursor's own speed, so the bird trails it instead of snapping to it.
+    const SPEED_FLY = 7;
+
+    // Launch-row columns, in play order, each with the fraction of full speed
+    // the bird travels while it is showing. Landing is not the takeoff
+    // reversed: a bird arrives feet-first and then folds, where a reversed
+    // takeoff would unfold its wings on the way down.
+    //
+    // The speeds matter as much as the frames. Holding the bird still for a
+    // transition and then snapping it back to full speed is what made takeoff
+    // and landing feel abrupt - it reads as a stutter, not a manoeuvre. It
+    // accelerates out of a launch and decelerates into a landing instead.
+    //
+    // Frames repeat rather than the list being short: three ticks is 300ms,
+    // which is too little room for an acceleration curve to be felt at all.
+    // Repeating a column holds the pose while the speed keeps changing under
+    // it, so the manoeuvre has somewhere to happen. Landing is the longer of
+    // the two because arresting momentum should take longer than spending it.
+    const TAKEOFF = [[5, 0.08], [5, 0.2], [6, 0.45], [6, 0.7], [7, 0.9]];
+    const LANDING = [[7, 0.75], [7, 0.55], [4, 0.4], [4, 0.25], [5, 0.12], [5, 0.04], [0, 0]];
 
     const REBIRTH_MS = 5200;
-    const GRACE_MS = 20000;  // no rebirth this soon after load
     const CLOCK_POLL_MS = 20000;
     const DOUBLE_CLICK_MS = 250;
 
@@ -72,15 +93,36 @@
     el.setAttribute('aria-hidden', 'true');
     document.body.appendChild(el);
 
+    // A shadow on the ground, because without one a bird flying straight up
+    // the screen is indistinguishable from a bird sliding up the screen. The
+    // sprite alone cannot carry altitude: from head-on the wings tell you it
+    // is flapping but nothing tells you how high it is. The shadow does.
+    //
+    // It only exists while the bird is off the ground, and it shrinks, fades
+    // and drops away from the body as the bird climbs, which is the whole
+    // vocabulary of a shadow doing its job.
+    const shadow = document.createElement('div');
+    shadow.id = 'phoenix-shadow';
+    shadow.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(shadow);
+
     // --- state ---------------------------------------------------------
     let x = 0, y = 0;                 // sprite centre, viewport coords
     let mx = 0, my = 0;               // cursor
     let facing = 1;                   // 1 right, -1 left
-    let mode = 'perched';   // perched | hop | takeoff | fly | landing | sleep | waking | rebirth
+    let mode = 'perched';   // perched | walk | takeoff | fly | landing | sleep | waking | rebirth
     let tick = 0;
     let idleFrames = 0;
+    let travelled = 0;   // pixels covered, drives the walk cycle
     let rebirthUntil = 0;
-    let started = Date.now();
+    let lastMove = Date.now();
+    // Why the bird is asleep, not just that it is. Dozing off on its own must
+    // be undone by the same thing that caused it - the cursor moving again -
+    // but a reader who deliberately clicked it to sleep would find that
+    // maddening, since moving the mouse is unavoidable. So a click-sleep is
+    // only ever undone by another click.
+    let sleepReason = null;   // 'idle' | 'user'
+    let lift = 0;             // 0 on the ground, 1 at full flight height
 
     const perch = () => {
       // Measure the T itself, not the whole wordmark: a Range over the first
@@ -118,6 +160,25 @@
       el.style.left = `${Math.round(x - CELL / 2)}px`;
       el.style.top = `${Math.round(y - CELL / 2)}px`;
       el.style.transform = facing < 0 ? 'scaleX(-1)' : '';
+
+      // Ground shadow. Height is faked, since a page has no ground plane and
+      // the bird has no third axis: what actually reads as altitude is the
+      // shadow separating from the feet while getting smaller and fainter.
+      // All three move together off one number, so a half-climb looks like a
+      // half-climb rather than three effects at different rates.
+      if (lift <= 0.01) {
+        shadow.style.opacity = '0';
+        return;
+      }
+      // These numbers were raised after looking at them. The first pass used
+      // 10px at 11% black, which is arithmetically a shadow and visually
+      // nothing at all, and a cue nobody can see does not cue anything.
+      const w = 22 - 7 * lift;
+      shadow.style.opacity = `${0.34 - 0.14 * lift}`;
+      shadow.style.width = `${w}px`;
+      shadow.style.height = `${Math.max(3, w * 0.3)}px`;
+      shadow.style.left = `${Math.round(x - w / 2)}px`;
+      shadow.style.top = `${Math.round(y + CELL / 2 - 6 + 22 * lift)}px`;
     };
 
     // --- rebirth -------------------------------------------------------
@@ -156,9 +217,18 @@
       tick = 0;
     };
 
+    // Claim the hour you arrived in, immediately.
+    //
+    // Without this the first poll after load sees an hour that has not burned
+    // yet and burns straight away, so arriving at 19:46 gave a rebirth at
+    // 19:46. The clock was never consulted; "on the hour" was only ever true
+    // from the second rebirth onwards. Standing down for the current hour is
+    // what makes the first one land on the hour too, and it makes the hover
+    // countdown honest, which it previously was not.
+    markBurned(hourKey());
+
     let pending = null;
     const checkClock = () => {
-      if (Date.now() - started < GRACE_MS) return;
       const k = hourKey();
       if (alreadyBurned(k)) return;
       if (document.hidden) { pending = k; return; }   // nobody is watching
@@ -233,6 +303,13 @@
     // --- input ---------------------------------------------------------
     document.addEventListener('mousemove', (e) => {
       mx = e.clientX; my = e.clientY;
+      lastMove = Date.now();
+      // Only an idle nap is broken by the cursor. See sleepReason.
+      if (mode === 'sleep' && sleepReason === 'idle') {
+        mode = 'waking';
+        sleepReason = null;
+        tick = 0;
+      }
       if (overBird(e.clientX, e.clientY)) {
         if (!dwellTimer && !bubbleOn) {
           dwellTimer = setTimeout(() => { dwellTimer = null; showBubble(true); }, DWELL_MS);
@@ -266,7 +343,13 @@
       }
       clickTimer = setTimeout(() => {
         clickTimer = null;
-        mode = mode === 'sleep' ? 'waking' : 'sleep';
+        if (mode === 'sleep') {
+          mode = 'waking';
+          sleepReason = null;
+        } else {
+          mode = 'sleep';
+          sleepReason = 'user';
+        }
         tick = 0;
       }, DOUBLE_CLICK_MS);
     });
@@ -276,6 +359,7 @@
       tick += 1;
 
       if (mode === 'rebirth') {
+        lift = 0;   // it burns on the ground
         const left = rebirthUntil - Date.now();
         const p = 1 - Math.max(0, left) / REBIRTH_MS;
         setFrame(ROW.rebirth, Math.min(7, Math.floor(p * 8)));
@@ -286,6 +370,7 @@
 
       if (mode === 'sleep') {
         setFrame(ROW.perched, 6);   // tucked, with the zZ
+        lift = 0;
         draw();
         return;
       }
@@ -294,6 +379,7 @@
         // Hold the alert frame briefly so waking reads as a startle rather
         // than the bird simply resuming.
         setFrame(ROW.perched, 7);
+        lift = 0;
         if (tick > 4) { mode = 'perched'; tick = 0; }
         draw();
         return;
@@ -307,24 +393,33 @@
       // away that it is frames rather than a creature. The launch row already
       // holds the poses: 5 crouch, 6 wings raised, 7 climbing away, and 4 is
       // the descent with the feet reaching down.
-      if (mode === 'takeoff') {
-        setFrame(ROW.launch, TAKEOFF[Math.min(TAKEOFF.length - 1, tick)]);
-        if (tick >= TAKEOFF.length) { mode = 'fly'; tick = 0; }
-        draw();
-        return;
-      }
-      if (mode === 'landing') {
-        setFrame(ROW.launch, LANDING[Math.min(LANDING.length - 1, tick)]);
-        if (tick >= LANDING.length) { mode = 'perched'; tick = 0; }
+      if (mode === 'takeoff' || mode === 'landing') {
+        const seq = mode === 'takeoff' ? TAKEOFF : LANDING;
+        const i = Math.min(seq.length - 1, tick);
+        const [col, frac] = seq[i];
+        setFrame(ROW.launch, col);
+        // The shadow rides the same curve as the speed. Both are the bird
+        // spending or shedding momentum, so one number driving both is what
+        // keeps the climb and the shadow from disagreeing.
+        lift = frac;
+        if (dist > 1) {
+          const v = SPEED_FLY * frac;
+          x += (dx / dist) * v;
+          y += (dy / dist) * v;
+        }
+        if (tick >= seq.length) {
+          mode = mode === 'takeoff' ? 'fly' : 'perched';
+          tick = 0;
+        }
         draw();
         return;
       }
 
       // A bird already in the air comes in to land; it does not drop into a
-      // hop on the way down. Without this the approach crosses HOP_MAX first,
-      // switches to hopping, and the landing never plays because the mode is
-      // no longer 'fly' by the time the deadzone is reached.
-      if (mode === 'fly' && dist <= HOP_MAX) {
+      // walk on the way down. Without this the approach crosses WALK_MAX
+      // first, switches to walking, and the landing never plays because the
+      // mode is no longer 'fly' by the time the deadzone is reached.
+      if (mode === 'fly' && dist <= WALK_MAX) {
         mode = 'landing';
         tick = 0;
         draw();
@@ -333,8 +428,20 @@
 
       if (dist < DEADZONE) {
         if (mode === 'fly') { mode = 'landing'; tick = 0; draw(); return; }
+        lift = 0;
         idleFrames += 1;
         if (idleFrames > SETTLE_MS / 100) {
+          // Nothing has touched the mouse for a while, so it dozes off by
+          // itself. Perching is the bird waiting for you; sleeping is the
+          // bird giving up on you, and a pet that never does the second one
+          // reads as a screensaver.
+          if (Date.now() - lastMove > IDLE_SLEEP_MS) {
+            mode = 'sleep';
+            sleepReason = 'idle';
+            setFrame(ROW.perched, 6);
+            draw();
+            return;
+          }
           mode = 'perched';
           // idle, blink, look up, look back, ruffle, preen - slow and quiet
           const cycle = [0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 5];
@@ -349,15 +456,22 @@
       idleFrames = 0;
       if (dx !== 0) facing = dx > 0 ? 1 : -1;
 
-      if (dist <= HOP_MAX) {
-        mode = 'hop';
-        const speed = SPEED_HOP;
-        x += (dx / dist) * speed;
-        y += (dy / dist) * speed;
-        setFrame(ROW.launch, 1 + (Math.floor(tick / 4) % 4));
+      if (dist <= WALK_MAX) {
+        // Walking, not hopping. Two of the launch row's four hop frames are
+        // genuinely airborne, so cycling them along the ground read as a bird
+        // trying and failing to fly rather than as a bird crossing a gap.
+        mode = 'walk';
+        lift = 0;
+        x += (dx / dist) * SPEED_WALK;
+        y += (dy / dist) * SPEED_WALK;
+        travelled += SPEED_WALK;
+        // Advance by distance covered, never by elapsed time. A leg cycle on
+        // its own timer is exactly what makes a walk look like sliding: the
+        // feet keep one rhythm while the body moves at some unrelated speed.
+        setFrame(ROW.walk, Math.floor(travelled / SPEED_WALK) % 8);
       } else {
         // Leaving the ground gets a takeoff; already airborne does not.
-        if (mode === 'perched' || mode === 'hop') {
+        if (mode === 'perched' || mode === 'walk') {
           mode = 'takeoff';
           tick = 0;
           if (dx !== 0) facing = dx > 0 ? 1 : -1;
@@ -365,9 +479,9 @@
           return;
         }
         mode = 'fly';
-        const speed = SPEED_FLY;
-        x += (dx / dist) * speed;
-        y += (dy / dist) * speed;
+        lift = 1;
+        x += (dx / dist) * SPEED_FLY;
+        y += (dy / dist) * SPEED_FLY;
         setFrame(aspectFor(dx, dy), Math.floor(tick / 3) % 6);
       }
       draw();
@@ -386,6 +500,7 @@
     document.addEventListener('astro:before-swap', () => { carried = el; });
     document.addEventListener('astro:after-swap', () => {
       if (carried && !document.getElementById('phoenix')) document.body.appendChild(carried);
+      if (!document.getElementById('phoenix-shadow')) document.body.appendChild(shadow);
       const h = perch();
       if (h && mode === 'perched') { x = h.x; y = h.y; draw(); }
     });
@@ -418,6 +533,31 @@
      its five seconds rather than happening behind a paragraph. */
   #phoenix[data-burning] {
     z-index: 20;
+  }
+
+  /*
+    Sits with the bird, behind the content, for the same reason.
+
+    An ellipse rather than a sprite. The rest of the bird is hard-edged pixel
+    art and this is not, which is a real inconsistency, but a shadow at this
+    size is 15x5 pixels: drawn as pixel art it is a grey dash, and the one
+    thing it has to do is get smaller and fainter smoothly enough to read as
+    height. A shape that can be scaled continuously does that; a 15px sprite
+    scaled to 10px does not.
+
+    var(--ink) rather than black, so the shadow turns white on the dark theme.
+    Not what a shadow does in life, but a dark smudge on a near-black page is
+    invisible, and an altitude cue nobody can see is not a cue. Following the
+    ink colour keeps it legible on both themes, so do not "correct" this to a
+    hardcoded black.
+  */
+  #phoenix-shadow {
+    position: fixed;
+    border-radius: 50%;
+    background: var(--ink);
+    pointer-events: none;
+    opacity: 0;
+    z-index: -1;
   }
 
   /*

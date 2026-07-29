@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "output"
 # Appended, never reordered: the engine indexes frames as row*8+col,
 # so inserting a row would silently repoint every later frame.
-ROWS = ["perched", "launch", "flight", "rebirth", "front", "quarter"]
+ROWS = ["perched", "launch", "flight", "rebirth", "front", "quarter", "walk"]
 CELL = 32
 
 sheet = Image.new("RGBA", (CELL * 8, CELL * len(ROWS)), (0, 0, 0, 0))

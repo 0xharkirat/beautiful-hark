@@ -6,7 +6,8 @@
     "flight": 2,
     "rebirth": 3,
     "front": 4,
-    "quarter": 5
+    "quarter": 5,
+    "walk": 6
   },
   "ground_y": 27,
   "note": "frame index = row*8 + col; right-facing, mirror for leftward travel"

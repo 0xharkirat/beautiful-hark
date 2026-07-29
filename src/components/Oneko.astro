@@ -80,12 +80,17 @@
     // State lives on the element, not in this closure. A closure variable can
     // desync if this script ever runs twice (dev HMR does exactly that),
     // leaving one blocker that thinks the cat is awake.
-    const sleeping = () => !!document.getElementById('oneko')?.hasAttribute('data-asleep');
+    // Frozen covers waking too, so the startle animation plays with the cat
+    // still, and it only starts following once that has finished.
+    const frozen = () => {
+      const el = document.getElementById('oneko');
+      return !!el && (el.hasAttribute('data-asleep') || el.hasAttribute('data-waking'));
+    };
 
     document.addEventListener(
       'mousemove',
       (e) => {
-        if (sleeping()) e.stopImmediatePropagation();
+        if (frozen()) e.stopImmediatePropagation();
       },
       true
     );
@@ -99,10 +104,13 @@
     document.addEventListener('click', (e) => {
       const el = document.getElementById('oneko');
       if (!el) return;
+      // 8px of slop around a 32px sprite: the cat is a small target and the
+      // click is coordinate-tested, so there is no cursor feedback to aim by.
+      const pad = 8;
       const r = el.getBoundingClientRect();
       const hit =
-        e.clientX >= r.left && e.clientX <= r.right &&
-        e.clientY >= r.top && e.clientY <= r.bottom;
+        e.clientX >= r.left - pad && e.clientX <= r.right + pad &&
+        e.clientY >= r.top - pad && e.clientY <= r.bottom + pad;
       if (!hit) return;
       // Duck-typed: e.target is not always an Element (a click dispatched on
       // document itself has no closest()).
@@ -111,7 +119,16 @@
           t.closest('a, button, input, textarea, select, summary, [role="button"]')) {
         return;
       }
-      el.toggleAttribute('data-asleep');
+      if (el.hasAttribute('data-asleep')) {
+        // Waking: flash oneko's own alert frame, then hand the sprite back.
+        el.removeAttribute('data-asleep');
+        el.setAttribute('data-waking', '');
+        clearTimeout(el._wakeTimer);
+        el._wakeTimer = setTimeout(() => el.removeAttribute('data-waking'), 450);
+      } else {
+        el.removeAttribute('data-waking');
+        el.setAttribute('data-asleep', '');
+      }
     });
 
     const script = document.createElement('script');
@@ -163,5 +180,61 @@
   #oneko {
     z-index: -1 !important;
     pointer-events: none;
+  }
+
+  /*
+    Drive the sprite while asleep instead of waiting for oneko to get there.
+
+    Left alone it only reaches sleep on a 1-in-200 roll per frame - its own
+    comment says "every ~20 seconds" - and it may pick scratchSelf instead. A
+    click should read as the cat deciding to nap, so play its own tired and
+    sleeping frames directly. Coordinates are setSprite's: spriteSets values
+    multiplied by 32.
+
+    CSS animations outrank inline styles in the cascade, so these win over
+    oneko's per-frame background-position writes without !important.
+  */
+  @keyframes oneko-scratch {
+    0%,    33.2% { background-position: -160px 0px; }
+    33.3%, 66.5% { background-position: -192px 0px; }
+    66.6%, 100%  { background-position: -224px 0px; }
+  }
+  @keyframes oneko-tired {
+    from, to { background-position: -96px -64px; }
+  }
+  @keyframes oneko-sleeping {
+    0%, 49.9% { background-position: -64px 0px; }
+    50%, 100% { background-position: -64px -32px; }
+  }
+  @keyframes oneko-alert {
+    from, to { background-position: -224px -96px; }
+  }
+
+  /*
+    Settling down: scratch itself, get tired, then sleep on a loop.
+
+    Each stage is a separate animation with a delay, and the later one in the
+    list wins once it starts. Fill mode is `forwards`, never `both` - a
+    backwards fill would make a delayed stage paint its first frame during the
+    delay and stomp the stage that is meant to be showing.
+  */
+  #oneko[data-asleep] {
+    animation:
+      oneko-scratch  0.6s steps(1, end) 0s   2        forwards,
+      oneko-tired    0.6s steps(1, end) 1.2s 1        forwards,
+      oneko-sleeping 1.4s steps(1, end) 1.8s infinite;
+  }
+
+  /* Waking: startle first, then the sprite goes back to oneko. */
+  #oneko[data-waking] {
+    animation: oneko-alert 0.45s steps(1, end) 1 forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #oneko[data-asleep],
+    #oneko[data-waking] {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+    }
   }
 </style>

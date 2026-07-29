@@ -6,9 +6,10 @@
  * at the cursor and that is the whole algorithm. This has to perch on a glyph,
  * hop or fly depending on distance, sleep on demand, and burn on the hour.
  *
- * Sprite sheet is public/phoenix.png, 256x128, four rows of eight 32px frames:
- * perched, launch, flight, rebirth. Frames are drawn facing right and mirrored
- * for leftward travel, so nothing is drawn twice.
+ * Sprite sheet is public/phoenix.png, 256x192, six rows of eight 32px frames:
+ * perched, launch, flight (side), rebirth, front, quarter. Frames are drawn
+ * facing right and mirrored for leftward travel, so nothing is drawn twice,
+ * and the three flight aspects cover all eight headings by angle.
  */
 ---
 
@@ -54,6 +55,13 @@
     const SPEED_HOP = 4;
     const SPEED_FLY = 11;
 
+    // Launch-row columns, in play order. Landing is not the takeoff reversed:
+    // it runs descent, crouch, settle, because a bird arrives feet-first and
+    // then folds, where a reversed takeoff would unfold its wings on the way
+    // down.
+    const TAKEOFF = [5, 6, 7];
+    const LANDING = [7, 4, 5, 0];
+
     const REBIRTH_MS = 5200;
     const GRACE_MS = 20000;  // no rebirth this soon after load
     const CLOCK_POLL_MS = 20000;
@@ -68,7 +76,7 @@
     let x = 0, y = 0;                 // sprite centre, viewport coords
     let mx = 0, my = 0;               // cursor
     let facing = 1;                   // 1 right, -1 left
-    let mode = 'perched';             // perched | hop | fly | sleep | rebirth
+    let mode = 'perched';   // perched | hop | takeoff | fly | landing | sleep | waking | rebirth
     let tick = 0;
     let idleFrames = 0;
     let rebirthUntil = 0;
@@ -294,7 +302,37 @@
       const dx = mx - x, dy = my - y;
       const dist = Math.hypot(dx, dy);
 
+      // Takeoff and landing. Without these the bird snaps between perched and
+      // flying with no transition, which is the single thing that most gives
+      // away that it is frames rather than a creature. The launch row already
+      // holds the poses: 5 crouch, 6 wings raised, 7 climbing away, and 4 is
+      // the descent with the feet reaching down.
+      if (mode === 'takeoff') {
+        setFrame(ROW.launch, TAKEOFF[Math.min(TAKEOFF.length - 1, tick)]);
+        if (tick >= TAKEOFF.length) { mode = 'fly'; tick = 0; }
+        draw();
+        return;
+      }
+      if (mode === 'landing') {
+        setFrame(ROW.launch, LANDING[Math.min(LANDING.length - 1, tick)]);
+        if (tick >= LANDING.length) { mode = 'perched'; tick = 0; }
+        draw();
+        return;
+      }
+
+      // A bird already in the air comes in to land; it does not drop into a
+      // hop on the way down. Without this the approach crosses HOP_MAX first,
+      // switches to hopping, and the landing never plays because the mode is
+      // no longer 'fly' by the time the deadzone is reached.
+      if (mode === 'fly' && dist <= HOP_MAX) {
+        mode = 'landing';
+        tick = 0;
+        draw();
+        return;
+      }
+
       if (dist < DEADZONE) {
+        if (mode === 'fly') { mode = 'landing'; tick = 0; draw(); return; }
         idleFrames += 1;
         if (idleFrames > SETTLE_MS / 100) {
           mode = 'perched';
@@ -318,6 +356,14 @@
         y += (dy / dist) * speed;
         setFrame(ROW.launch, 1 + (Math.floor(tick / 4) % 4));
       } else {
+        // Leaving the ground gets a takeoff; already airborne does not.
+        if (mode === 'perched' || mode === 'hop') {
+          mode = 'takeoff';
+          tick = 0;
+          if (dx !== 0) facing = dx > 0 ? 1 : -1;
+          draw();
+          return;
+        }
         mode = 'fly';
         const speed = SPEED_FLY;
         x += (dx / dist) * speed;

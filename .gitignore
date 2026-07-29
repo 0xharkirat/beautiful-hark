@@ -70,3 +70,6 @@ dist
 # P0 spike: parked Next.js source for reference; delete at cutover
 _legacy-next/
 .DS_Store
+
+# Implementation plans are working notes, not project docs. Specs stay.
+docs/superpowers/plans/

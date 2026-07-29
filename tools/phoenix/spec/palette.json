@@ -1,0 +1,16 @@
+{
+  "name": "phoenix-monochrome-plus-ember",
+  "note": "Three greys carry the bird. The warm colour appears only during burn and rebirth, in 5 of 32 frames, so colour reads as an event rather than a state.",
+  "colors": {
+    "transparent": [0, 0, 0, 0],
+    "fill":        [250, 249, 247, 255],
+    "ink":         [22, 22, 20, 255],
+    "ember":       [214, 106, 42, 255]
+  },
+  "matrix_legend": {
+    ".": "transparent",
+    "W": "fill",
+    "K": "ink",
+    "F": "ember"
+  }
+}

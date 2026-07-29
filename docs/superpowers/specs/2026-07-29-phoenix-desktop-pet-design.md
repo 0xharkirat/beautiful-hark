@@ -24,18 +24,101 @@ This is why the handover spec's first stage was wrong.
 "Stage 0: character design lock" would have spent a whole stage locking a generic bird, then discovered later that nothing about it read as a phoenix.
 Rebirth is the character. It gets designed first, and the perched pose falls out of it.
 
-## Home is the letter T
+## The letter T is where it starts, not where it lives
 
-The pet lives on the "T" of "Tales of Hark" in the site header.
-It leaves the T to follow the cursor, returns to the T when idle, and burns and is reborn on the T.
+The pet spawns perched on the "T" of "Tales of Hark".
+After that it follows the cursor and never homes back, exactly like the cat.
 
-This is the reason to build this at all rather than ship another cursor-follower.
-It is specific to this site and cannot be lifted wholesale.
+Homing was considered and dropped.
+A pet that keeps flying back to the header competes with the text for attention, and it makes every idle moment a journey across the page.
+The T earns its place as a first impression rather than a destination.
 
-The anchor is measured at runtime from the glyph, not hardcoded.
+The perch is measured at runtime from the glyph, not hardcoded.
 A `Range` over the first character of `header .wordmark span` gives its rect;
 the perch point is the top edge of that rect.
-The existing cat already seeds its start position from `.wordmark`'s bounding box, so the mechanism is proven, only the precision changes.
+The existing cat already seeds its start position from `.wordmark`'s bounding box, so the mechanism is proven and only the precision changes.
+
+## Interaction
+
+| Input | Result |
+|---|---|
+| single click | toggle sleep, as the cat does |
+| double click | rebirth |
+| top of the hour | rebirth, 24 times a day |
+
+### The click collision
+
+A double click fires `click`, `click`, `dblclick` in that order.
+Handled naively, a double click would start the sleep sequence, undo it, then burn - a visible flicker every time.
+
+So the single click is debounced by 250ms.
+A second click inside that window means rebirth; otherwise the sleep toggle runs.
+The cost is a 250ms delay on sleep, which is standard and imperceptible.
+
+### Movement, and when it lands
+
+Landing whenever the cursor stops and taking off whenever it moves would produce takeoff and landing spam on every twitch of the mouse.
+That reads as twitchy, which is wrong for a site built to be calm.
+
+Hysteresis instead, roughly mirroring how birds actually move:
+
+| Distance to cursor | Behaviour |
+|---|---|
+| under ~32px | nothing; deadzone kills jitter |
+| ~32 to 100px | hop, stays grounded |
+| over ~100px | takeoff, fly, land |
+| idle for 2s | settle into perched idle |
+
+Landing happens only after it has been still for a beat, and takeoff only when the trip is long enough to be worth it.
+Exact thresholds are to be tuned against the real site, not decided here.
+
+## Rebirth mechanics
+
+### Clock
+
+Rebirth fires on the hour, local time.
+
+**Poll, do not schedule.**
+A `setTimeout` to the next hour breaks on laptop sleep, DST and manual clock changes: sleep the machine for six hours and it fires late or never.
+Checking `new Date()` every ~20s against the last-seen hour is immune to all of that and costs nothing.
+
+**Defer while hidden.**
+Browsers throttle timers in background tabs, so a hidden rebirth would be both late and unwatched.
+If the hour passes while `document.hidden`, hold it and fire on the next `visibilitychange`.
+
+**Fire once, not once per missed hour.**
+A tab hidden for six hours gets one rebirth on return.
+
+**Persist the fired hour.**
+The site is client-side routed, so without persistence every navigation inside the same hour would refire.
+Store the key as `YYYY-MM-DD-HH` in localStorage, which also handles date rollover.
+
+**Grace period.**
+No rebirth within ~20s of load.
+Landing at 2:59:58 and watching the bird instantly immolate reads as a bug, not a feature.
+
+### While asleep
+
+Rebirth plays in full, then the bird returns to sleeping rather than waking.
+
+Sleep is an explicit instruction from the reader and overriding it would feel like the pet ignoring them.
+Skipping rebirth entirely would mean anyone who prefers it asleep never sees the headline feature.
+Playing it and going back to sleep honours both.
+
+### Layering during rebirth
+
+The pet normally renders at `z-index: -1`, behind content, so it can never cover a word being read.
+
+Rebirth lifts it above content for the duration, then drops it back.
+
+Without this the one moment worth watching happens behind a paragraph.
+It is a roughly five second event, so the intrusion is bounded and rare.
+
+### Other rules
+
+- Rebirth is **not interruptible**. Clicks during the burn are ignored, or the bird ends up in a half-burnt state.
+- Rebirth happens **in place**, including mid-flight: it freezes, burns, and reforms where it was. No falling ashes, no special case.
+- Under `prefers-reduced-motion` the pet never loads at all, so rebirth never arises.
 
 ## Palette
 
@@ -151,9 +234,10 @@ Automated, run on every stage:
 
 ## Open questions
 
-- What triggers rebirth: a long timer, a visit count, a click, or something on the page.
-- Whether the pet is silent about the rebirth or the site acknowledges it.
-- Whether the perch survives client-side navigation, given the header already uses `transition:persist`.
+- Whether the site acknowledges a rebirth at all, or the bird just does it.
+- Whether the spawn perch is recalculated after a client-side navigation, given the header already uses `transition:persist` so the T does not move.
+- Whether two open tabs burning simultaneously at the hour is charming or noisy. Assumed charming; they are separate pets.
+- Exact hysteresis thresholds, to be tuned against the real site.
 
 ## Out of scope
 

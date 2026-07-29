@@ -16,7 +16,10 @@ const isActive = (href: string) =>
   href === '/' ? path === '/' : path.startsWith(href);
 ---
 
-<header class="column pt-10 pb-8">
+<!-- Persist across swaps so the nav does not flash on every navigation. The
+     directive has to sit on the element: putting it on <Header> in Base.astro
+     emitted no marker at all. -->
+<header class="column pt-10 pb-8" transition:persist>
   <a href="/" class="wordmark" aria-label="Home">
     <HarkLogo trackEyes={true} className="size-8" />
     <span class="serif">{header?.name ?? 'Tales of Hark'}</span>

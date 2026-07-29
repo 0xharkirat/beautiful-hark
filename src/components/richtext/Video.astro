@@ -1,0 +1,58 @@
+---
+/**
+ * Video embed for rich-text bodies.
+ *
+ * The Video template has been declared on the post body's rich text for a
+ * while with nothing registered to render it, so `<Video>` in a post produced
+ * no output at all - the schema advertised a feature that silently did nothing.
+ *
+ * Shares FigCaption with MarkdownImage, so a video caption behaves exactly like
+ * an image caption: left aligned, and markdown so it can carry a link.
+ */
+import FigCaption from './FigCaption.astro';
+
+interface Props {
+  url?: string | null;
+  autoPlay?: boolean | null;
+  loop?: boolean | null;
+  caption?: string | null;
+}
+
+const { url, autoPlay, loop, caption } = Astro.props;
+
+// Same guard as images: a URL comes from editable content and must never be
+// allowed to become a javascript: or data: source.
+const safe = url && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(url) ? url : null;
+
+// Autoplay without muted is blocked by every browser, so asking for one implies
+// the other. Requesting autoplay and silently getting a still frame is worse
+// than muting something the reader did not choose to start.
+const auto = !!autoPlay;
+---
+
+{safe && (
+  <figure class="fig">
+    <video
+      src={safe}
+      autoplay={auto || undefined}
+      muted={auto || undefined}
+      loop={loop || undefined}
+      playsinline
+      controls
+      preload="metadata"
+    ></video>
+    {caption && <FigCaption caption={caption} />}
+  </figure>
+)}
+
+<style>
+  .fig {
+    margin: 0;
+  }
+  .fig video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+</style>

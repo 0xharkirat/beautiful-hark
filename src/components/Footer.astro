@@ -1,6 +1,8 @@
 ---
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsGlobal } from '../lib/data';
+import { isExternal } from '../lib/links';
+import ExternalMark from './richtext/ExternalMark.astro';
 
 interface Props {
   config?: CmsGlobal | null;
@@ -27,6 +29,12 @@ const footer = config?.footer ?? null;
 const social = (footer?.social ?? []).filter((s) => s !== null);
 const tagline = footer?.tagline ?? null;
 const colophon = footer?.colophon ?? null;
+
+// These three URLs come from Tina, so "external" is a fact about the data, not
+// something to hardcode. They were all unconditionally target="_blank", which
+// is wrong the moment someone points the tagline at a page on this site: a new
+// tab for an internal link is never what a reader wants.
+const ext = (u?: string | null) => isExternal(u, Astro.site);
 ---
 
 <footer class="column pt-10 pb-16 mt-20">
@@ -41,12 +49,12 @@ const colophon = footer?.colophon ?? null;
     {social.map((s) => (
       <a
         href={s.url ?? '#'}
-        target="_blank"
-        rel="noopener noreferrer"
+        target={ext(s.url) ? '_blank' : undefined}
+        rel={ext(s.url) ? 'noopener noreferrer' : undefined}
         data-tina-field={tinaField(s, 'url')}
         class="quiet tap"
       >
-        {label(s.icon?.name)}
+        {label(s.icon?.name)}{ext(s.url) && <ExternalMark />}
       </a>
     ))}
   </div>
@@ -61,11 +69,11 @@ const colophon = footer?.colophon ?? null;
         <p class="serif italic tagline">
           <a
             href={tagline.url ?? '#'}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={ext(tagline.url) ? '_blank' : undefined}
+            rel={ext(tagline.url) ? 'noopener noreferrer' : undefined}
             data-tina-field={tinaField(tagline, 'label')}
             class="link"
-          >{tagline.label}</a>{tagline.suffix && (
+          >{tagline.label}{ext(tagline.url) && <ExternalMark />}</a>{tagline.suffix && (
             <span data-tina-field={tinaField(tagline, 'suffix')}>{tagline.suffix}</span>
           )}
         </p>
@@ -77,11 +85,11 @@ const colophon = footer?.colophon ?? null;
             <span data-tina-field={tinaField(colophon, 'prefix')}>{colophon.prefix}</span>
           )}<a
             href={colophon.url ?? '#'}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={ext(colophon.url) ? '_blank' : undefined}
+            rel={ext(colophon.url) ? 'noopener noreferrer' : undefined}
             data-tina-field={tinaField(colophon, 'label')}
             class="link"
-          >{colophon.label}</a>
+          >{colophon.label}{ext(colophon.url) && <ExternalMark />}</a>
         </p>
       )}
     </div>
@@ -95,7 +103,7 @@ const colophon = footer?.colophon ?? null;
     text-decoration: none;
     transition: color 0.15s ease;
   }
-  .quiet:hover { color: var(--ink); }
+  .quiet:hover { color: var(--accent); }
 
   .tagline {
     font-size: 15px;

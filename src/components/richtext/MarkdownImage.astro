@@ -1,0 +1,60 @@
+---
+/**
+ * Image renderer for rich-text bodies, replacing the package default.
+ *
+ * @tinacms/astro's ImageNode emits a bare <img src alt> and throws the caption
+ * away, even though Tina's AST carries it: an image written as
+ * `![alt](/x.png "A caption")` parses to { url, alt, caption } and the caption
+ * never reached the page. So every captioned image in every post, page and
+ * About section was silently losing it.
+ *
+ * ImageNode does check `components.img` first and hands the override all three
+ * values, so this is the supported seam rather than a patch around the package.
+ *
+ * Registered once in lib/richtext.ts so posts, pages and blocks all get it.
+ * Fixing it per call site would have left the next TinaMarkdown to forget.
+ */
+import FigCaption from './FigCaption.astro';
+
+interface Props {
+  url?: string | null;
+  alt?: string | null;
+  caption?: string | null;
+}
+
+const { url, alt, caption } = Astro.props;
+
+// Same guard the package applies. An image URL comes from content, and content
+// is editable, so a javascript: or data: URL must not become an src.
+const safe =
+  url && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(url) ? url : null;
+
+// The sprite sheet is the one image here that must not be smoothed. Browsers
+// interpolate by default, which turns 32px pixel art into a smear, and the
+// whole point of showing the sheet is that the pixels are countable.
+const isPixelArt = !!safe && /phoenix\.png$/.test(safe);
+---
+
+{safe && (
+  <figure class:list={['fig', { pixel: isPixelArt }]}>
+    <img src={safe} alt={alt ?? ''} loading="lazy" decoding="async" />
+    {caption && <FigCaption caption={caption} />}
+  </figure>
+)}
+
+<style>
+  .fig {
+    margin: 0;
+  }
+
+  .fig.pixel img {
+    width: 512px;
+    max-width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    padding: 20px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--ink) 4%, transparent);
+  }
+</style>

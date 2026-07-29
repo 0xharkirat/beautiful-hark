@@ -1,0 +1,74 @@
+---
+/**
+ * A figure caption that renders markdown, so a caption can carry a link.
+ *
+ * Tina hands captions over as a plain string with the markdown still in it:
+ * `![alt](/x.png "made with [forge](https://...)")` parses to
+ * caption: 'made with [forge](https://...)' - literal text, never parsed. So a
+ * link in a caption used to render as visible brackets.
+ *
+ * Parsed with Tina's own parser rather than a hand-rolled one. Captions want
+ * links, bold, italic and code, which is most of inline markdown, and a
+ * hand-rolled version of that is how you ship a subtly wrong parser. It also
+ * means captions and body text cannot disagree about the same syntax, and the
+ * output is an AST rendered by TinaMarkdown, so nothing goes through innerHTML.
+ *
+ * Only the first paragraph's inline children are rendered. parseMDX wraps its
+ * result in a paragraph, and a <p> inside <figcaption> would add block margins
+ * to what should be one line of text.
+ */
+import { parseMDX } from '@tinacms/mdx';
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+
+interface Props {
+  caption: string;
+  field?: string | null;
+}
+
+const { caption, field } = Astro.props;
+
+// A caption comes from content, and a parser given odd input should degrade to
+// showing the text rather than failing the page build.
+let inline: any[] | null = null;
+try {
+  const ast: any = parseMDX(caption, { name: 'caption', type: 'rich-text' } as any, (s: any) => s);
+  const first = ast?.children?.[0];
+  if (first?.type === 'p' && Array.isArray(first.children)) inline = first.children;
+} catch {
+  inline = null;
+}
+---
+
+<figcaption class="meta mt-2" data-tina-field={field ?? undefined}>
+  {inline ? <TinaMarkdown content={inline} /> : caption}
+</figcaption>
+
+<style>
+  /*
+    Left, not centred. A centred caption reads as a plate in a printed book; on
+    a page whose every other line starts at the same left edge it just looks
+    detached from the column. Aligning it with the body text ties it to the
+    writing it belongs to.
+  */
+  figcaption {
+    text-align: left;
+  }
+
+  /* Inherit the caption's size and colour. Body-text link styling at 13px grey
+     would out-weigh the caption it sits in. */
+  figcaption :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  figcaption :global(a:hover) {
+    text-decoration-color: var(--accent);
+  }
+  figcaption :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+  }
+</style>

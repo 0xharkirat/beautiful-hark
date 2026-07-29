@@ -1,5 +1,6 @@
 ---
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { richTextComponents } from '../../lib/richtext';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsPost } from '../../lib/data';
 
@@ -30,7 +31,7 @@ const date = data?.date
 
     {data._body && (
       <div data-tina-field={tinaField(data, '_body')} class="prose">
-        <TinaMarkdown content={data._body} />
+        <TinaMarkdown content={data._body} components={richTextComponents} />
       </div>
     )}
   </div>

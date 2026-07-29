@@ -1,4 +1,5 @@
 import type { Collection } from 'tinacms';
+import { videoTemplate } from '../templates/video';
 
 export const PostCollection: Collection = {
   label: 'Blog Posts',
@@ -108,15 +109,7 @@ export const PostCollection: Collection = {
             },
           ],
         },
-        {
-          name: 'Video',
-          label: 'Video',
-          fields: [
-            { name: 'url', label: 'URL', type: 'string' },
-            { name: 'autoPlay', label: 'Auto Play', type: 'boolean' },
-            { name: 'loop', label: 'Loop', type: 'boolean' },
-          ],
-        },
+        videoTemplate,
       ],
     },
   ],

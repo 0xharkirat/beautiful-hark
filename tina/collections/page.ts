@@ -1,6 +1,7 @@
 import type { Collection } from 'tinacms';
 import { heroBlockSchema } from '../../src/components/blocks/hero.template';
 import { aboutBlockSchema } from '../../src/components/blocks/about.template';
+import { videoTemplate } from '../templates/video';
 
 export const PageCollection: Collection = {
   name: 'page',
@@ -50,6 +51,9 @@ export const PageCollection: Collection = {
       label: 'Body',
       type: 'rich-text',
       isBody: true,
+      // Same embeds a post body gets, so a page is not a second-class place to
+      // write. Shared from tina/templates rather than copied.
+      templates: [videoTemplate],
     },
   ],
 };

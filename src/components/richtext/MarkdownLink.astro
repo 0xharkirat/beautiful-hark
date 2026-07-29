@@ -1,0 +1,39 @@
+---
+/**
+ * Link renderer for rich-text bodies, replacing the package default.
+ *
+ * @tinacms/astro's LinkNode emits a bare <a href> with no target and no rel, so
+ * a link written in body text behaved differently from a hand-written one: the
+ * footer's social links opened in a new tab, and all 25 external links in the
+ * About page opened in the same tab. Nothing anywhere told a reader that a link
+ * left the site.
+ *
+ * LinkNode checks `components.a` first and passes the url with the link text as
+ * children, so this is the supported seam.
+ */
+import { isExternal } from '../../lib/links';
+import ExternalMark from './ExternalMark.astro';
+
+interface Props {
+  url?: string | null;
+}
+
+const { url } = Astro.props;
+
+// Same guard the package applies. An href comes from editable content, so
+// javascript: and data: must never reach the DOM.
+const safe =
+  url && /^(https?:\/\/|\/|\.\/|\.\.\/|#|mailto:|tel:)/i.test(url) ? url : null;
+
+const external = isExternal(safe, Astro.site);
+---
+
+{safe ? (
+  external ? (
+    <a href={safe} target="_blank" rel="noopener noreferrer"><slot /><ExternalMark /></a>
+  ) : (
+    <a href={safe}><slot /></a>
+  )
+) : (
+  <slot />
+)}

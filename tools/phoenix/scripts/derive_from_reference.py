@@ -39,13 +39,17 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-REFERENCE = ROOT / "reference" / "gemini-phoenix.png"
+REFERENCE = ROOT / "reference" / "gemini-phoenix-checker.png"
 PALETTE_PATH = ROOT / "spec" / "palette.json"
 CELL = 32
 
-# The reference sits on a flat grey card. Anything close to it is background.
-BG_LO, BG_HI = 110, 175
-BG_NEUTRAL = 18
+# The second reference sheet paints a CHECKERBOARD to represent transparency
+# rather than carrying real alpha - a common image-gen failure. Measured: zero
+# transparent pixels, two flat neutrals at ~156 and ~199. Neither sits near
+# white (250+), the ember orange, or the ink, so a neutral band keys it out
+# cleanly. 79% of the sheet falls in the band, which matches the empty area.
+BG_LO, BG_HI = 138, 218
+BG_NEUTRAL = 14
 
 
 def classify(rgb: tuple[int, int, int]) -> str:

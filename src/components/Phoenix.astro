@@ -170,8 +170,68 @@
       }
     });
 
+    // --- hover bubble ---------------------------------------------------
+    //
+    // The bird is pointer-events:none at z-index -1, so it never receives
+    // pointer events and :hover can never fire on it. That is deliberate - it
+    // is what stops the bird eating clicks meant for the text behind it. So
+    // dwell is detected by coordinate, the same way clicks already are.
+    //
+    // The bubble itself is also pointer-events:none: while the cursor is "over
+    // the bird" it is really over whatever content the bird sits behind, and
+    // text selection and link hovers must keep working underneath.
+    const bubble = document.createElement('div');
+    bubble.id = 'phoenix-bubble';
+    bubble.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bubble);
+
+    const DWELL_MS = 400;
+    let dwellTimer = null;
+    let bubbleOn = false;
+
+    const untilNextHour = () => {
+      const now = new Date();
+      const s = 3600 - (now.getMinutes() * 60 + now.getSeconds());
+      const m = Math.floor(s / 60);
+      return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    };
+    const paintBubble = () => {
+      if (!bubbleOn) return;
+      bubble.textContent =
+        mode === 'rebirth' ? 'reborn' : `next rebirth ${untilNextHour()}`;
+      // Sit above the bird, clamped so it never leaves the viewport.
+      const bx = Math.min(Math.max(4, x - bubble.offsetWidth / 2), innerWidth - bubble.offsetWidth - 4);
+      const by = Math.max(4, y - CELL / 2 - bubble.offsetHeight - 6);
+      bubble.style.left = `${Math.round(bx)}px`;
+      bubble.style.top = `${Math.round(by)}px`;
+    };
+    const showBubble = (on) => {
+      if (on === bubbleOn) return;
+      bubbleOn = on;
+      if (on) { bubble.setAttribute('data-show', ''); paintBubble(); }
+      else bubble.removeAttribute('data-show');
+    };
+    setInterval(paintBubble, 1000);
+
+    const overBird = (px, py) => {
+      const r = el.getBoundingClientRect();
+      const pad = 8;
+      return px >= r.left - pad && px <= r.right + pad &&
+             py >= r.top - pad && py <= r.bottom + pad;
+    };
+
     // --- input ---------------------------------------------------------
-    document.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+    document.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      if (overBird(e.clientX, e.clientY)) {
+        if (!dwellTimer && !bubbleOn) {
+          dwellTimer = setTimeout(() => { dwellTimer = null; showBubble(true); }, DWELL_MS);
+        }
+      } else {
+        if (dwellTimer) { clearTimeout(dwellTimer); dwellTimer = null; }
+        showBubble(false);
+      }
+    }, { passive: true });
 
     let clickTimer = null;
     document.addEventListener('click', (e) => {
@@ -310,5 +370,38 @@
      its five seconds rather than happening behind a paragraph. */
   #phoenix[data-burning] {
     z-index: 20;
+  }
+
+  /*
+    Unlike the bird, the bubble has to sit ABOVE content or it is pointless.
+    It is small, transient, and only appears on deliberate dwell, so the
+    intrusion is bounded.
+
+    It is also pointer-events:none. The cursor is really over whatever the
+    bird is sitting behind, and text selection and link hovers must keep
+    working underneath it.
+
+    Square corners, a hard offset shadow, mono type and a stepped fade: the
+    pixel-art bubble convention. A bubble drawn in the site's own serif would
+    read as a browser tooltip rather than as part of the creature.
+  */
+  #phoenix-bubble {
+    position: fixed;
+    z-index: 30;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    padding: 6px 8px;
+    color: var(--paper);
+    background: var(--ink);
+    white-space: nowrap;
+    box-shadow: 3px 3px 0 0 color-mix(in oklab, var(--ink) 25%, transparent);
+    opacity: 0;
+    transition: opacity 0.12s steps(2, end);
+  }
+  #phoenix-bubble[data-show] {
+    opacity: 1;
   }
 </style>

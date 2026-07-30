@@ -61,7 +61,11 @@ pnpm build        # production build, needs TinaCloud credentials
 pnpm build:local  # build with no TinaCloud, for offline work
 pnpm preview      # serve the build
 pnpm exec astro check   # typecheck, including .astro files
+pnpm test:touch   # Hawky's touch behaviour, needs pnpm dev running
 ```
+
+`pnpm test:touch` drives a real iPhone emulation with real touch events, because the thing it guards is that a scroll and a tap start out identical and only one of them may move the bird.
+Playwright skips its browser download on install, so run `pnpm exec playwright install chromium` once before the first run.
 
 Run `pnpm exec tinacms dev --no-server` after changing the Tina schema.
 It rewrites `tina/__generated__` and `tina/tina-lock.json`, and a stale lock against a changed schema fails the deploy.
@@ -88,6 +92,7 @@ Both live in the same collection.
 | `/about` | about |
 | `/posts`, `/posts/<slug>` | blog |
 | `/poems`, `/poems/<slug>` | poetry |
+| `/recommendations` | films, shows, books, music and videos, with a checklist |
 | `/hawky` | the phoenix that follows your cursor |
 | `/feed.xml`, `/atom.xml`, `/feed.json` | feeds |
 | `/admin` | Tina editor |

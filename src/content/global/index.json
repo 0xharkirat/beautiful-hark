@@ -18,6 +18,10 @@
       {
         "href": "/poems",
         "label": "Poems"
+      },
+      {
+        "href": "/recommendations",
+        "label": "Recommendations"
       }
     ]
   },

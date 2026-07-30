@@ -17,8 +17,22 @@
 
 <script is:inline>
   (() => {
-    // No cursor to follow on touch, so it would sit in a corner looking broken.
-    if (window.matchMedia('(hover: none)').matches) return;
+    /*
+      Runs on touch devices too now.
+
+      It used to bail on `(hover: none)`, on the reasoning that a bird with no
+      cursor to follow would sit in a corner looking broken. That was true of a
+      bird that only knows how to follow a pointer, and the fix is to teach it
+      the other input rather than to hide from it: on a phone it flies to where
+      you tapped and lands, which suits a device that has positions but no
+      continuous pointer better than following ever did.
+
+      Capability, not device. A laptop with a touchscreen gets both, which is
+      what the person using it expects.
+    */
+    const canHover = window.matchMedia('(hover: hover)').matches;
+    const canTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+    if (!canHover && !canTouch) return;
     // Continuous motion, so it is removed outright rather than reduced.
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (window.__phoenix) return;
@@ -321,6 +335,9 @@
     }, { passive: true });
 
     let clickTimer = null;
+    // Separate from clickTimer: a hybrid laptop can produce both, and sharing one
+    // timer would let a mouse click cancel a pending touch tap.
+    let touchTapTimer = null;
     document.addEventListener('click', (e) => {
       const r = el.getBoundingClientRect();
       const pad = 8;   // small target, and the click is coordinate-tested
@@ -353,6 +370,110 @@
         tick = 0;
       }, DOUBLE_CLICK_MS);
     });
+
+    /* --- touch ----------------------------------------------------------
+      The whole problem on a phone is that a scroll begins exactly like a tap.
+      A bird that flew to every touchstart would chase every scroll gesture and
+      be intolerable on the one device where the reader's finger is also the
+      thing they are reading around.
+
+      So nothing happens on touchstart or touchmove. The decision is made at
+      touchend, by asking whether the finger actually went anywhere:
+
+        moved more than 10px, or held longer than 300ms  ->  a scroll or a drag,
+                                                             ignored completely
+        neither                                          ->  a tap, acted on
+
+      10px rather than 0 because a finger never holds still. Testing for no
+      movement at all would classify most real taps as scrolls.
+    */
+    if (canTouch) {
+      let tStartX = 0, tStartY = 0, tStartAt = 0, tMoved = false;
+
+      document.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) { tMoved = true; return; }  // pinch, not a tap
+        const t = e.touches[0];
+        tStartX = t.clientX; tStartY = t.clientY;
+        tStartAt = Date.now(); tMoved = false;
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        if (tMoved || !e.touches.length) return;
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - tStartX, t.clientY - tStartY) > 10) tMoved = true;
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        if (tMoved || Date.now() - tStartAt > 300) return;
+        const t = e.changedTouches[0];
+        if (!t) return;
+
+        // Anything the reader was actually aiming at wins. Same guard the click
+        // handler uses, and it matters more here: a fingertip is far wider than
+        // a cursor, so the bird overlaps things it never would on a desktop.
+        const target = document.elementFromPoint(t.clientX, t.clientY);
+        if (target && typeof target.closest === 'function' &&
+            target.closest('a, button, input, textarea, select, summary, [role="button"]')) return;
+
+        if (mode === 'rebirth') return;
+        lastMove = Date.now();
+
+        if (overBird(t.clientX, t.clientY)) {
+          /*
+            preventDefault only here, and only for a tap that hits the bird and
+            misses every control. That suppresses the synthesised click, so the
+            handler above does not fire twice, and it suppresses double-tap zoom
+            for this one gesture.
+
+            Deliberately not solved with user-scalable=no on the viewport, which
+            would kill pinch zoom for the whole site and fail WCAG 1.4.4. Zoom
+            everywhere else is untouched.
+          */
+          e.preventDefault();
+
+          if (touchTapTimer) {
+            clearTimeout(touchTapTimer); touchTapTimer = null;
+            beginRebirth();                       // second tap on the bird
+            return;
+          }
+          touchTapTimer = setTimeout(() => {
+            touchTapTimer = null;
+            if (mode === 'sleep') { mode = 'waking'; sleepReason = null; }
+            else { mode = 'sleep'; sleepReason = 'user'; }
+            tick = 0;
+          }, DOUBLE_CLICK_MS);
+          return;
+        }
+
+        // Tapped somewhere else: fly there. No preventDefault, so a tap that
+        // lands on ordinary text still does whatever it would have done.
+        if (mode === 'sleep' && sleepReason === 'idle') {
+          mode = 'waking'; sleepReason = null; tick = 0;
+        }
+        mx = t.clientX; my = t.clientY;
+      }, { passive: false });   // passive:false, or preventDefault is ignored
+
+      /*
+        Long press stands in for hover. Dwelling over the bird is how the
+        rebirth countdown is reached with a mouse, and touch has no dwell, so
+        holding it does the same. Cancelled the moment the finger moves, which
+        is what makes it distinct from the tap above.
+      */
+      let holdTimer = null;
+      document.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0];
+        if (!overBird(t.clientX, t.clientY)) return;
+        holdTimer = setTimeout(() => { holdTimer = null; showBubble(true); }, 500);
+      }, { passive: true });
+
+      const endHold = () => {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+        setTimeout(() => showBubble(false), 2000);
+      };
+      document.addEventListener('touchend', endHold, { passive: true });
+      document.addEventListener('touchcancel', endHold, { passive: true });
+    }
 
     // --- loop ----------------------------------------------------------
     const step = () => {

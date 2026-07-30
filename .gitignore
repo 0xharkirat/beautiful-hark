@@ -81,3 +81,9 @@ docs/superpowers/plans/
 # Python bytecode from the sprite pipeline in tools/phoenix/scripts.
 __pycache__/
 *.pyc
+
+# Personal drafts live outside the repo, but guard against a stray copy.
+# Age is stored as a number in Tina, never a birth date: a public history keeps
+# a date even after an edit removes it.
+about-draft*.md
+*-draft.md

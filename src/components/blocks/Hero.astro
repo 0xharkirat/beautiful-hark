@@ -178,17 +178,42 @@ const imgSrc = data.image?.src;
     transform: scale(0.96);
   }
 
-  /* The label carries two strings, and "click again" measures 65.34px against
-     "click" at 28.30px in Inter at 13px, so the chip used to resize itself
-     mid-swap. The chip is anchored right, so that reflow dragged its left edge
-     across the frame - worse than any text treatment could fix. Reserve the
-     wider string (measured, then rounded up for other platforms' rasterisers)
-     and left-align, so the words change inside a box that never moves. */
+  /*
+    The label morphs to fit its text instead of reserving room for the longest
+    string.
+
+    "click again" measures 65.34px against "click" at 28.30px in Inter at 13px,
+    and the chip is anchored right, so an unmanaged swap drags its left edge
+    across the frame.
+
+    First attempt was min-width sized to "click again", which stopped the chip
+    resizing but left "click" sitting in 38px of dead space. Reserving the worst
+    case is the right instinct for content that arrives asynchronously and the
+    wrong one here, where both strings are known and the change is a deliberate
+    response to a click.
+
+    So the width is set explicitly in JS from a measurement and transitioned.
+    Animating width is a layout property, which is normally the thing to avoid,
+    and it is safe in this one case: .chip is position:absolute, so its reflow is
+    contained and cannot touch the page. There is no transform that changes a
+    text box's width without stretching the glyphs, so this is the only way to
+    morph rather than jump.
+  */
   .chip-label {
-    min-width: 66px;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
     /* The UA centres text inside a <button>, and this inherits it. */
     text-align: left;
-    transition: filter 180ms ease, opacity 180ms ease;
+    transition:
+      width 200ms var(--ease-out),
+      filter 180ms ease,
+      opacity 180ms ease;
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .chip-label { transition: filter 180ms ease, opacity 180ms ease; }
   }
 
   /* textContent lands in a single frame, so the swap needs something to cross.
@@ -289,8 +314,60 @@ const imgSrc = data.image?.src;
         an absolute string, so the final word is always right; only the middle
         blur gets clipped, which nobody can see at this speed.
       */
+      /*
+        Measured, not guessed. A hidden twin inherits the same font stack, size
+        and letter-spacing as the label, so its box is the real rendered width of
+        the string. Hardcoding a number here would drift the first time the font
+        changes, and would be wrong on any platform that rasterises differently.
+      */
+      let measurer: HTMLElement | null = null;
+      const widthOf = (text: string) => {
+        if (!label) return 0;
+        if (!measurer) {
+          measurer = document.createElement('span');
+          /*
+            Positioned inline, not by class. Astro scopes component styles with a
+            generated data attribute, and an element created here never carries
+            it, so a `.chip-measure` rule in the <style> block below simply does
+            not match. The first version relied on that rule and the twin stayed
+            in normal flow inside the chip, widening it from 61px to 97px while
+            the label itself measured correctly. Setting the properties that keep
+            it out of flow directly is the only version that cannot silently fail.
+
+            Still a child of .chip so it inherits the same font, size and
+            letter-spacing. That inheritance is the entire point of measuring
+            against a real element rather than computing from a font metric.
+          */
+          /*
+            display:inline-block matters. The class on this element does nothing,
+            per the note above, so without it the twin measures as an inline box
+            while the real label is inline-block. The two round their widths
+            differently, and .chip-label has overflow:hidden, so a shortfall of
+            less than a pixel clipped the final letter: "click agai".
+          */
+          measurer.style.cssText =
+            'position:absolute;visibility:hidden;pointer-events:none;' +
+            'white-space:nowrap;left:-9999px;top:0;width:auto;' +
+            'display:inline-block;';
+          label.parentElement?.appendChild(measurer);
+        }
+        measurer.textContent = text;
+        // Ceil, then 1px of slack. Sub-pixel text advance is not something a
+        // layout width can hold exactly, and erring narrow costs a letter while
+        // erring wide costs nothing anyone can see.
+        return Math.ceil(measurer.getBoundingClientRect().width) + 1;
+      };
+
+      // Pin the starting width, or the first transition would run from `auto`
+      // and the browser has nothing to interpolate from.
+      if (label) label.style.width = `${widthOf(label.textContent ?? '')}px`;
+
       const swapLabel = (text: string) => {
         if (!label) return;
+        // Width first and text second: the box starts travelling on this frame
+        // while the old word is still legible, so the two changes overlap
+        // instead of queueing. Swapping the text first would snap the width.
+        label.style.width = `${widthOf(text)}px`;
         label.classList.add('swapping');
         setTimeout(() => {
           label.textContent = text;

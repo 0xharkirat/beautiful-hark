@@ -1,0 +1,192 @@
+---
+/**
+ * Turns the lists in this rich-text body into a checklist the reader can tick
+ * off, kept in their own browser.
+ *
+ * Drop <Checklist /> once anywhere in a page body and every list item in the
+ * same .prose container gets a checkbox. Nothing is sent anywhere: the ticks
+ * live in localStorage on the reader's machine, which is the whole feature. A
+ * server would need accounts, and nobody is signing in to remember which film
+ * they watched.
+ */
+---
+
+<div class="checklist" data-checklist="rec" aria-live="polite">
+  <span class="count" data-count>Loading your progress</span>
+  <button type="button" class="clear" data-clear hidden>Clear</button>
+</div>
+
+<script is:inline>
+  (() => {
+    /*
+      Keyed by a hash of the item's own text, not by its position.
+
+      Position breaks the moment a list is reordered or something is inserted
+      above, which silently moves every tick down one row. Hashing the text
+      survives reordering and survives the item moving to another section. The
+      trade is that editing a title loses that one tick, which is the better
+      failure: one item forgotten rather than every item wrong.
+    */
+    const hash = (s) => {
+      let h = 5381;
+      for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+      return 'k' + (h >>> 0).toString(36);
+    };
+
+    const upgrade = () => {
+      for (const root of document.querySelectorAll('[data-checklist]')) {
+        const scope = root.closest('.prose');
+        // ClientRouter can run this over a page that is already upgraded, and
+        // Tina's editor re-renders the body in place. Both would double the
+        // checkboxes without this.
+        if (!scope || scope.dataset.checklistReady) continue;
+
+        const NS = 'hark:checklist:' + (root.dataset.checklist || 'default') + ':';
+        const items = [...scope.querySelectorAll('li')];
+        /*
+          Claim the container only once there is something in it.
+
+          This tag used to be set before the items were counted, which turned a
+          harmless early run into a permanent one: the script fires while the
+          document is still parsing, this element sits at the top of the page, so
+          nothing below it existed yet, and marking the scope "ready" with zero
+          items meant the real pass afterwards was skipped by this very guard.
+        */
+        if (!items.length) continue;
+        scope.dataset.checklistReady = '1';
+        const countEl = root.querySelector('[data-count]');
+        const clearEl = root.querySelector('[data-clear]');
+
+        const paint = () => {
+          const done = items.filter((li) => li.dataset.done === '1').length;
+          countEl.textContent = done
+            ? `${done} of ${items.length} ticked off`
+            : `${items.length} things. Tick them off as you go.`;
+          clearEl.hidden = done === 0;
+        };
+
+        for (const li of items) {
+          const text = li.textContent.trim();
+          if (!text) continue;
+          const key = NS + hash(text);
+
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          box.className = 'tick';
+          /*
+            A bare checkbox with an aria-label, deliberately not a <label>
+            wrapped around the item. Wrapping would make a click anywhere in the
+            row toggle the box, and most of these rows are links: you would tick
+            a film off every time you tried to watch it.
+          */
+          box.setAttribute('aria-label', text.length > 80 ? text.slice(0, 80) + '...' : text);
+
+          let on = false;
+          try { on = localStorage.getItem(key) === '1'; } catch {}
+          box.checked = on;
+          li.dataset.done = on ? '1' : '0';
+
+          box.addEventListener('change', () => {
+            li.dataset.done = box.checked ? '1' : '0';
+            try {
+              if (box.checked) localStorage.setItem(key, '1');
+              else localStorage.removeItem(key);
+            } catch {}
+            paint();
+          });
+
+          li.prepend(box);
+        }
+
+        clearEl.addEventListener('click', () => {
+          for (const li of items) {
+            const box = li.querySelector('.tick');
+            if (!box) continue;
+            box.checked = false;
+            li.dataset.done = '0';
+            try { localStorage.removeItem(NS + hash(li.textContent.trim())); } catch {}
+          }
+          paint();
+        });
+
+        paint();
+      }
+    };
+
+    // This script is inline and sits above the lists it upgrades, so on first
+    // load it runs mid-parse when none of them exist. Wait for the document, and
+    // re-run after every client-side navigation.
+    document.addEventListener('astro:page-load', upgrade);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', upgrade, { once: true });
+    } else {
+      upgrade();
+    }
+  })();
+</script>
+
+<style is:global>
+  /*
+    The list keeps its bullets until the script runs, then swaps them for boxes.
+    Without JS this stays a perfectly good list, which is the point: the
+    checklist is an enhancement, not the content.
+  */
+  .prose[data-checklist-ready] ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .prose[data-checklist-ready] li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  .prose .tick {
+    /* Sized and positioned to sit on the text baseline rather than float above
+       it, which is what a default checkbox does next to 18px serif. */
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    translate: 0 2px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex: none;
+  }
+
+  /* Ticked items recede rather than vanish. Someone scanning for what is left
+     should be able to skip them, and someone looking for what they liked should
+     still be able to read them. */
+  .prose li[data-done='1'] {
+    color: var(--ink-3);
+  }
+  .prose li[data-done='1'] :global(a) {
+    color: inherit;
+    text-decoration-color: var(--rule);
+  }
+
+  .checklist {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+
+  .checklist .clear {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--ink-3);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease;
+  }
+  .checklist .clear:hover { color: var(--accent); }
+</style>

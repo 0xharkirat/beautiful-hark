@@ -9,6 +9,7 @@
  * across posts, pages and the About block, and per-site fixes are how three of
  * them end up behaving differently. Add future overrides to this map.
  */
+import Checklist from '../components/richtext/Checklist.astro';
 import ImagePair from '../components/richtext/ImagePair.astro';
 import MarkdownImage from '../components/richtext/MarkdownImage.astro';
 import MarkdownLink from '../components/richtext/MarkdownLink.astro';
@@ -22,6 +23,7 @@ export const richTextComponents = {
   img: MarkdownImage,
   Video,
   ImagePair,
+  Checklist,
   // Same renderer as a markdown image: the Image template's fields are
   // url/alt/caption, which is exactly MarkdownImage's contract.
   Image: MarkdownImage,

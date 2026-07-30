@@ -3,10 +3,22 @@
     "logo": "/uploads/hark-logo.svg",
     "name": "Tales of Hark",
     "nav": [
-      { "href": "/", "label": "Home" },
-      { "href": "/about", "label": "About" },
-      { "href": "/posts", "label": "Blog" },
-      { "href": "/poems", "label": "Poems" }
+      {
+        "href": "/",
+        "label": "Home"
+      },
+      {
+        "href": "/about",
+        "label": "About"
+      },
+      {
+        "href": "/posts",
+        "label": "Blog"
+      },
+      {
+        "href": "/poems",
+        "label": "Poems"
+      }
     ]
   },
   "footer": {
@@ -14,26 +26,75 @@
       {
         "heading": "Read",
         "links": [
-          { "label": "Latest posts", "href": "/posts" },
-          { "label": "Poetry", "href": "/poems" },
-          { "label": "About", "href": "/about" }
+          {
+            "label": "Latest posts",
+            "href": "/posts"
+          },
+          {
+            "label": "Poetry",
+            "href": "/poems"
+          },
+          {
+            "label": "About",
+            "href": "/about"
+          }
         ]
       },
       {
         "heading": "Follow",
         "links": [
-          { "label": "RSS", "href": "/feed.xml" },
-          { "label": "Atom", "href": "/atom.xml" },
-          { "label": "JSON Feed", "href": "/feed.json" }
+          {
+            "label": "RSS",
+            "href": "/feed.xml"
+          },
+          {
+            "label": "Atom",
+            "href": "/atom.xml"
+          },
+          {
+            "label": "JSON Feed",
+            "href": "/feed.json"
+          }
         ]
       }
     ],
     "social": [
-      { "icon": { "name": "ssw-icon" }, "url": "https://ssw.com.au/people/hark-singh" },
-      { "icon": { "name": "FaLinkedin" }, "url": "https://www.linkedin.com/in/talesofhark" },
-      { "icon": { "name": "FaGithub" }, "url": "https://github.com/0xHARKIRAT" },
-      { "icon": { "name": "FaYoutube" }, "url": "https://www.youtube.com/@TalesofHark" },
-      { "icon": { "name": "FaXTwitter" }, "url": "https://x.com/TalesofHark" }
+      {
+        "icon": {
+          "name": "ssw-icon"
+        },
+        "url": "https://ssw.com.au/people/hark-singh"
+      },
+      {
+        "icon": {
+          "name": "FaLinkedin"
+        },
+        "url": "https://www.linkedin.com/in/talesofhark"
+      },
+      {
+        "icon": {
+          "name": "FaGithub"
+        },
+        "url": "https://github.com/0xHARKIRAT"
+      },
+      {
+        "icon": {
+          "name": "FaYoutube"
+        },
+        "url": "https://www.youtube.com/@TalesofHark"
+      },
+      {
+        "icon": {
+          "name": "FaXTwitter"
+        },
+        "url": "https://x.com/TalesofHark"
+      },
+      {
+        "icon": {
+          "name": "AiFillInstagram"
+        },
+        "url": "https://www.instagram.com/talesofhark"
+      }
     ],
     "tagline": {
       "label": "Memento Homo",

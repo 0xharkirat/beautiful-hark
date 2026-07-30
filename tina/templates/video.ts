@@ -12,6 +12,19 @@ export const videoTemplate: Template = {
   label: 'Video',
   fields: [
     { name: 'url', label: 'URL', type: 'string' },
+    {
+      name: 'poster',
+      label: 'Poster image',
+      type: 'string',
+      // Worth filling in every time, and not only so there is something to look
+      // at while the file downloads. A <video> with no poster and no dimensions
+      // has nothing to compute `height: auto` from, so it lays out at the
+      // browser's default 150px and then jumps to its real height when metadata
+      // arrives - a 252px shove of everything below it on the hawky page. The
+      // browser takes its intrinsic size from the poster until then, so one
+      // field fixes the blank box and the layout shift together.
+      description: 'A path under public/. Also reserves the right space before the video loads.',
+    },
     { name: 'autoPlay', label: 'Auto Play', type: 'boolean' },
     { name: 'loop', label: 'Loop', type: 'boolean' },
     {

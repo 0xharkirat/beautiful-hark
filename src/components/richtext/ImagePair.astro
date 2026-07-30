@@ -1,0 +1,94 @@
+---
+/**
+ * Two photos side by side, from the ImagePair rich-text template.
+ *
+ * This existed in the schema and in about.mdx but had no renderer, so the About
+ * page shipped a red "No component provided for ImagePair" box where two
+ * childhood photos should be - on production, for as long as the Astro rebuild
+ * has been live. The template was declared during the Next.js era and the
+ * migration never ported the component that drew it.
+ *
+ * Same shape as MarkdownImage on purpose: one <figure> per photo, captions
+ * through FigCaption so they are left aligned and can hold a link like every
+ * other caption on the site.
+ */
+import FigCaption from './FigCaption.astro';
+
+interface Props {
+  leftUrl?: string | null;
+  leftAlt?: string | null;
+  leftCaption?: string | null;
+  rightUrl?: string | null;
+  rightAlt?: string | null;
+  rightCaption?: string | null;
+}
+
+const {
+  leftUrl, leftAlt, leftCaption,
+  rightUrl, rightAlt, rightCaption,
+} = Astro.props;
+
+// Same guard the other rich-text components apply: a src comes from editable
+// content, so javascript: and data: must never reach the DOM.
+const ok = (u?: string | null) =>
+  u && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(u) ? u : null;
+
+const pair = [
+  { src: ok(leftUrl), alt: leftAlt, caption: leftCaption },
+  { src: ok(rightUrl), alt: rightAlt, caption: rightCaption },
+].filter((p) => p.src);
+---
+
+{pair.length > 0 && (
+  <div class:list={['pair', pair.length === 1 && 'solo']}>
+    {pair.map((p) => (
+      <figure>
+        <img src={p.src} alt={p.alt ?? ''} loading="lazy" decoding="async" />
+        {p.caption && <FigCaption caption={p.caption} />}
+      </figure>
+    ))}
+  </div>
+)}
+
+<style>
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  /* One image is a legitimate state: an author can fill in one side and not the
+     other, and a lone photo stretched across two columns looks like a mistake. */
+  .pair.solo {
+    grid-template-columns: 1fr;
+  }
+
+  .pair figure {
+    margin: 0;
+  }
+
+  /*
+    A fixed aspect-ratio with object-fit, not height:auto.
+
+    The two photos are rarely the same shape, and left to their own sizes one
+    column ends taller than the other, which drags its caption out of line with
+    the neighbouring one. Cropping to a shared 4:3 keeps both captions on the
+    same baseline. It also means the row reserves its height before either file
+    arrives, so nothing below reflows as they load.
+  */
+  .pair img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  /* Side by side stops working long before the column does. Below this the two
+     stack, which is better than two photos too small to read. */
+  @media (max-width: 520px) {
+    .pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

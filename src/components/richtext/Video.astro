@@ -13,16 +13,20 @@ import FigCaption from './FigCaption.astro';
 
 interface Props {
   url?: string | null;
+  poster?: string | null;
   autoPlay?: boolean | null;
   loop?: boolean | null;
   caption?: string | null;
 }
 
-const { url, autoPlay, loop, caption } = Astro.props;
+const { url, poster, autoPlay, loop, caption } = Astro.props;
 
 // Same guard as images: a URL comes from editable content and must never be
 // allowed to become a javascript: or data: source.
-const safe = url && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(url) ? url : null;
+const ok = (u?: string | null) =>
+  u && /^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(u) ? u : null;
+const safe = ok(url);
+const safePoster = ok(poster);
 
 // Autoplay without muted is blocked by every browser, so asking for one implies
 // the other. Requesting autoplay and silently getting a still frame is worse
@@ -41,8 +45,23 @@ const auto = !!autoPlay;
       preload is metadata, not auto, when there is no autoplay - no reason to
       pull a megabyte for a video nobody has asked to watch.
     */}
+    {/*
+      The poster is doing two jobs, and the second one is the reason it is not
+      optional in practice.
+
+      A <video> with no poster and no dimensions has nothing to compute
+      `height: auto` from, so it lays out at the browser's default 150px and then
+      snaps to its real height the moment metadata arrives. On this page that was
+      a 252px shove of every paragraph below it, and until then the box was
+      simply empty - which reads as "the video is broken" and is why refreshing
+      appeared to fix it: the second load had the file cached, so metadata was
+      instant. The browser takes the element's intrinsic size from the poster
+      until the video's own metadata lands, so one attribute fixes the blank box
+      and the reflow together.
+    */}
     <video
       src={safe}
+      poster={safePoster ?? undefined}
       autoplay={auto || undefined}
       muted={auto || undefined}
       loop={loop || undefined}

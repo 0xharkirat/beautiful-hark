@@ -17,9 +17,31 @@
     font-size: 15px;
     color: var(--ink-3);
     cursor: pointer;
-    transition: color 0.15s ease;
   }
   button:hover { color: var(--ink); }
+
+  /* The attribute is in this selector to win a specificity fight, not for
+     precision: Header.astro reaches in with `header :global(button)`, which
+     outranks a bare scoped `button` and would replace this whole shorthand
+     with its own colour-only transition. Losing it leaves the press snapping
+     back with no ease on release, which is the half of a press people
+     actually notice. */
+  button[data-theme-toggle] {
+    transition: color 0.15s ease, transform 140ms var(--ease-out);
+  }
+
+  /* Same 0.96 as the hero chip so presses read as one system, and not gated
+     behind (hover: hover) because touch has nothing else. Colour moves with
+     the scale, so the reduced-motion rule below can drop the transform and
+     still leave the tap answered. */
+  button:active {
+    color: var(--ink);
+    transform: scale(0.96);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button:active { transform: none; }
+  }
 
   .dark-only { display: none; }
   :global(.dark) .light-only { display: none; }

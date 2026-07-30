@@ -157,7 +157,7 @@ const imgSrc = data.image?.src;
     font-size: 13px;
     line-height: 1;
     opacity: 0.6;
-    transition: opacity 0.18s ease, transform 0.18s ease;
+    transition: opacity 0.18s ease, transform 140ms var(--ease-out);
   }
 
   /* The chip moves; the video does not. It is already a moving, meditative
@@ -166,6 +166,38 @@ const imgSrc = data.image?.src;
   .sound-toggle:focus-visible .chip {
     opacity: 1;
     transform: translateY(-2px);
+  }
+
+  /* Press reads on the chip, not on .sound-toggle. The button is a transparent
+     inset:0 layer, so scaling the button itself would animate nothing anyone
+     can see. 0.96 because 0.95 and below reads as a bounce on something this
+     small. Deliberately not behind (hover: hover): a press is the only
+     feedback a touch reader ever gets, and it has to land after the :hover
+     rule above, which is the same specificity. */
+  .sound-toggle:active .chip {
+    transform: scale(0.96);
+  }
+
+  /* The label carries two strings, and "click again" measures 65.34px against
+     "click" at 28.30px in Inter at 13px, so the chip used to resize itself
+     mid-swap. The chip is anchored right, so that reflow dragged its left edge
+     across the frame - worse than any text treatment could fix. Reserve the
+     wider string (measured, then rounded up for other platforms' rasterisers)
+     and left-align, so the words change inside a box that never moves. */
+  .chip-label {
+    min-width: 66px;
+    /* The UA centres text inside a <button>, and this inherits it. */
+    text-align: left;
+    transition: filter 180ms ease, opacity 180ms ease;
+  }
+
+  /* textContent lands in a single frame, so the swap needs something to cross.
+     A soften rather than a move: nothing shifts, and the new word arrives out
+     of the blur. 2px because blur() is genuinely expensive in Safari and
+     anything larger only smears a 13px word into nothing. */
+  .chip-label.swapping {
+    filter: blur(2px);
+    opacity: 0.7;
   }
 
   .dot {
@@ -183,6 +215,21 @@ const imgSrc = data.image?.src;
   /* Touch has no hover to reveal it, so show it at full strength. */
   @media (hover: none) {
     .chip { opacity: 1; }
+  }
+
+  /* Gentler, not off. The opacity cues survive - they are what tells the
+     reader the chip is live and that the word changed. What goes is anything
+     that reads as movement: the lift, the press, and the blur, which is the
+     one people forget counts. The label still cross-fades. */
+  @media (prefers-reduced-motion: reduce) {
+    .sound-toggle:hover .chip,
+    .sound-toggle:focus-visible .chip,
+    .sound-toggle:active .chip {
+      transform: none;
+    }
+    .chip-label.swapping {
+      filter: none;
+    }
   }
 </style>
 
@@ -231,6 +278,27 @@ const imgSrc = data.image?.src;
       };
 
       /*
+        Blur the word, replace it halfway through, let it sharpen again. The
+        class goes on, and 90ms later the text changes and the class comes off,
+        so the swap happens inside the blur instead of in front of it. That
+        90ms is also where the blur peaks, since it reverses there: the word
+        never actually reaches the 2px the class asks for, and it should not -
+        the point is to soften the cut, not to hide the chip.
+
+        Rapid double-toggles queue two timers. They fire in order and both set
+        an absolute string, so the final word is always right; only the middle
+        blur gets clipped, which nobody can see at this speed.
+      */
+      const swapLabel = (text: string) => {
+        if (!label) return;
+        label.classList.add('swapping');
+        setTimeout(() => {
+          label.textContent = text;
+          label.classList.remove('swapping');
+        }, 90);
+      };
+
+      /*
         Every route into sound goes through here - click, keyboard, and the
         observer below - so the chip can never disagree with the video's
         real muted state. The chip is the only signal the reader has, and a
@@ -243,7 +311,7 @@ const imgSrc = data.image?.src;
         // still reads two ways without relying on colour: the words differ,
         // and the dot goes green. The aria-label above stays explicit, so
         // screen readers are told plainly what the control does.
-        if (label) label.textContent = on ? 'click again' : 'click';
+        swapLabel(on ? 'click again' : 'click');
 
         if (on) {
           video.volume = 0;

@@ -53,10 +53,30 @@
   --ink-3: #6f6e6a;    /*  4.9:1 - the quietest grey that still clears AA */
   --rule: #e6e5e1;
   --accent: #b4551e;   /*  4.7:1 - ember, darkened for the light paper */
+  --focus: #161614;    /* see the --focus note below */
 
   /* One column. Everything lives inside it. */
   --measure: 640px;
   --gutter: 24px;
+
+  /*
+    Two curves, and the reason they are not the CSS defaults.
+
+    The built-in easings are weak: `ease-out` reaches half its distance around
+    40% of the way through, where this curve is past 70%. That early movement is
+    what makes a press or a transition feel like it answered instantly, and the
+    moment the user is watching most closely is the first frame.
+
+    --ease-out for anything entering, exiting, or responding to a press.
+    --ease-in-out for something moving across the screen, where the eye wants
+    acceleration at both ends.
+
+    Colour and hover transitions deliberately stay on plain `ease` and are not
+    ported to these. A colour has no direction to accelerate in, and a punchy
+    curve on a hover tint reads as a twitch.
+  */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .dark {
@@ -67,6 +87,7 @@
   --ink-3: #8b8a84;    /*  5.4:1 */
   --rule: #333330;
   --accent: #d66a2a;   /*  5.3:1 - the ember as the sprite draws it */
+  --focus: #eceae5;
 }
 
 ::selection {
@@ -109,9 +130,18 @@
 
   a { color: inherit; }
 
-  /* Focus is the accent, so it moves with the theme. */
+  /*
+    Focus is ink, not the accent, and --focus exists so the two cannot drift
+    back together.
+
+    They shared --accent until the accent stopped being grey. Pointing it at the
+    phoenix ember turned every focus ring on the site orange, which is the one
+    place a brand colour does not belong: the ring has to read as the browser's
+    own affordance against arbitrary content, and a coloured outline competes
+    with whatever it is outlining. Hover keeps the ember. Focus does not.
+  */
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -129,13 +159,81 @@
   }
   .skip-link:focus { top: 12px; }
 
+  /*
+    Reduced motion means less movement, not less feedback.
+
+    This used to zero `transition-duration` on every element, which also killed
+    the colour and underline fades. Those carry no motion at all - they are how a
+    link says it is being hovered - so removing them made the site harder to read
+    for someone who asked only not to be moved.
+
+    Restricting `transition-property` instead is the honest version: anything
+    that changes colour or fades still eases, and anything that would travel,
+    scale or sweep now snaps to its end state. Animations are still cut outright,
+    since a keyframe sequence is motion by definition.
+  */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-property:
+        color, background-color, border-color, text-decoration-color,
+        outline-color, fill, stroke, opacity !important;
     }
   }
+}
+
+/* ── Navigating between pages ───────────────────────────────────────── */
+
+/*
+  This narrows an existing transition rather than adding one.
+
+  ClientRouter already calls startViewTransition on every navigation, and with
+  no view-transition-name anywhere the browser captured the whole page as one
+  snapshot and crossfaded it at its own default pace. Two problems with that.
+
+  It was too slow. Navigation is the most repeated action on the site, and at
+  that frequency the correct amount of animation is an amount you do not
+  consciously notice. 140ms is near the floor of perceptible and deliberately
+  boring.
+
+  Worse, a whole-page snapshot includes the phoenix, which is position:fixed and
+  moving. Crossfading the page against itself meant crossfading the bird at
+  position A against the bird at position B: a ghost of a second bird on every
+  navigation. Naming only <main> takes the header, footer and bird out of the
+  capture entirely, so the only thing that fades is the only thing that changed.
+
+  Opacity, never transform. A page that slides on every navigation is the exact
+  effect people disable view transitions to escape.
+*/
+/* #main, not `main`. A view-transition-name has to be unique in the document, and
+   a bare tag selector is one nested landmark away from matching twice and taking
+   the whole transition down with it. The id is the guarantee. */
+#main {
+  view-transition-name: hark-main;
+}
+
+/* The rest of the page is identical either side of a swap - the header is even
+   the same DOM node, thanks to transition:persist - so a hard cut is invisible
+   and costs nothing. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(hark-main) {
+  animation: 140ms var(--ease-out) both hark-fade-out;
+}
+::view-transition-new(hark-main) {
+  animation: 140ms var(--ease-out) both hark-fade-in;
+}
+
+@keyframes hark-fade-out {
+  to { opacity: 0; }
+}
+@keyframes hark-fade-in {
+  from { opacity: 0; }
 }
 
 /* ── The column ─────────────────────────────────────────────────────── */
@@ -179,6 +277,24 @@
 .tap {
   padding-block: 11px;
   margin-block: -11px;
+  /*
+    The inline axis was missing, so a short word was a short target. "rss" was
+    20px wide and "ssw" 37px, well under the 44px a finger expects, while the
+    block padding above already gave them full height. Height alone is half a
+    hit area.
+
+    10px, not 12px, and the number is set by the row rather than by taste: the
+    footer lays these out with a 20px gap, so 10px each side has the two
+    neighbouring targets meet exactly at the midpoint. Touching is fine;
+    overlapping is not, and 12px would overlap by 4px and hand taps to the wrong
+    link. "rss" lands at 40px, which clears the desktop floor and is as far as
+    this row's spacing allows without moving the words apart.
+
+    The negative margin cancels the padding, so nothing moves on screen. The
+    target grows and the layout does not.
+  */
+  padding-inline: 10px;
+  margin-inline: -10px;
 }
 
 /* Quiet link: underline sits close, and the whole link takes the accent on

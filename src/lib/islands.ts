@@ -17,7 +17,15 @@ export const islands: IslandRegistry = {
   page: {
     fetch: (_request, params) => getPage(params.get('slug') ?? 'home'),
     component: PageBody,
-    wrapper: { tag: 'main' },
+    // div, not main. Base.astro already wraps every page in <main id="main">, so
+    // this wrapper rendered a second <main> nested inside the first: invalid
+    // HTML, and two `main` landmarks for a screen reader to choose between.
+    //
+    // It also broke view transitions. Naming <main> as a transition group found
+    // two elements with the same name, which makes the API reject the whole
+    // transition rather than degrade, so navigation silently lost its crossfade
+    // on exactly the three pages that use this island.
+    wrapper: { tag: 'div' },
     propsFromData: (data) => ({
       data: (data as QueryResult<PageQuery>).data?.page as CmsPage | undefined,
     }),

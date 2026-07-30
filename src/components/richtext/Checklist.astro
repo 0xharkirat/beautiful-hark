@@ -57,11 +57,18 @@
         const countEl = root.querySelector('[data-count]');
         const clearEl = root.querySelector('[data-clear]');
 
+        /*
+          Nothing until something is ticked.
+
+          This used to greet everyone with "78 things. Tick them off as you go",
+          which announced the feature to people who had not asked for it and put
+          a number on the page that is only ever going to be wrong-looking. The
+          checkboxes explain themselves; a count is only worth showing once it
+          is counting something.
+        */
         const paint = () => {
           const done = items.filter((li) => li.dataset.done === '1').length;
-          countEl.textContent = done
-            ? `${done} of ${items.length} ticked off`
-            : `${items.length} things. Tick them off as you go.`;
+          countEl.textContent = done ? `${done} of ${items.length} ticked off` : '';
           clearEl.hidden = done === 0;
         };
 
@@ -166,14 +173,22 @@
     text-decoration-color: var(--rule);
   }
 
+  /* Collapses to nothing until there is a count to show, so an untouched page
+     has no empty row sitting under the intro line. */
   .checklist {
     display: flex;
     align-items: baseline;
     gap: 12px;
-    margin-bottom: 8px;
     font-family: var(--font-sans);
     font-size: 13px;
     color: var(--ink-3);
+  }
+  .checklist:not(:has([data-count]:not(:empty))) {
+    margin: 0;
+    min-height: 0;
+  }
+  .checklist:has([data-count]:not(:empty)) {
+    margin-bottom: 8px;
   }
 
   .checklist .clear {

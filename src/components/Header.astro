@@ -113,5 +113,24 @@ const isActive = (href: string) => {
     color: var(--ink-3);
     transition: color 0.15s ease;
   }
-  header :global(button:hover) { color: var(--ink); }
+  header :global(button:hover) { color: var(--accent); }
+
+  /*
+    Space the toggle away from the nav, because sitting the same distance from
+    "Recommendations" as "Recommendations" sits from "Poems" made it read as a
+    6th nav item. Measured: the gap between nav items and the gap to the toggle
+    were both -4px, so nothing but the words themselves said it was a different
+    kind of control.
+
+    Proximity is the only grouping signal here, so it has to do the work: a
+    little over double the nav's own spacing reads as a separate group without
+    needing a rule, a bullet, or pushing the toggle to the far right, which
+    would strand it across 200px of empty column.
+
+    Marked !important because .tap pulls 10px back on each side with a negative
+    margin, and this has to win against the shorthand it sets.
+  */
+  header :global([data-theme-toggle]) {
+    margin-inline-start: 24px !important;
+  }
 </style>

@@ -267,25 +267,51 @@
     // countdown honest, which it previously was not.
     markBurned(hourKey());
 
-    let pending = null;
+    /*
+      How late a rebirth is still allowed to be.
+
+      A missed burn used to be saved and replayed the moment the reader came
+      back, which meant leaving at 09:55 and returning at 10:03 played the
+      10:00 rebirth at 10:03. That reads as broken rather than as a surprise:
+      the whole conceit is that it happens on the hour, the hover bubble counts
+      down to the hour, and a burn three minutes late quietly contradicts both.
+
+      Deferring was also only half the problem. A laptop that sleeps at 09:55
+      and wakes at 10:03 comes back with the tab visible, so the deferral never
+      applied and the poll simply fired late. A limit on lateness covers both,
+      where a visibility check covers only one.
+
+      Three times the poll interval. A burn is detected up to 20s after the
+      turn, so anything tighter would start dropping rebirths that did happen
+      on time.
+    */
+    const REBIRTH_GRACE_MS = 60000;
+    const hourStart = () => {
+      const d = new Date();
+      d.setMinutes(0, 0, 0);
+      return d.getTime();
+    };
+
     const checkClock = () => {
       const k = hourKey();
       if (alreadyBurned(k)) return;
-      if (document.hidden) { pending = k; return; }   // nobody is watching
+      // Do not claim an hour nobody could have seen. Leaving it unclaimed is
+      // what lets someone who glanced at another tab for ten seconds still
+      // catch it when they come back.
+      if (document.hidden) return;
       markBurned(k);
+      // Claimed either way, so a skipped hour cannot fire later in the hour.
+      if (Date.now() - hourStart() > REBIRTH_GRACE_MS) return;
       beginRebirth();
     };
     // Poll rather than schedule. A setTimeout to the next hour breaks on
     // laptop sleep, DST and clock changes; comparing the wall clock every 20s
     // is immune to all of it and costs nothing.
     setInterval(checkClock, CLOCK_POLL_MS);
+    // Coming back is a reason to look at the clock, not a reason to replay
+    // whatever was missed while away.
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && pending) {
-        // One rebirth on return, not one per missed hour.
-        markBurned(pending);
-        pending = null;
-        beginRebirth();
-      }
+      if (!document.hidden) checkClock();
     });
 
     // --- hover bubble ---------------------------------------------------

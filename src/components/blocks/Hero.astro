@@ -62,7 +62,6 @@ const imgSrc = data.image?.src;
       <iframe
         src={videoUrl}
         title={data.image?.alt ?? 'Video'}
-        frameborder="0"
         allowfullscreen
       ></iframe>
     </figure>
@@ -104,6 +103,10 @@ const imgSrc = data.image?.src;
   }
   .hero-media :is(video, iframe, img) {
     display: block;
+    /* Replaces frameborder="0", which browsers still honour but TypeScript
+       flags as deprecated. An iframe's default 2px inset border is the only
+       reason that attribute was ever there. */
+    border: 0;
     width: 100%;
     height: auto;
     aspect-ratio: 3 / 2;

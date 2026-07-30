@@ -1,0 +1,192 @@
+---
+title: Next.js Was Too Much Website for My Blog
+excerpt: >
+  I moved this site from Next.js to Astro. Tina did not move at all, because it
+  is headless and never cared which framework was rendering the pages. Here is
+  what the swap actually involved, and the one Vercel setting that needed
+  touching.
+author: ''
+date: 2026-07-31T00:00:00.000Z
+tags:
+  - tag: src/content/tags/astro.mdx
+  - tag: src/content/tags/tinacms.mdx
+  - tag: src/content/tags/nextjs.mdx
+---
+
+This blog is eight posts and some poems.
+
+Text. A few images. Nothing that updates while you are looking at it.
+
+It was running on [Next.js](https://nextjs.org) 15 and React 18.
+
+That is a lot of machine for a page that could just be a file.
+
+***
+
+## What it was actually costing me
+
+I did not start out annoyed. Next.js was fine. It worked.
+
+The thing that made me look properly was the ISR bill scare. I wrote about that one separately: Vercel emailed to say I had burned 150,000 ISR writes on a blog nobody was reading yet. I fixed it, but the fix was me learning what Incremental Static Regeneration was so I could stop it happening.
+
+And that is the bit that stuck with me.
+
+**My blog does not need regeneration.** It needs to be built once when I publish, and then sit there.
+
+I was paying attention to a caching strategy for content that changes maybe twice a month. Next.js was solving a problem I did not have, and the price was that I had to understand the solution anyway.
+
+Then there was React. Every page shipped a React runtime so that a handful of components could be interactive. The reader downloads a framework to read a paragraph.
+
+None of this was broken. It was just more website than I needed.
+
+***
+
+## The reason this was cheap: Tina is headless
+
+Here is the part that made me actually do it instead of just complaining about it.
+
+**[TinaCMS](https://tina.io) is headless.** Your content is not locked in a database behind a vendor. It is MDX and JSON files sitting in your own repo, in `src/content/`.
+
+So when I say I migrated the site, I mean I migrated the *rendering*. The content did not move. Not one file.
+
+```
+src/content/
+  posts/
+  poems/
+  pages/
+  tags/
+  authors/
+  global/
+```
+
+Those directories are byte for byte what they were on Next.js.
+
+Tina reads them through a schema you define in `tina/`. The schema did not know it was talking to Next.js, and it does not know it is talking to Astro now. It just knows there is a collection called `post` with a title and a body.
+
+That is the whole reason a framework migration on a content site is a weekend-shaped job instead of a quarter-shaped one. Most of the fear in a migration is about the content. Here the content was never at risk.
+
+***
+
+## Tina is going the same way
+
+While I was looking into this, Matt Wicks published [Astro is becoming the default starter for TinaCMS](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter) on the Tina blog.
+
+Short version of his argument: more people are cloning the Astro starter than the Next.js one, Astro suits the things Tina users actually build like docs and blogs and marketing sites, and the newer visual editing uses data islands rather than hydrating the whole page as React.
+
+He is also clear that the Next.js starter is not going away, so this is not a "move or else".
+
+But it did tell me something useful. I was not making a lonely bet. The people who build the CMS are pointing the same direction.
+
+***
+
+## The strategy: branch, preview, merge
+
+This is the part worth copying.
+
+I did not rewrite in place. I did not touch main until the very end.
+
+**1. New branch with the Tina Astro starter.**
+
+I scaffolded [the Astro starter](https://github.com/tinacms/tina-astro-starter) onto a branch. The old Next.js `app/` and `components/` tree got parked out of the way rather than deleted, so I could still read it while porting.
+
+**2. Prove one collection end to end before doing anything else.**
+
+My first real commit on that branch did exactly one thing: render a single poem, and confirm that `/admin` could edit it live.
+
+Not the whole site. One collection, all the way through, including the editing experience. If that had not worked, I would have stopped there and lost a day instead of a month.
+
+**3. Port the rest in passes.**
+
+Content parity first, then design, then the editorial pages. Each pass was its own commit, so when something broke I knew which pass broke it.
+
+**4. Let Vercel preview the branch.**
+
+This is the bit that made the whole thing low stress. Vercel builds a preview deployment for every branch, so the Astro version had a real URL, on real infrastructure, with real content, weeks before it went live.
+
+I was not comparing a localhost to production. I was comparing two production builds.
+
+**5. Merge, and let Vercel pick it up.**
+
+When it was ready, I merged to main. Vercel did what it always does.
+
+There was no cutover, no DNS change, no maintenance window. The deploy that shipped Astro looked exactly like every deploy before it.
+
+***
+
+## The one Vercel setting
+
+Almost nothing changed on the Vercel side, which surprised me.
+
+The one thing that did: **the framework preset.**
+
+Vercel had the project pinned to Next.js. That is fine while main is Next.js, but it means the preview build for my Astro branch was being built as if it were Next.js, which does not work.
+
+Changing the preset so the branch built as Astro was the whole infrastructure task. That plus the [`@astrojs/vercel`](https://docs.astro.build/en/guides/integrations-guide/vercel/) adapter in `astro.config.mjs`:
+
+```js
+export default defineConfig({
+  output: 'static',
+  adapter: vercel(),
+});
+```
+
+`output: 'static'` is the line that ends the ISR story. There is nothing to regenerate. The build produces HTML and the HTML is the site.
+
+***
+
+## I used Claude for the template swap
+
+I did not hand-port every component.
+
+I pointed [Claude](https://claude.com/claude-code) at the old Next.js tree and the new Astro starter and had it do the translation, component by component, while I reviewed.
+
+This is the kind of work AI is genuinely good at. It is mechanical, the target shape is well defined, and mistakes show up immediately because the page either renders or it does not.
+
+It works well with Tina specifically because the schema is the contract. The agent is not guessing what a `post` looks like. It can read `tina/collections/post.ts` and see the fields.
+
+The parts I did not delegate were the taste calls. Spacing, type, what to cut. An agent will happily port a component you should have deleted.
+
+***
+
+## The Cloudflare thing I did not do
+
+I did look at moving to [Cloudflare](https://developers.cloudflare.com/pages/) at the same time.
+
+Astro is arguably hosted better there. Static output on their edge is basically the ideal case for this kind of site, and I could see the argument.
+
+I decided against it, and the reason is boring: it was not worth my time.
+
+Vercel already supports Astro properly, my domains and previews and environment variables were already set up, and the whole point of this exercise was to have *less* to think about. Doing a framework migration and a host migration in the same move would have doubled the surface area for the same end result.
+
+Maybe later. The site is static now, so if I ever do move, it will be a much smaller decision than it would have been on Next.js.
+
+***
+
+## The numbers
+
+What actually changed, measured rather than guessed:
+
+* Production dependencies went from **26 to 18**
+* Dev dependencies went from **12 to 6**
+* React and Next packages went from **12 to zero**
+* JavaScript shipped to the browser went from a React runtime to **one 16 KB bundle**
+
+That last one is the bit I like. The only JavaScript this site sends you now is the view-transitions router, so that navigating between pages does not flash.
+
+Everything else is HTML that was built before you asked for it.
+
+I have not run before and after Lighthouse numbers, so I am not going to pretend I have. Dependency counts and bundle size are what I actually measured.
+
+***
+
+## Was it worth it
+
+For this site, yes.
+
+Not because Next.js is bad. It is genuinely good at the thing it is for, which is applications. My blog is not an application. It is a pile of text with some pictures in it.
+
+The honest summary is that I was using a framework built for a much harder problem than the one I had, and I only noticed when it sent me a bill.
+
+If you are running Tina on Next.js and your site is mostly content, the migration is smaller than you think, and the reason is that your content is already portable. It is sitting in your repo in plain files. That was true the whole time.
+
+Start with one collection on a branch. If that works, the rest is just typing.

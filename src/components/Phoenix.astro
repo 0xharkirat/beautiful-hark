@@ -98,7 +98,33 @@
     const TAKEOFF = [[5, 0.08], [5, 0.2], [6, 0.45], [6, 0.7], [7, 0.9]];
     const LANDING = [[7, 0.75], [7, 0.55], [4, 0.4], [4, 0.25], [5, 0.12], [5, 0.04], [0, 0]];
 
-    const REBIRTH_MS = 5200;
+    /*
+      How long each rebirth column is held, rather than one duration split
+      eight ways.
+
+      A linear sweep gave every frame 650ms, which spends the time backwards.
+      The burn is spectacle and reads fine fast; the part worth watching is the
+      bird coming back, and that was over before you could see it happen. The
+      ash pile, the ember, and the legless shape rising out of it now hold
+      roughly three times as long as any burn frame, so the return arrives in
+      stages instead of as a flicker.
+
+      Multiples of 100 because the loop ticks at 100ms. A hold shorter than one
+      tick would skip its frame entirely, and at this size a skipped frame is
+      the difference between the bird growing legs and it teleporting them.
+    */
+    const REBIRTH_HOLD = [300, 300, 900, 1100, 900, 1600, 1400, 700];
+    const REBIRTH_MS = REBIRTH_HOLD.reduce((a, b) => a + b, 0);   // 7200
+
+    const rebirthCol = (elapsed) => {
+      let t = 0;
+      for (let i = 0; i < REBIRTH_HOLD.length; i++) {
+        t += REBIRTH_HOLD[i];
+        if (elapsed < t) return i;
+      }
+      return REBIRTH_HOLD.length - 1;
+    };
+
     const CLOCK_POLL_MS = 20000;
     const DOUBLE_CLICK_MS = 250;
 
@@ -482,8 +508,7 @@
       if (mode === 'rebirth') {
         lift = 0;   // it burns on the ground
         const left = rebirthUntil - Date.now();
-        const p = 1 - Math.max(0, left) / REBIRTH_MS;
-        setFrame(ROW.rebirth, Math.min(7, Math.floor(p * 8)));
+        setFrame(ROW.rebirth, rebirthCol(REBIRTH_MS - Math.max(0, left)));
         if (left <= 0) endRebirth();
         draw();
         return;

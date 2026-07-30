@@ -1,4 +1,5 @@
 ---
+import { Icon } from 'astro-icon/components';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsGlobal } from '../lib/data';
 import { isExternal } from '../lib/links';
@@ -24,11 +25,37 @@ function label(raw?: string | null) {
   return raw.replace(/^(Fa6?|Ai(Fill|Outline)?|Bi)/i, '').toLowerCase() || raw;
 }
 
+// Only the names verified to exist in the installed @iconify-json/lucide set.
+// astro-icon hard-fails the build on a name it cannot resolve, so an unchecked
+// guess here breaks CI rather than degrading. Anything absent falls through to
+// LABELS and keeps rendering as a word, which is the safe direction.
+//
+// ssw-icon has no Lucide equivalent and there is no SSW SVG in the repo, so it
+// stays the word "ssw". A stand-in building or briefcase glyph would be a
+// worse label than the four letters it replaced.
+const ICONS: Record<string, string> = {
+  FaGithub: 'lucide:github',
+  FaLinkedin: 'lucide:linkedin',
+  FaYoutube: 'lucide:youtube',
+  FaXTwitter: 'lucide:x',
+};
+
 const { config } = Astro.props;
 const footer = config?.footer ?? null;
 const social = (footer?.social ?? []).filter((s) => s !== null);
 const tagline = footer?.tagline ?? null;
 const colophon = footer?.colophon ?? null;
+
+// The shimmer stagger counts only the links that actually shimmer, so the first
+// glyph fires at 0ms even though "ssw" sits ahead of it in the row. Indexing off
+// the raw social order would spend the first 60ms slot on an item with nothing
+// to animate and make the sweep look like it started late.
+let sweep = 0;
+const items = social.map((s) => {
+  const name = s.icon?.name;
+  const icon = name ? ICONS[name] : undefined;
+  return { s, icon, word: label(name), i: icon ? sweep++ : 0 };
+});
 
 // These three URLs come from Tina, so "external" is a fact about the data, not
 // something to hardcode. They were all unconditionally target="_blank", which
@@ -46,15 +73,23 @@ const ext = (u?: string | null) => isExternal(u, Astro.site);
     <!-- Hardcoded next to rss rather than added to the Tina nav: the bird is
          an easter egg, and a fifth nav item would announce it. -->
     <a href="/hawky" class="quiet tap">hawky</a>
-    {social.map((s) => (
+    {items.map(({ s, icon, word, i }) => (
       <a
         href={s.url ?? '#'}
         target={ext(s.url) ? '_blank' : undefined}
         rel={ext(s.url) ? 'noopener noreferrer' : undefined}
         data-tina-field={tinaField(s, 'url')}
-        class="quiet tap"
+        class:list={['quiet', 'tap', icon && 'ico']}
+        style={icon ? `--i:${i}` : undefined}
       >
-        {label(s.icon?.name)}{ext(s.url) && <ExternalMark />}
+        {icon ? (
+          <Fragment>
+            <span class="glyph">
+              <Icon name={icon} aria-hidden="true" focusable="false" />
+              <span class="shim"><Icon name={icon} aria-hidden="true" focusable="false" /></span>
+            </span><span class="sr">{word}</span>
+          </Fragment>
+        ) : word}{ext(s.url) && <ExternalMark />}
       </a>
     ))}
   </div>
@@ -97,6 +132,16 @@ const ext = (u?: string | null) => isExternal(u, Astro.site);
 </footer>
 
 <style>
+  /*
+    The footer is the last thing on every page, so on a phone it ends where the
+    home indicator begins and the bottom row sits under it. env() is 0 on every
+    device without a notch, and max() means the existing pb-16 still wins there,
+    so this only ever adds space where space is actually taken.
+  */
+  footer {
+    padding-bottom: max(4rem, calc(1rem + env(safe-area-inset-bottom)));
+  }
+
   .quiet {
     font-size: 14px;
     color: var(--ink-3);
@@ -104,6 +149,108 @@ const ext = (u?: string | null) => isExternal(u, Astro.site);
     transition: color 0.15s ease;
   }
   .quiet:hover { color: var(--accent); }
+
+  /* The brand marks are icon-only, so the word they replaced moves into a
+     visually hidden span - same clip-path technique as ExternalMark's .ext-sr.
+     Without it the link has no accessible name at all and a screen reader falls
+     back to reading the URL out character by character. */
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* .tap only pads the block axis, which was enough when the label was a word
+     but leaves an 18px glyph sitting in an 18px-wide target. Squaring it to 44px
+     is the inline half of the same job.
+     position: relative keeps .sr from escaping to a distant positioned
+     ancestor and being laid out somewhere else on the page. */
+  .ico {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    /* Squaring the box adds 13px either side of the glyph, which would stack
+       with the row's own 20px gap and space the glyphs 46px apart - a row of
+       icons that no longer reads as a group. -10px per side cancels exactly
+       that gap, so the 44px boxes tile edge to edge: touching, never
+       overlapping, because overlapping targets make a tap ambiguous. */
+    margin-inline: -10px;
+  }
+
+  /* 18px, not the 24px Lucide draws at. Its stroke-width of 2 cannot be thinned
+     from here: astro-icon renders each glyph as <symbol> + <use>, and <use>
+     clones into a shadow tree, so the inner <g stroke-width="2"> is out of reach
+     of any selector in this file and beats an inherited value anyway. Size is
+     the only lever left, and 18px scales that stroke to 1.5px, which sits at
+     about the weight of the 14px words beside it. Going bigger reads bolder than
+     the row it belongs to.
+     :global because the svg is Icon.astro's element, not this file's, so a
+     scoped selector would never reach it. */
+  /* relative so the .shim copy below stacks on the glyph, not on the anchor. */
+  .glyph {
+    position: relative;
+  }
+  .glyph,
+  .glyph :global(svg) {
+    display: block;
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ExternalMark raises its arrow with vertical-align, which an inline-flex
+     parent ignores outright - the arrow landed dead centre beside the glyph,
+     reading as a second icon rather than a mark on the first. This puts it back
+     up at the glyph's shoulder where it reads as the same superscript it is next
+     to a word. Transform, so it costs no layout and cannot widen the target. */
+  .ico :global(.ext) {
+    transform: translateY(-5px);
+  }
+
+  /* The shimmer is a second, accent-coloured copy of the same glyph, revealed
+     by a clip-path band travelling across it. A background-position gradient
+     cannot do this job: these glyphs are open line art, so a gradient shows
+     through the hollow interiors and the sweep reads as a rectangle crossing
+     the icon rather than a shine running along the strokes. */
+  .shim {
+    position: absolute;
+    inset: 0;
+    color: var(--accent);
+    /* Parked fully clipped. The band only exists while the animation runs, and
+       both of its fill states sit off the glyph, so there is no flash on either
+       side of the sweep. */
+    clip-path: inset(0 100% 0 0);
+  }
+
+  /* One sweep per page load, armed by the observer below. No reduced-motion
+     guard here on purpose: the script never adds this class under
+     prefers-reduced-motion, so a rule for it would be dead code. */
+  .ico.is-swept .shim {
+    animation: shim-sweep 260ms both;
+    /* Timing and delay as longhands after the shorthand. If --ease-out ever
+       went missing, a var() inside the shorthand would be invalid at
+       computed-value time and take animation-name down with it, cancelling the
+       sweep outright; on its own longhand it degrades to plain ease. */
+    animation-timing-function: var(--ease-out);
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+
+  /* A 30%-wide window crossing from just off the left edge to just off the
+     right. Both insets move linearly between these two states, so two frames
+     are enough - note the obvious 100%-to-0 pairing does not work, it shrinks
+     the window to zero width at every step and nothing is ever visible. */
+  @keyframes shim-sweep {
+    from { clip-path: inset(0 100% 0 -30%); }
+    to { clip-path: inset(0 -30% 0 100%); }
+  }
 
   .tagline {
     font-size: 15px;
@@ -119,3 +266,57 @@ const ext = (u?: string | null) => isExternal(u, Astro.site);
     margin: 0;
   }
 </style>
+
+<script>
+  /*
+    One shimmer across the brand icons the first time they reach the viewport.
+    Swapping the words for glyphs took away the only affordance saying these are
+    links, and a reader who never hovers - anyone on a touch screen - has no way
+    to find that out. The sweep says it once.
+
+    Once is the whole point. It disconnects on the first hit rather than
+    re-firing on every scroll back down, because a footer that keeps glinting
+    stops reading as a hint and starts reading as a bug.
+  */
+  declare global {
+    interface Window {
+      __footerShimmerBound?: boolean;
+    }
+  }
+
+  const arm = () => {
+    // Re-read per navigation rather than once at parse: the flag below guards
+    // only the listener, and the setting can change mid-session.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const icons = document.querySelectorAll<HTMLElement>('footer a.ico');
+    if (!icons.length) return;
+
+    // Watching the last icon, not the footer. The footer's top edge crosses the
+    // fold ~70px above the row, so triggering on the footer would spend the
+    // sweep while the glyphs were still below it; the last icon being visible
+    // means every one of them is.
+    const io = new IntersectionObserver((entries, obs) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      obs.disconnect();
+      for (const a of icons) a.classList.add('is-swept');
+    });
+    io.observe(icons[icons.length - 1]);
+  };
+
+  /*
+    astro:page-load fires on the initial parse and again after every
+    ClientRouter swap, and each swap hands over a brand new footer node, so the
+    observer has to be rebuilt per navigation - binding at parse time alone
+    would arm it once and never again.
+
+    The flag lives on window rather than in module scope because Astro may
+    re-execute this module after a swap, which would reset a module-scoped
+    variable and leave a second listener running its own observer over the same
+    icons.
+  */
+  if (!window.__footerShimmerBound) {
+    window.__footerShimmerBound = true;
+    document.addEventListener('astro:page-load', arm);
+  }
+</script>

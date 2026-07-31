@@ -130,7 +130,21 @@ export default defineConfig({
 });
 ```
 
-`output: 'static'` is the line that ends the ISR story. There is nothing to regenerate. The build produces HTML and the HTML is the site.
+`output: 'static'` is the line that matters. Every page is built once and served as a file.
+
+I want to be careful here, because I had this wrong in my own head at first.
+
+**Astro on Vercel can absolutely do ISR.** The adapter takes an `isr` option, with an expiration and a bypass token and the rest of it:
+
+```js
+adapter: vercel({ isr: { expiration: 60 } }),
+```
+
+I am just not using it. You can check this on your own build rather than take my word for it. Look in `.vercel/output/config.json` after a build. Mine has no `expiration` and no `isr` anywhere in it, and every page route resolves through Vercel's `filesystem` handler straight to prerendered HTML.
+
+There is still one serverless function in my deploy, which did surprise me. It only handles the image endpoint, Astro's server islands, and Tina's editing route. No actual page touches it.
+
+So the ISR problem did not go away because Astro cannot do ISR. It went away because I stopped asking for it.
 
 ***
 

@@ -107,7 +107,26 @@ await p.touchscreen.tap(bb.x, bb.y);
 await p.waitForTimeout(900);
 s = await bird();
 ok('double tap starts the rebirth', s.row === 3, `row ${s.row} (3 = rebirth)`);
-await p.waitForTimeout(5400);   // it is uninterruptible, let it finish
+
+/*
+  Wait it out by watching, not by counting.
+
+  This was a fixed 5400ms, tuned to a 5200ms rebirth. Staging the rebirth pushed
+  it to 7200ms and the sleep silently became too short, so test 8 below ran while
+  the bird was still burning. It still passed, because a rebirthing bird ignores
+  every input and so trivially satisfies "did not fall asleep" - a green test
+  proving nothing, which is the worst way for this to fail.
+
+  Polling the row means the next duration change cannot do that again.
+*/
+const waitOutRebirth = async (ms = 12000) => {
+  for (let i = 0; i < ms / 100; i++) {
+    if ((await bird()).row !== 3) return true;
+    await p.waitForTimeout(100);
+  }
+  return false;
+};
+ok('the rebirth finishes on its own', await waitOutRebirth());
 
 // 8. A tap on a link must go to the link, not the bird.
 await p.evaluate(() => window.scrollTo(0, 0));

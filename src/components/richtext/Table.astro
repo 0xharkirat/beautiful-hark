@@ -1,0 +1,122 @@
+---
+/**
+ * Table renderer for rich-text bodies.
+ *
+ * Tina's parser does produce table nodes - `table` > `tr` > `td` > `p` - but
+ * @tinacms/astro's Node.astro has no branch for any of them. It computes
+ * `components[node.type]` and then only consults it for `hr`, `break` and
+ * `html`, so a table matches nothing and falls through to `null`. Registering
+ * `table` on the components map does nothing at all; the dispatcher never looks.
+ *
+ * The seam that does work is MdxNode, which dispatches by `node.name` and
+ * spreads `node.props`. So `withTables` in lib/richtext.ts rewrites each table
+ * node into an mdx element named Table, and this draws it.
+ *
+ * There is no `th` in Tina's AST and no header flag on any row. Markdown's
+ * header separator is consumed during parsing, so the first `tr` is the header
+ * by position and nothing else. That is a convention, not a guarantee, which is
+ * why a single-row table renders as a header with an empty body rather than
+ * throwing.
+ */
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import MarkdownImage from './MarkdownImage.astro';
+import MarkdownLink from './MarkdownLink.astro';
+
+interface Props {
+  rows?: any[];
+}
+
+const { rows = [] } = Astro.props as Props;
+const [head, ...body] = rows as any[];
+const cells = (row: any) => (row?.children ?? []) as any[];
+
+/*
+  A local map rather than the shared richTextComponents.
+
+  Importing the shared map here would close a cycle: richtext.ts imports this
+  file to register it, and this file would import richtext.ts back. Cells only
+  ever hold inline content anyway, so the block-level entries in the shared map
+  are dead weight inside a cell.
+*/
+const inline = { a: MarkdownLink, img: MarkdownImage, Image: MarkdownImage };
+---
+
+{rows.length > 0 && (
+  <div class="table-wrap">
+    <table>
+      {head && (
+        <thead>
+          <tr>
+            {cells(head).map((cell) => (
+              <th><TinaMarkdown content={cell.children} components={inline} /></th>
+            ))}
+          </tr>
+        </thead>
+      )}
+      {body.length > 0 && (
+        <tbody>
+          {body.map((row) => (
+            <tr>
+              {cells(row).map((cell) => (
+                <td><TinaMarkdown content={cell.children} components={inline} /></td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      )}
+    </table>
+  </div>
+)}
+
+<style is:global>
+  /*
+    Scrolls inside its own box rather than widening the page. The column is
+    640px and a three-column table of commands will exceed that on a phone, and
+    a table that pushes the body wider makes every paragraph on the page scroll
+    sideways too.
+  */
+  .prose .table-wrap {
+    overflow-x: auto;
+    margin: 24px 0;
+    /* Lets a keyboard user scroll it, which an overflow container otherwise
+       swallows silently. */
+    scrollbar-width: thin;
+  }
+
+  .prose .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .prose .table-wrap th,
+  .prose .table-wrap td {
+    padding: 8px 14px 8px 0;
+    text-align: left;
+    vertical-align: baseline;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .prose .table-wrap th {
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .prose .table-wrap td {
+    color: var(--ink-2);
+  }
+
+  /* The cell contents come through as <p>, because that is what Tina's AST
+     wraps them in. Left alone they would inherit the prose paragraph margins
+     and space every row apart. */
+  .prose .table-wrap :is(th, td) > p {
+    margin: 0;
+  }
+
+  .prose .table-wrap tr:last-child td {
+    border-bottom: 0;
+  }
+</style>

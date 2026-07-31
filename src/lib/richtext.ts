@@ -13,6 +13,7 @@ import Checklist from '../components/richtext/Checklist.astro';
 import ImagePair from '../components/richtext/ImagePair.astro';
 import MarkdownImage from '../components/richtext/MarkdownImage.astro';
 import MarkdownLink from '../components/richtext/MarkdownLink.astro';
+import Table from '../components/richtext/Table.astro';
 import Video from '../components/richtext/Video.astro';
 
 export const richTextComponents = {
@@ -27,6 +28,46 @@ export const richTextComponents = {
   // Same renderer as a markdown image: the Image template's fields are
   // url/alt/caption, which is exactly MarkdownImage's contract.
   Image: MarkdownImage,
+  // Not a schema template. withTables below rewrites parsed table nodes into an
+  // mdx element with this name, because that is the only dispatch path the
+  // package offers for a node type it does not know.
+  Table,
+};
+
+/**
+ * Rewrites parsed `table` nodes into mdx elements named `Table`.
+ *
+ * Markdown tables were being dropped silently, and had been since the site
+ * moved to Astro. Tina's parser handles them fine and emits `table` > `tr` >
+ * `td` > `p`, but @tinacms/astro's Node.astro has no branch for those types:
+ * it reads `components[node.type]` into an `Override` and then only uses that
+ * for `hr`, `break` and `html`. Every other unrecognised type hits the final
+ * `: null`. So the rows parsed correctly and then rendered to nothing, with no
+ * error and no red "No component provided" box to notice.
+ *
+ * The published git-worktrees post has six table rows in its source and has
+ * been serving none of them.
+ *
+ * Registering `table` on the map does not help, because the dispatcher never
+ * consults the map for that type. Rewriting to an mdx element does, because
+ * MdxNode dispatches on `node.name` and spreads `node.props`.
+ *
+ * Returns new objects rather than mutating. The AST comes from the page's data
+ * and Tina's editor re-renders from the same object, so mutating it would make
+ * the transform run against its own output on the second pass.
+ */
+export const withTables = (content: any): any => {
+  if (Array.isArray(content)) return content.map(withTables);
+  if (!content || typeof content !== 'object') return content;
+  if (content.type === 'table') {
+    return {
+      type: 'mdxJsxFlowElement',
+      name: 'Table',
+      props: { rows: content.children ?? [] },
+    };
+  }
+  if (!Array.isArray(content.children)) return content;
+  return { ...content, children: content.children.map(withTables) };
 };
 
 /*

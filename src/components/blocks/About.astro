@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
-import { richTextComponents } from '../../lib/richtext';
+import { richTextComponents, withTables } from '../../lib/richtext';
 import { tinaField } from '@tinacms/astro/tina-field';
 import type { AboutBlock } from '../../lib/data';
 
@@ -17,7 +17,7 @@ const gallery = (data.gallery ?? []).filter((g) => g !== null);
 
   {data.subtitle && (
     <div data-tina-field={tinaField(data, 'subtitle')} class="subtitle mt-3">
-      <TinaMarkdown content={data.subtitle} components={richTextComponents} />
+      <TinaMarkdown content={withTables(data.subtitle)} components={richTextComponents} />
     </div>
   )}
 
@@ -44,7 +44,7 @@ const gallery = (data.gallery ?? []).filter((g) => g !== null);
 
   {data.summary && (
     <div data-tina-field={tinaField(data, 'summary')} class="prose mt-8">
-      <TinaMarkdown content={data.summary} components={richTextComponents} />
+      <TinaMarkdown content={withTables(data.summary)} components={richTextComponents} />
     </div>
   )}
 
@@ -53,7 +53,7 @@ const gallery = (data.gallery ?? []).filter((g) => g !== null);
       {section.title && <h2>{section.title}</h2>}
       {section.content && (
         <div class="prose mt-3">
-          <TinaMarkdown content={section.content} components={richTextComponents} />
+          <TinaMarkdown content={withTables(section.content)} components={richTextComponents} />
         </div>
       )}
     </section>

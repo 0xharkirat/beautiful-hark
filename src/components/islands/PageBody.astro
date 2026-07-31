@@ -1,6 +1,6 @@
 ---
 import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
-import { richTextComponents } from '../../lib/richtext';
+import { richTextComponents, withTables } from '../../lib/richtext';
 import { tinaField } from '@tinacms/astro/tina-field';
 import Blocks from '../blocks/Blocks.astro';
 import type { CmsPage } from '../../lib/data';
@@ -29,7 +29,7 @@ const body = (data as any)?.body ?? null;
 					<h1 data-tina-field={tinaField(data, 'title')}>{data.title}</h1>
 				)}
 				<div data-tina-field={tinaField(data, 'body')} class="prose mt-6">
-					<TinaMarkdown content={body} components={richTextComponents} />
+					<TinaMarkdown content={withTables(body)} components={richTextComponents} />
 				</div>
 			</article>
 		)}

@@ -18,14 +18,12 @@ TinaCMS is going default [Astro](https://tina.io/blog/astro-is-becoming-the-defa
 
 I counted the dependencies before and after.
 
-* Production dependencies: 26 down to 18
-* Dev dependencies: 12 down to 6
-* React and Next packages: 12 down to zero
+* Production dependencies: from 26 to 18
+* Dev dependencies: from 12 to 6
+* React and Next packages: from 12 to 0
 * Browser JavaScript: a React runtime down to one 16 KB bundle
 
 The 16 KB is the view transitions router, so pages do not flash when you click between them. The rest of what you get is HTML that was built before you asked for it.
-
-I did not run Lighthouse, so I am not going to quote you speed numbers. The four lines above are what I actually counted.
 
 ## Why it was cheap
 
@@ -45,37 +43,39 @@ src/content/
 
 Tina reads those through a schema in `tina/`. That schema never knew it was talking to Next.js, and it does not know it is talking to Astro now. It knows there is a collection called `post` with a title and a body. That is enough.
 
-Most of the worry in a migration is about the content. Mine was never in play.
-
 ## Why TinaCMS is going Astro
 
 Matt Wicks wrote it up on the [TinaCMS blog](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter). His case is that more people clone the Astro starter than the Next.js one, and that Astro suits what Tina users are mostly building. The newer visual editing also uses data islands, so the whole page no longer has to behave like a React app.
 
 He is clear that the Next.js starter stays. Nobody is being pushed anywhere.
 
-What it told me is that I was not out on a limb. The people who build the CMS are walking the same way.
-
-Plus I respect [Wicksy](https://www.ssw.com.au/people/matt-wicks/). He is undisputed leader of the Newy office and PO of TinaCMS.
+Plus I respect [Wicksy](https://www.ssw.com.au/people/matt-wicks/). He is undisputed leader of the Newy office and PO of TinaCMS 🫡.
 
 ## How I did it
 
-All of it with [Claude Code](https://claude.com/claude-code), so I will say where that helped.
+All of it with Claude Code. Not only the components, the whole job.
 
-I put the [Tina Astro starter](https://github.com/tinacms/tina-astro-starter) on a branch and left main alone until the very end. The old Next.js `app/` and `components/` tree got parked where I could still read it while porting.
+1. Put the [Tina Astro starter](https://github.com/tinacms/tina-astro-starter) on a branch and left main alone until the very end. The old Next.js `app/` and `components/` tree got parked where we could both still read it while porting.
 
-My first real commit did one thing. Render a single poem, then open `/admin` and confirm I could still edit it live. One collection, all the way through, editing included. If that had not worked I would have found out in a day instead of a month.
+2. Rendered a single poem and opened `/admin` to confirm I could still edit it live. One collection, all the way through, editing included. If that had not worked I would have found out in a day instead of a month.
 
-After that I ported in passes. Content parity, then the design, then the pages themselves. Each pass was its own commit, so a breakage told me which pass caused it.
+3. Brought the other collections across until the content matched what main was already serving.
 
-Claude did the component translation. I pointed it at the old tree and the new starter and let it work through file by file while I read the diffs. The work is mechanical and the target shape is fixed, which is what it is good at. A bad port announces itself immediately, because the page either renders or it does not.
+4. Rebuilt the design. Tokens, fonts, the shell around the page, accessibility.
+
+5. Rebuilt the pages themselves. Hero, blog, poems, tags, the 404.
+
+6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL on real infrastructure with the real content, weeks before it went live. Both sides of my comparison were production builds.
+
+7. Merged. Vercel picked it up like any other deploy.
+
+Each of those was its own commit, so when something broke I knew which pass broke it. Claude worked through the files and I read the diffs.
+
+The work suits an agent because it is mechanical and the target shape is fixed. A bad port announces itself immediately, because the page either renders or it does not.
 
 It goes well with Tina because the schema is the contract. The agent never has to guess what a `post` is. It reads `tina/collections/post.ts` and the fields are right there.
 
 What I kept for myself were the taste calls. An agent will happily port a component you should have deleted.
-
-Vercel builds a preview deployment for every branch, and that is what kept the whole thing calm. The Astro version had a real URL on real infrastructure with the real content, weeks before it went live. Both sides of my comparison were production builds.
-
-When it was ready I merged to main and Vercel picked it up like any other deploy.
 
 ## The one Vercel setting
 
@@ -98,6 +98,9 @@ export default defineConfig({
 
 I looked at moving hosts at the same time. Astro is arguably better served on Cloudflare, and static output on their edge is close to the ideal case for a site like mine.
 
-I gave it a miss for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there, and doing two migrations at once would have doubled what could go wrong for the same result.
+I gave it a miss for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there.
 
-Maybe later. The site is static now, so that move would be a much smaller decision than it would have been on Next.js.
+Maybe later. 
+
+
+Until then, enjoy [hawky](/hawky)

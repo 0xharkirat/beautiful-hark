@@ -53,20 +53,14 @@ Plus I respect [Wicksy](https://www.ssw.com.au/people/matt-wicks/). He is undisp
 
 ## How I did it
 
-All of it with Claude Code. Not only the components, the whole job.
+All of it with Claude Code.
 
-1. Put the [Tina Astro starter](https://github.com/tinacms/tina-astro-starter) on a branch and left main alone until the very end. The old Next.js `app/` and `components/` tree got parked where we could both still read it while porting.
-
+1. Put the [Tina Astro starter](https://github.com/tinacms/tina-astro-starter) on a branch and left main branch alone until the very end. The old Next.js `app/` and `components/` tree got parked where we could both still read it while porting.
 2. Rendered a single poem and opened `/admin` to confirm I could still edit it live. One collection, all the way through, editing included. If that had not worked I would have found out in a day instead of a month.
-
 3. Brought the other collections across until the content matched what main was already serving.
-
 4. Rebuilt the design. Tokens, fonts, the shell around the page, accessibility.
-
 5. Rebuilt the pages themselves. Hero, blog, poems, tags, the 404.
-
 6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL on real infrastructure with the real content, weeks before it went live. Both sides of my comparison were production builds.
-
 7. Merged. Vercel picked it up like any other deploy.
 
 Each of those was its own commit, so when something broke I knew which pass broke it. Claude worked through the files and I read the diffs.
@@ -100,7 +94,6 @@ I looked at moving hosts at the same time. Astro is arguably better served on Cl
 
 I gave it a miss for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there.
 
-Maybe later. 
-
+Maybe later.
 
 Until then, enjoy [hawky](/hawky)

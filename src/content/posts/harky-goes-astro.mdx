@@ -60,7 +60,7 @@ All of it with Claude Code.
 3. Brought the other collections across until the content matched what main was already serving.
 4. Rebuilt the design. Tokens, fonts, the shell around the page, accessibility.
 5. Rebuilt the pages themselves. Hero, blog, poems, tags, the 404.
-6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL on real infrastructure with the real content, weeks before it went live. Both sides of my comparison were production builds.
+6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL with the real content, weeks before it went live. Both sides of my comparison were production builds.
 7. Merged. Vercel picked it up like any other deploy.
 
 Each of those was its own commit, so when something broke I knew which pass broke it. Claude worked through the files and I read the diffs.
@@ -90,7 +90,7 @@ export default defineConfig({
 
 ## Cloudflare, which I skipped
 
-I looked at moving hosts at the same time. Astro is arguably better served on Cloudflare, and static output on their edge is close to the ideal case for a site like mine.
+I looked at moving hosts at the same time. Astro is meant to run better on Cloudflare, and static output on their edge is close to the ideal case for a site like mine.
 
 I gave it a miss for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there.
 

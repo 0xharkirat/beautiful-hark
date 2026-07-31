@@ -16,6 +16,24 @@ const date = data?.date
       day: 'numeric',
     })
   : '';
+
+/*
+  heroImg and author were being fetched and thrown away.
+
+  The generated query has selected both since the migration - PostParts asks for
+  heroImg, heroImgWidth and the resolved author with its name and avatar - but
+  this component only ever drew a title, a date and the body. So a hero image set
+  in Tina appeared nowhere, and setting an author did nothing visible on any of
+  the posts that have one.
+
+  Same shape of bug as the ImagePair one: the schema field survived the move off
+  Next.js and the thing that drew it did not.
+*/
+const hero = (data as any)?.heroImg as string | undefined;
+const heroWidth = ((data as any)?.heroImgWidth as string) || 'md';
+const author = (data as any)?.author as
+  | { name?: string; avatar?: string; bio?: string }
+  | undefined;
 ---
 
 {data && (
@@ -24,10 +42,35 @@ const date = data?.date
       {data.title && (
         <h1 data-tina-field={tinaField(data, 'title')}>{data.title}</h1>
       )}
-      {date && (
-        <p data-tina-field={tinaField(data, 'date')} class="meta mt-2">{date}</p>
+
+      {(date || author?.name) && (
+        <p class="byline meta mt-2">
+          {author?.name && (
+            <span class="who" data-tina-field={tinaField(data, 'author')}>
+              {author.avatar && (
+                <img class="avatar" src={author.avatar} alt="" width="20" height="20" loading="eager" decoding="async" />
+              )}
+              <span>{author.name}</span>
+            </span>
+          )}
+          {date && author?.name && <span aria-hidden="true" class="sep">·</span>}
+          {date && <span data-tina-field={tinaField(data, 'date')}>{date}</span>}
+        </p>
       )}
     </header>
+
+    {hero && (
+      <figure class="hero" data-hero-width={heroWidth} data-tina-field={tinaField(data, 'heroImg')}>
+        {/*
+          eager and high priority, deliberately.
+
+          This is the first thing under the title and is in view on load, so
+          lazy-loading it just delays the one image the reader is already
+          looking at.
+        */}
+        <img src={hero} alt={data.title ?? ''} loading="eager" fetchpriority="high" decoding="async" />
+      </figure>
+    )}
 
     {data._body && (
       <div data-tina-field={tinaField(data, '_body')} class="prose">
@@ -36,3 +79,55 @@ const date = data?.date
     )}
   </div>
 )}
+
+<style>
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .who {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* The column is text, and a hard-edged avatar against it reads as a button.
+       A hairline settles it into the line of type. */
+    box-shadow: 0 0 0 1px var(--rule);
+  }
+  .sep {
+    color: var(--rule);
+  }
+
+  .hero {
+    margin: 0 0 32px;
+  }
+  .hero img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 3px;
+  }
+
+  /*
+    Widths are capped, never stretched.
+
+    max-width rather than width, so a small image is shown at its own size
+    instead of being blown up past its pixels. `full` is the only one that
+    leaves the 640px column, and it stops well short of the viewport edge so the
+    page never gains a horizontal scrollbar because of a hero.
+  */
+  .hero[data-hero-width='sm'] img { max-width: 320px; }
+  .hero[data-hero-width='md'] img { max-width: 480px; }
+  .hero[data-hero-width='lg'] img { max-width: 100%; }
+  .hero[data-hero-width='full'] {
+    width: min(880px, calc(100vw - (var(--gutter) * 2)));
+    margin-inline: calc((min(880px, 100vw - (var(--gutter) * 2)) - 100%) / -2);
+  }
+</style>

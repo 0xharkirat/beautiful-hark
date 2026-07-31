@@ -1,53 +1,24 @@
 ---
-title: Migrating My Website from Tina Next.js to Tina Astro
-excerpt: >
-  I moved this site from Next.js to Astro. Tina did not move at all, because it
-  is headless and never cared which framework was rendering the pages. Here is
-  what the swap actually involved, and the one Vercel setting that needed
-  touching.
-author: ''
-date: 2026-07-31T00:00:00.000Z
+title: "Harky goes Astro \U0001F680"
+heroImg: /uploads/posts/harky-goes-astro/tinanaut-8bit.png
+heroImgWidth: sm
+excerpt: |
+  I moved this site from Next.js to Astro. Tina did not move at all, because it is headless and never cared which framework was rendering the pages. Here is what the swap actually involved, and the one Vercel setting that needed touching.
+author: src/content/authors/hark.md
+date: 2026-08-01T00:00:00.000Z
 tags:
   - tag: src/content/tags/astro.mdx
   - tag: src/content/tags/tinacms.mdx
   - tag: src/content/tags/nextjs.mdx
 ---
 
-This blog is eight posts and some poems.
+TinaCMS is going default [Astro](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter) for their starter templates, so am I.
 
-Text. A few images. Nothing that updates while you are looking at it.
+## Migration was cheap: TinaCMS is headless
 
-It was running on [Next.js](https://nextjs.org) 15 and React 18.
+**[TinaCMS](https://tina.io) is headless.** Your content is not locked in a database behind a vendor. It is MDX and JSON files sitting in your own GitHub repo, in `src/content/`.
 
-That is a lot of machine for a page that could just be a file.
-
-***
-
-## What it was actually costing me
-
-I did not start out annoyed. Next.js was fine. It worked.
-
-The thing that made me look properly was the ISR bill scare. I wrote about that one separately: Vercel emailed to say I had burned 150,000 ISR writes on a blog nobody was reading yet. I fixed it, but the fix was me learning what Incremental Static Regeneration was so I could stop it happening.
-
-And that is the bit that stuck with me.
-
-**My blog does not need regeneration.** It needs to be built once when I publish, and then sit there.
-
-I was paying attention to a caching strategy for content that changes maybe twice a month. Next.js was solving a problem I did not have, and the price was that I had to understand the solution anyway.
-
-Then there was React. Every page shipped a React runtime so that a handful of components could be interactive. The reader downloads a framework to read a paragraph.
-
-None of this was broken. It was just more website than I needed.
-
-***
-
-## The reason this was cheap: Tina is headless
-
-Here is the part that made me actually do it instead of just complaining about it.
-
-**[TinaCMS](https://tina.io) is headless.** Your content is not locked in a database behind a vendor. It is MDX and JSON files sitting in your own repo, in `src/content/`.
-
-So when I say I migrated the site, I mean I migrated the *rendering*. The content did not move. Not one file.
+So when I say I migrated the site, I mean I migrated the *UI Layer*. The content did not move. Not one file.
 
 ```
 src/content/
@@ -67,15 +38,18 @@ That is the whole reason a framework migration on a content site is a weekend-sh
 
 ***
 
-## Tina is going the same way
+## Why TinaCMS is going Astro?
 
-While I was looking into this, Matt Wicks published [Astro is becoming the default starter for TinaCMS](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter) on the Tina blog.
+While I was looking into this, Matt Wicks published [Astro is becoming the default starter for TinaCMS](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter) on the TinaCMS blog.
 
 Short version of his argument: more people are cloning the Astro starter than the Next.js one, Astro suits the things Tina users actually build like docs and blogs and marketing sites, and the newer visual editing uses data islands rather than hydrating the whole page as React.
 
 He is also clear that the Next.js starter is not going away, so this is not a "move or else".
 
 But it did tell me something useful. I was not making a lonely bet. The people who build the CMS are pointing the same direction.
+
+
+Plus, I respect [Wicksy](https://www.ssw.com.au/people/matt-wicks/) (he is  undisputed leader of the Newy office & PO of TinaCMS)
 
 ***
 

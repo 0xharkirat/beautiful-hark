@@ -3,6 +3,8 @@ import { tinaField } from '@tinacms/astro/tina-field';
 import type { CmsGlobal } from '../lib/data';
 import ThemeToggle from './ThemeToggle.astro';
 import HarkLogo from './HarkLogo.astro';
+import ExternalMark from './richtext/ExternalMark.astro';
+import { isExternal } from '../lib/links';
 
 interface Props {
   config?: CmsGlobal | null;
@@ -21,6 +23,19 @@ const isActive = (href: string) => {
   const h = href.replace(/\/+$/, '') || '/';
   return h === '/' ? p === '/' : p === h || p.startsWith(h + '/');
 };
+
+/*
+  A nav item may now point off-site, so each one is decided rather than assumed.
+
+  An external link can never be the current page, so it gets neither is-active
+  nor aria-current. Both would be a lie to a screen reader, which reads
+  aria-current="page" as "you are here".
+
+  Same isExternal the body text and the footer use. Deciding it a fourth time in
+  a fourth file is how the footer and the rich-text renderer ended up disagreeing
+  about target="_blank" in the first place.
+*/
+const external = (href: string | null | undefined) => isExternal(href, Astro.site);
 ---
 
 <!-- Persist across swaps so the nav does not flash on every navigation. The
@@ -34,16 +49,22 @@ const isActive = (href: string) => {
 
   <div class="mt-3 flex items-baseline gap-4">
     <nav aria-label="Primary" class="flex items-baseline gap-4">
-      {nav.map((item) => (
-        <a
-          href={item.href ?? '#'}
-          data-tina-field={tinaField(item, 'label')}
-          class:list={['nav', 'tap', { 'is-active': isActive(item.href ?? '') }]}
-          aria-current={isActive(item.href ?? '') ? 'page' : undefined}
-        >
-          {item.label}
-        </a>
-      ))}
+      {nav.map((item) => {
+        const href = item.href ?? '#';
+        const off = external(href);
+        return (
+          <a
+            href={href}
+            data-tina-field={tinaField(item, 'label')}
+            class:list={['nav', 'tap', { 'is-active': !off && isActive(href) }]}
+            aria-current={!off && isActive(href) ? 'page' : undefined}
+            target={off ? '_blank' : undefined}
+            rel={off ? 'noopener noreferrer' : undefined}
+          >
+            {item.label}{off && <ExternalMark />}
+          </a>
+        );
+      })}
     </nav>
     <ThemeToggle />
   </div>
@@ -67,7 +88,24 @@ const isActive = (href: string) => {
     const sync = () => {
       const p = location.pathname.replace(/\/+$/, '') || '/';
       for (const a of document.querySelectorAll('header a.nav')) {
-        const h = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
+        /*
+          Resolve through URL rather than string-matching the raw href.
+
+          A nav item can now be an absolute URL. An off-site one must never light
+          up, and a same-origin absolute URL must still light up on its own page.
+          Comparing the raw attribute got the second case wrong: the server
+          marked it current and this loop unmarked it on the next navigation,
+          because "https://harksingh.com/about" never startsWith "/about".
+        */
+        const raw = a.getAttribute('href') || '';
+        let u;
+        try { u = new URL(raw, location.origin); } catch { continue; }
+        if (u.origin !== location.origin) {
+          a.classList.remove('is-active');
+          a.removeAttribute('aria-current');
+          continue;
+        }
+        const h = u.pathname.replace(/\/+$/, '') || '/';
         const on = h === '/' ? p === '/' : p === h || p.startsWith(h + '/');
         a.classList.toggle('is-active', on);
         if (on) a.setAttribute('aria-current', 'page');
@@ -131,6 +169,21 @@ const isActive = (href: string) => {
     margin, and this has to win against the shorthand it sets.
   */
   header :global([data-theme-toggle]) {
-    margin-inline-start: 24px !important;
+    /*
+      Pushed to the right edge of the column rather than sitting a fixed gap
+      from the nav.
+
+      It used to be a 24px margin, chosen so the toggle would not read as a
+      sixth nav item. That worked when there were five items and stops working
+      as soon as the row is long enough to wrap, which "Projects" brings closer.
+      An auto margin gets the separation from the layout instead of from a
+      number that has to be re-guessed every time a link is added.
+
+      Only the start margin. .tap sets margin-inline: -10px on both sides to
+      widen the hit area without moving the glyph, and the -10px end is what
+      keeps the icon optically aligned with the column edge rather than the
+      padding box. !important because it has to beat that shorthand.
+    */
+    margin-inline-start: auto !important;
   }
 </style>

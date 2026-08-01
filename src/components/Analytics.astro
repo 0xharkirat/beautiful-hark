@@ -64,9 +64,31 @@ const enabled = process.env.VERCEL_ENV === 'production';
         if (!window.__umamiBound) {
           window.__umamiBound = true;
           document.addEventListener('astro:page-load', () => {
-            // Optional chaining because the script is deferred: the first
-            // page-load can beat it, and a missing umami must not throw.
-            window.umami?.track();
+            /*
+              The url has to be passed explicitly. A bare track() reports the
+              url captured when the script first ran, every single time.
+
+              Umami keeps the current url in a variable that its history hook
+              updates, and that hook is only installed inside the auto-track
+              branch, which is off here. So the title updates, being read live,
+              and the url does not. Measured: after a pushState to
+              /second-page, a bare track() still sent /start.
+
+              Every client-side navigation on this site would have been recorded
+              as whatever page the reader first landed on, which is worse than
+              no analytics, because the numbers look plausible.
+
+              The function form is used rather than a plain object so referrer,
+              screen size and the rest survive instead of being replaced.
+
+              Optional chaining because the script is deferred: the first
+              page-load can beat it, and a missing umami must not throw.
+            */
+            window.umami?.track((props) => ({
+              ...props,
+              url: location.pathname + location.search,
+              title: document.title,
+            }));
           });
         }
       </script>

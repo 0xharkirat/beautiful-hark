@@ -1,46 +1,58 @@
 ---
 /**
- * Google Analytics 4.
+ * Umami, replacing Google Analytics.
  *
- * Renders nothing unless PUBLIC_GA_ID is set, so local dev and any
+ * GA was wired here and dormant: 49 lines behind PUBLIC_GA_ID that were never
+ * switched on in production. Leaving it was the risk, not running it. Setting
+ * that one variable would have shipped roughly 50KB of gtag plus cookies that
+ * legally need a consent banner, onto a site whose whole browser payload is one
+ * 16KB bundle.
+ *
+ * Umami is about 2KB, sets no cookies, and needs no banner. It answers the
+ * questions actually being asked: how many people, which countries, how much of
+ * it is bots.
+ *
+ * Renders nothing unless PUBLIC_UMAMI_WEBSITE_ID is set, so local dev and any
  * environment without the variable stay clean. Set it for Production only in
- * Vercel and preview deployments will not pollute the property.
+ * Vercel, or preview deployments will pollute the numbers with your own builds.
  */
-const GA_ID = import.meta.env.PUBLIC_GA_ID;
+const UMAMI_ID = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
 ---
 
 {
-  GA_ID && (
+  UMAMI_ID && (
     <>
-      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
-      <script is:inline define:vars={{ GA_ID }}>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          dataLayer.push(arguments);
-        }
-        gtag('js', new Date());
+      {/*
+        data-auto-track="false", then one manual track per astro:page-load.
 
-        /*
-          send_page_view: false, then one manual page_view per astro:page-load.
+        Umami's own auto-tracking hooks pushState, and ClientRouter does use
+        pushState, so this would half-work by accident. It would also be
+        counting a navigation that Astro has not finished swapping, so the URL
+        and the title could disagree about which page was viewed.
 
-          ClientRouter navigations are not document loads, so gtag's automatic
-          page_view fires once and every subsequent page goes uncounted.
-          astro:page-load fires on the initial load *and* after each swap, so
-          sending it ourselves covers both with no double count.
-        */
-        gtag('config', GA_ID, { send_page_view: false });
-
-        // The head persists across swaps, so this script should run once. Guard
-        // anyway: a second registration would double every page_view, and
-        // silently inflated analytics is worse than none.
-        if (!window.__gaPageViewBound) {
-          window.__gaPageViewBound = true;
+        astro:page-load fires on the first load and after every swap, which is
+        exactly the set of moments that count as a page view here. The GA
+        version this replaces had learned the same thing.
+      */}
+      <script
+        is:inline
+        defer
+        src="https://cloud.umami.is/script.js"
+        data-website-id={UMAMI_ID}
+        data-auto-track="false"
+      />
+      <script is:inline>
+        {/*
+          The head persists across swaps, so this should register once. Guard
+          anyway: a second listener doubles every page view, and quietly
+          inflated numbers are worse than no numbers.
+        */}
+        if (!window.__umamiBound) {
+          window.__umamiBound = true;
           document.addEventListener('astro:page-load', () => {
-            gtag('event', 'page_view', {
-              page_title: document.title,
-              page_location: location.href,
-              page_path: location.pathname + location.search,
-            });
+            // Optional chaining because the script is deferred: the first
+            // page-load can beat it, and a missing umami must not throw.
+            window.umami?.track();
           });
         }
       </script>

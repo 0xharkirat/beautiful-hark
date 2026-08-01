@@ -28,6 +28,7 @@ const config = (await getGlobal()).data?.global ?? null;
       <Header config={config} />
     </TinaIsland>
     <main id="main" class="flex-1">
+      <div class="backdrop" aria-hidden="true"></div>
       <slot />
     </main>
     <TinaIsland name="global-footer" wrapper={islands['global-footer'].wrapper}>

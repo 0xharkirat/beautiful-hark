@@ -212,6 +212,31 @@
    the whole transition down with it. The id is the guarantee. */
 #main {
   view-transition-name: hark-main;
+  /* Anchors .backdrop, which is absolutely positioned to main's full height. */
+  position: relative;
+}
+
+/*
+  A translucent panel behind the reading column.
+
+  Over the page background it is invisible, since it is the page background.
+  Its whole job is the phoenix: the bird flies at z-index -2, this sits at -1, so
+  wherever the bird crosses the column it is muted to a fifth of its opacity and
+  the text on top stays readable. Outside the column, in the wide margins either
+  side, the bird is untouched and full strength.
+
+  Translucent is load-bearing. An opaque panel here would hide the bird
+  completely, which is the failure the z-index note in Phoenix.astro warns about.
+*/
+.backdrop {
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: min(100%, calc(var(--measure) + var(--gutter) * 2));
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* The rest of the page is identical either side of a swap - the header is even

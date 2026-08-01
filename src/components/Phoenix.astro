@@ -376,7 +376,7 @@
         sleepReason = null;
         tick = 0;
       }
-      if (overBird(e.clientX, e.clientY)) {
+      if (overBird(e.clientX, e.clientY) && !inColumn(e.clientX, e.clientY)) {
         if (!dwellTimer && !bubbleOn) {
           dwellTimer = setTimeout(() => { dwellTimer = null; showBubble(true); }, DWELL_MS);
         }
@@ -385,6 +385,21 @@
         showBubble(false);
       }
     }, { passive: true });
+
+    /*
+      Inside the reading column the bird is scenery, not a toy.
+
+      It still follows the cursor there, but it does not take clicks and does not
+      raise its bubble, because both of those interrupt someone who is reading.
+      Measured off .backdrop rather than a hardcoded width, so the two can never
+      disagree about where the column is.
+    */
+    const inColumn = (x, y) => {
+      const panel = document.querySelector('.backdrop');
+      if (!panel) return false;
+      const r = panel.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    };
 
     let clickTimer = null;
     // Separate from clickTimer: a hybrid laptop can produce both, and sharing one
@@ -396,6 +411,8 @@
       const hit = e.clientX >= r.left - pad && e.clientX <= r.right + pad &&
                   e.clientY >= r.top - pad && e.clientY <= r.bottom + pad;
       if (!hit) return;
+      // Reading, not playing. See inColumn.
+      if (inColumn(e.clientX, e.clientY)) return;
       const t = e.target;
       if (t && typeof t.closest === 'function' &&
           t.closest('a, button, input, textarea, select, summary, [role="button"]')) return;
@@ -697,8 +714,12 @@
       the canvas, which paints before negative z-index. Put a background on
       html, or an opaque one on a wrapper around the content, and the bird
       disappears - check this rule first.
+
+      -2 rather than -1 so .backdrop can sit at -1, between the bird and the
+      page. That is what mutes the bird behind the reading column while leaving
+      it full strength in the margins either side.
     */
-    z-index: -1;
+    z-index: -2;
   }
 
   /* The burn is the one moment worth watching, so it comes to the front for
@@ -729,7 +750,7 @@
     background: var(--ink);
     pointer-events: none;
     opacity: 0;
-    z-index: -1;
+    z-index: -2;   /* rides with the bird, see above */
   }
 
   /*

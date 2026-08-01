@@ -16,8 +16,6 @@ TinaCMS is going default [Astro](https://tina.io/blog/astro-is-becoming-the-defa
 
 ## What I gained
 
-I counted the dependencies before and after.
-
 * Production dependencies: from 26 to 18
 * Dev dependencies: from 12 to 6
 * React and Next packages: from 12 to 0
@@ -56,26 +54,26 @@ Plus I respect [Wicksy](https://www.ssw.com.au/people/matt-wicks/). He is undisp
 All of it with Claude Code.
 
 1. Put the [Tina Astro starter](https://github.com/tinacms/tina-astro-starter) on a branch and left main branch alone until the very end. The old Next.js `app/` and `components/` tree got parked where we could both still read it while porting.
-2. Rendered a single poem and opened `/admin` to confirm I could still edit it live. One collection, all the way through, editing included. If that had not worked I would have found out in a day instead of a month.
+2. Rendered a single poem and opened `/admin` to confirm I could still edit it live.
 3. Brought the other collections across until the content matched what main was already serving.
 4. Rebuilt the design. Tokens, fonts, the shell around the page, accessibility.
 5. Rebuilt the pages themselves. Hero, blog, poems, tags, the 404.
-6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL with the real content, weeks before it went live. Both sides of my comparison were production builds.
+6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL with the real content.
 7. Merged. Vercel picked it up like any other deploy.
 
-Each of those was its own commit, so when something broke I knew which pass broke it. Claude worked through the files and I read the diffs.
+Each of those was its own commit, so when something broke I knew which commit broke it. Claude worked through the files and I read the diffs.
 
-The work suits an agent because it is mechanical and the target shape is fixed. A bad port announces itself immediately, because the page either renders or it does not.
+The work suits an agent because it is mechanical and the target shape was fixed.
 
-It goes well with Tina because the schema is the contract. The agent never has to guess what a `post` is. It reads `tina/collections/post.ts` and the fields are right there.
+It goes well with Tina because the schema is the contract. Claude never has to guess what a `post` is. It reads `tina/collections/post.ts` and the fields are right there.
 
-What I kept for myself were the taste calls. An agent will happily port a component you should have deleted.
+What I kept for myself were the taste calls. 
 
 ## The one Vercel setting
 
 Almost nothing changed on the Vercel side, which surprised me.
 
-The one thing that did was the framework preset. Vercel had the project pinned to Next.js, so my Astro branch was being built as if it were a Next.js app. That does not work. Switching the preset was the whole infrastructure task.
+The one thing that did was the framework preset. Vercel had the project preset pinned to Next.js, so my Astro branch was being built as if it were a Next.js app. That does not work. Switching the preset was the whole step.
 
 The other half is the [`@astrojs/vercel`](https://docs.astro.build/en/guides/integrations-guide/vercel/) adapter in `astro.config.mjs`:
 
@@ -92,7 +90,7 @@ export default defineConfig({
 
 I looked at moving hosts at the same time. Astro is meant to run better on Cloudflare, and static output on their edge is close to the ideal case for a site like mine.
 
-I gave it a miss for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there.
+I didn't do it for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there.
 
 Maybe later.
 

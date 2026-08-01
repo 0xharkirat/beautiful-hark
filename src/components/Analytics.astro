@@ -3,36 +3,50 @@
  * Umami, replacing Google Analytics.
  *
  * GA was wired here and dormant: 49 lines behind PUBLIC_GA_ID that were never
- * switched on in production. Leaving it was the risk, not running it. Setting
- * that one variable would have shipped roughly 50KB of gtag plus cookies that
- * legally need a consent banner, onto a site whose whole browser payload is one
- * 16KB bundle.
- *
- * Umami is about 2KB, sets no cookies, and needs no banner. It answers the
- * questions actually being asked: how many people, which countries, how much of
- * it is bots.
- *
- * Renders nothing unless PUBLIC_UMAMI_WEBSITE_ID is set, so local dev and any
- * environment without the variable stay clean. Set it for Production only in
- * Vercel, or preview deployments will pollute the numbers with your own builds.
+ * switched on. Leaving it was the risk rather than running it. Setting that one
+ * variable would have shipped roughly 50KB of gtag plus cookies that legally
+ * need a consent banner, onto a site whose whole browser payload is one 16KB
+ * bundle. Umami is about 2KB, sets no cookies and needs no banner.
  */
-const UMAMI_ID = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+
+/*
+  The website id sits in the source because it is not a secret and cannot be.
+  Umami reads it from a script tag in the page, so it reaches every visitor's
+  browser by definition; hiding it in an env var would protect nothing and only
+  make a local build behave differently from a deployed one.
+ */
+const UMAMI_ID = 'd9ea7c53-94ff-4e81-871a-7a582241c020';
+
+/*
+  Production deploys only, decided at build time rather than by remembering a
+  setting.
+
+  Gating on an env var meant setting it in Vercel and scoping it correctly, and
+  the failure mode of getting that wrong is silent: set it for Preview too and
+  every deploy preview counts itself as a visitor, quietly inflating the numbers
+  with your own traffic. VERCEL_ENV is set by Vercel and is 'production' only on
+  a production deploy, so previews and local dev are excluded by construction
+  instead of by discipline.
+
+  To check it locally: VERCEL_ENV=production pnpm build.
+*/
+const enabled = process.env.VERCEL_ENV === 'production';
 ---
 
 {
-  UMAMI_ID && (
+  enabled && (
     <>
       {/*
         data-auto-track="false", then one manual track per astro:page-load.
 
-        Umami's own auto-tracking hooks pushState, and ClientRouter does use
-        pushState, so this would half-work by accident. It would also be
-        counting a navigation that Astro has not finished swapping, so the URL
-        and the title could disagree about which page was viewed.
+        Umami's auto-tracking hooks pushState, and ClientRouter uses pushState,
+        so leaving it on would half-work by accident while counting a navigation
+        Astro has not finished swapping, leaving the URL and the title
+        disagreeing about which page was viewed.
 
-        astro:page-load fires on the first load and after every swap, which is
-        exactly the set of moments that count as a page view here. The GA
-        version this replaces had learned the same thing.
+        Verified against the tracker source that this is safe: auto-track off
+        skips the automatic pageview and the history hooks, and still exposes
+        window.umami.track for the listener below to call.
       */}
       <script
         is:inline

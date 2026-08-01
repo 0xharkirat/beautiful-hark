@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Comments from '../../components/Comments.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
 import PoemBody from '../../components/islands/PoemBody.astro';
 import { getPoem, listPoems } from '../../lib/data';
@@ -58,6 +59,7 @@ const isPa = (lang?: string | null) => (lang ?? '').toLowerCase() === 'punjabi';
       </div>
     </nav>
   )}
+  <Comments term={`/poems/${slug}`} />
 </Base>
 
 <style>

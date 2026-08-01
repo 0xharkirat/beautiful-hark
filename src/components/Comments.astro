@@ -1,0 +1,127 @@
+---
+/**
+ * Giscus comments, restored after the Astro migration dropped them.
+ *
+ * The Next.js site had this on posts and poems. It went out with the
+ * `components/` tree in the rebuild and never came back, which is the same way
+ * ImagePair, the hero image, the author byline and markdown tables went
+ * missing. Config below is the old component's, recovered from git rather than
+ * guessed at, so existing discussions keep matching their posts.
+ *
+ * The repo and category ids are not secrets. Giscus puts them in the client
+ * markup on every site that uses it, and they identify a public repo's public
+ * discussion category. They belong in the source, not in an env var that would
+ * only make local builds fail.
+ */
+
+interface Props {
+  /** Discussion mapping term, the post path, e.g. "/posts/my-slug". */
+  term: string;
+}
+
+const { term } = Astro.props;
+
+const GISCUS = {
+  repo: '0xharkirat/beautiful-hark',
+  repoId: 'R_kgDOQph0Xw',
+  category: 'General',
+  categoryId: 'DIC_kwDOQph0X84C3gWD',
+};
+---
+
+<section class="column mt-16" aria-label="Comments">
+  <hr class="rule" />
+  <h2 class="meta mt-6 mb-4">Comments</h2>
+  <div
+    data-giscus
+    data-term={term}
+    data-repo={GISCUS.repo}
+    data-repo-id={GISCUS.repoId}
+    data-category={GISCUS.category}
+    data-category-id={GISCUS.categoryId}
+  ></div>
+</section>
+
+<script>
+  /*
+    Mounted from a script rather than a bare <script src>, for two reasons.
+
+    Giscus reads its settings off the script tag's own attributes at execution
+    time, so the theme has to be known before the tag is inserted. And this site
+    swaps pages with ClientRouter, so a tag left in the markup would either not
+    re-run on navigation or would stack a second widget on top of the first.
+  */
+  const ORIGIN = 'https://giscus.app';
+  const themeNow = () =>
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+  const mount = () => {
+    const host = document.querySelector<HTMLElement>('[data-giscus]');
+    if (!host || host.dataset.mounted === '1') return;
+    host.dataset.mounted = '1';
+    host.replaceChildren();
+
+    const s = document.createElement('script');
+    s.src = `${ORIGIN}/client.js`;
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.setAttribute('data-repo', host.dataset.repo ?? '');
+    s.setAttribute('data-repo-id', host.dataset.repoId ?? '');
+    s.setAttribute('data-category', host.dataset.category ?? '');
+    s.setAttribute('data-category-id', host.dataset.categoryId ?? '');
+    s.setAttribute('data-mapping', 'pathname');
+    s.setAttribute('data-term', host.dataset.term ?? '');
+    // strict, so two paths that hash alike cannot share one discussion thread.
+    s.setAttribute('data-strict', '1');
+    s.setAttribute('data-reactions-enabled', '1');
+    s.setAttribute('data-emit-metadata', '0');
+    s.setAttribute('data-input-position', 'top');
+    s.setAttribute('data-theme', themeNow());
+    s.setAttribute('data-lang', 'en');
+    // lazy, so a widget below the fold costs nothing until it is scrolled to.
+    s.setAttribute('data-loading', 'lazy');
+    host.appendChild(s);
+  };
+
+  /*
+    Theme flips talk to the running widget instead of rebuilding it.
+
+    Reloading the iframe would throw away anything half-typed in the comment
+    box, and the toggle is one click away from the reading position. Giscus
+    accepts a setConfig message for exactly this.
+  */
+  const repaint = () => {
+    const frame = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+    frame?.contentWindow?.postMessage(
+      { giscus: { setConfig: { theme: themeNow() } } },
+      ORIGIN,
+    );
+  };
+
+  new MutationObserver(repaint).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+
+  document.addEventListener('astro:page-load', mount);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mount, { once: true });
+  } else {
+    mount();
+  }
+</script>
+
+<style>
+  h2.meta {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-3);
+    letter-spacing: 0.02em;
+  }
+  /* Giscus injects its own iframe height, so this only needs to stop the
+     widget touching the rule above it. */
+  [data-giscus] {
+    min-height: 200px;
+  }
+</style>

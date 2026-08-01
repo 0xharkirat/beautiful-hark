@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Comments from '../../components/Comments.astro';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
 import PostBody from '../../components/islands/PostBody.astro';
 import { getPost, listPosts } from '../../lib/data';
@@ -74,6 +75,7 @@ const description = excerpt
       </div>
     </nav>
   )}
+  <Comments term={`/posts/${slug}`} />
 </Base>
 
 <style>

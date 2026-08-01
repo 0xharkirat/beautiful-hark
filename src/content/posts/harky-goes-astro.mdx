@@ -1,0 +1,97 @@
+---
+title: "Harky goes Astro \U0001F680"
+heroImg: /uploads/posts/harky-goes-astro/tinanaut-8bit.png
+heroImgWidth: sm
+excerpt: |
+  I moved this site off Next.js and onto Astro. The content never moved, because Tina is headless and does not care what renders it. Here is what I gained and how I did it.
+author: src/content/authors/hark.md
+date: 2026-08-01T00:00:00.000Z
+tags:
+  - tag: src/content/tags/astro.mdx
+  - tag: src/content/tags/tinacms.mdx
+  - tag: src/content/tags/nextjs.mdx
+---
+
+TinaCMS is going default [Astro](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter) for their starter templates, so am I.
+
+## What I gained
+
+* Production dependencies: from 26 to 18
+* Dev dependencies: from 12 to 6
+* React and Next packages: from 12 to 0
+* Browser JavaScript: a React runtime down to one 16 KB bundle
+
+The 16 KB is the view transitions router, so pages do not flash when you click between them. The rest of what you get is HTML that was built before you asked for it.
+
+## Why it was cheap
+
+TinaCMS is headless. My content is MDX and JSON files sitting in my own GitHub repo under `src/content/`.
+
+So what I migrated was the UI layer. The content stayed exactly where it was.
+
+```
+src/content/
+  posts/
+  poems/
+  pages/
+  tags/
+  authors/
+  global/
+```
+
+Tina reads those through a schema in `tina/`. That schema never knew it was talking to Next.js, and it does not know it is talking to Astro now. It knows there is a collection called `post` with a title and a body. That is enough.
+
+## Why TinaCMS is going Astro
+
+Matt Wicks wrote it up on the [TinaCMS blog](https://tina.io/blog/astro-is-becoming-the-default-tinacms-starter). His case is that more people clone the Astro starter than the Next.js one, and that Astro suits what Tina users are mostly building. The newer visual editing also uses data islands, so the whole page no longer has to behave like a React app.
+
+He is clear that the Next.js starter stays. Nobody is being pushed anywhere.
+
+Plus I respect [Wicksy](https://www.ssw.com.au/people/matt-wicks/). He is undisputed leader of the Newy office and PO of TinaCMS 🫡.
+
+## How I did it
+
+All of it with Claude Code.
+
+1. Put the [Tina Astro starter](https://github.com/tinacms/tina-astro-starter) on a branch and left main branch alone until the very end. The old Next.js `app/` and `components/` tree got parked where we could both still read it while porting.
+2. Rendered a single poem and opened `/admin` to confirm I could still edit it live.
+3. Brought the other collections across until the content matched what main was already serving.
+4. Rebuilt the design. Tokens, fonts, the shell around the page, accessibility.
+5. Rebuilt the pages themselves. Hero, blog, poems, tags, the 404.
+6. Let Vercel preview the branch. It builds a deployment for every branch, so the Astro version had a real URL with the real content.
+7. Merged. Vercel picked it up like any other deploy.
+
+Each of those was its own commit, so when something broke I knew which commit broke it. Claude worked through the files and I read the diffs.
+
+The work suits an agent because it is mechanical and the target shape was fixed.
+
+It goes well with Tina because the schema is the contract. Claude never has to guess what a `post` is. It reads `tina/collections/post.ts` and the fields are right there.
+
+What I kept for myself were the taste calls. 
+
+## The one Vercel setting
+
+Almost nothing changed on the Vercel side, which surprised me.
+
+The one thing that did was the framework preset. Vercel had the project preset pinned to Next.js, so my Astro branch was being built as if it were a Next.js app. That does not work. Switching the preset was the whole step.
+
+The other half is the [`@astrojs/vercel`](https://docs.astro.build/en/guides/integrations-guide/vercel/) adapter in `astro.config.mjs`:
+
+```js
+export default defineConfig({
+  output: 'static',
+  adapter: vercel(),
+});
+```
+
+`output: 'static'` is the line that matters. Every page gets built once and served as a file.
+
+## Cloudflare, which I skipped
+
+I looked at moving hosts at the same time. Astro is meant to run better on Cloudflare, and static output on their edge is close to the ideal case for a site like mine.
+
+I didn't do it for a boring reason. It was not worth my time. Vercel already handles Astro fine, my domains and environment variables were already sitting there.
+
+Maybe later.
+
+Until then, enjoy [hawky](/hawky)

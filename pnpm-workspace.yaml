@@ -1,3 +1,14 @@
+# Supply-chain controls. Set explicitly rather than inherited from whatever
+# pnpm the machine happens to run, because CI was on pnpm 9 and 10 while local
+# was on 11.9.0, and these settings do not all exist in 9.
+
+# Only these five may run install scripts. Everything else is blocked.
+#
+# Lifecycle hooks are the main remote-code-execution route in npm supply chain
+# attacks: a compromised package runs postinstall on the machine of anyone who
+# installs it. This list is the highest-value control in the file, and it is
+# load-bearing rather than theoretical - it is what silently skipped
+# Playwright's 95MB browser download when playwright was added.
 onlyBuiltDependencies:
   - better-sqlite3
   - core-js
@@ -10,3 +21,41 @@ allowBuilds:
   esbuild: true
   protobufjs: true
   sharp: true
+
+# Refuse any version published in the last 3 days.
+#
+# Compromised releases are usually caught within hours, so a cooldown means we
+# are never the ones who install the bad version first. pnpm v11 defaults this
+# to 1440 (one day); 4320 is deliberately stronger because nothing on a blog is
+# urgent enough to want a package published this morning.
+#
+# This gates resolution, so it bites on `pnpm add` and `pnpm update`. It does
+# not re-check a --frozen-lockfile install of versions already pinned, which is
+# what makes it safe to turn on without breaking CI.
+minimumReleaseAge: 4320
+
+# A transitive dependency may not come from a git URL or a raw tarball.
+#
+# Registry packages are at least subject to npm's own controls and to
+# after-the-fact takedown. An exotic source is a URL someone controls.
+blockExoticSubdeps: true
+
+# trustPolicy: no-downgrade is NOT set, and that is a decision, not an oversight.
+#
+# Turning it on rejects the current lockfile:
+#
+#   vite@4.5.14  High-risk trust downgrade (possible package takeover)
+#
+# That package is a dev-only transitive: @tinacms/cli -> @vitejs/plugin-react@3.1.0
+# -> vite@4.5.14, on the legacy vite 4 branch. Production resolves vite@7.3.5 and
+# never touches it.
+#
+# It is most likely an artifact of a patch on an old branch lacking the
+# provenance attestation its newer siblings carry, rather than a takeover. But
+# "most likely" is not verification, so the choice was between suppressing a
+# security signal to make CI green and blocking every build on a signal nobody
+# has checked. Neither is acceptable, so the setting waits for someone to
+# actually confirm what that flag means.
+#
+# To pick it up again: `pnpm install` with `trustPolicy: no-downgrade` added and
+# see whether vite is still the only rejection.

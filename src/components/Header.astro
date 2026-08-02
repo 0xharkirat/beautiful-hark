@@ -191,4 +191,29 @@ const isActive = (href: string) => {
   header nav.contents {
     display: contents;
   }
+
+  header :global([data-theme-toggle]) {
+    /*
+      Right edge of the column, at every width.
+
+      This only works because of display: contents above, and the two have to
+      stay together. The toggle used to be a sibling of the whole nav block, so
+      the nav consumed entire lines and the toggle was pushed onto one of its
+      own, where an auto margin threw it into a corner by itself. As a sibling
+      of the individual links it lands on a line that already has links on it,
+      and the auto margin pushes it to the right of that line.
+
+      Remove display: contents and this margin strands the toggle again. Remove
+      this margin and the toggle sits at nav-link spacing and stops reading as a
+      separate control.
+
+      Swept 320 to 1440 across 13 widths: never alone on its line, never
+      off-screen, always at the column edge.
+
+      -10px rather than 0 to the edge is .tap's negative margin, which widens the
+      hit area without moving the glyph. It is what puts the word itself on the
+      column edge instead of its padding box.
+    */
+    margin-inline-start: auto !important;
+  }
 </style>

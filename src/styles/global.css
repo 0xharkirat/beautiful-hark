@@ -439,3 +439,33 @@
   border-bottom: 1px solid var(--rule);
 }
 .prose th { font-weight: 600; }
+
+/*
+  A theme-aware image pair in a post body, matched on filename.
+
+  Raw <picture> is not available here: Tina's parser escapes HTML in a rich-text
+  body into entities, so it renders as literal text, and MDX turns a bare
+  <figure> into a JSX element rather than markup. The only image the body can
+  emit is a markdown one, so the pair is two markdown images and the swap is
+  done in CSS.
+
+  Keyed to .dark rather than prefers-color-scheme on purpose. This site has its
+  own theme toggle, and matching the OS instead would leave the portrait light
+  for a reader who chose dark here.
+
+  Only the visible one is fetched. MarkdownImage sets loading="lazy", and a
+  display:none figure never enters the viewport, so the hidden variant is never
+  requested. Measured: in light theme the dark SVG reports naturalWidth 0.
+*/
+.prose figure:has(img[src$="-dark.svg"]) { display: none; }
+.dark .prose figure:has(img[src$="-dark.svg"]) { display: block; }
+.dark .prose figure:has(img[src$="-light.svg"]) { display: none; }
+
+/* 330px is the width the action renders at, so showing it larger would only
+   upscale the SVG's own grid. Left aligned like every other image and caption
+   in a post body. */
+.prose figure:has(img[src$="portrait-light.svg"]) img,
+.prose figure:has(img[src$="portrait-dark.svg"]) img {
+  width: 330px;
+  max-width: 100%;
+}

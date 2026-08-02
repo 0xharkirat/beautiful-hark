@@ -1,0 +1,60 @@
+---
+title: Show some love to your GitHub profile README
+heroImg: /uploads/posts/show-some-love-to-your-github-profile-readme/profile-readme.webp
+heroImgWidth: lg
+excerpt: |
+  Your profile README is the first thing people see and most of them are a bullet list under a stock avatar. I built a GitHub Action that dithers your photo into an animated SVG. Here is how to put one on yours.
+author: src/content/authors/hark.md
+date: 2026-08-02T00:00:00.000Z
+tags:
+  - tag: src/content/tags/git.mdx
+---
+
+Your GitHub profile README is the first thing anyone sees when they look you up. Mine was a bullet list under the same avatar everyone gets.
+
+So I built [dither-portrait](https://github.com/0xharkirat/dither-portrait). It turns a photo into an animated dithered SVG you can drop straight into your README. The face stays still and the grain ripples.
+
+That is what is sitting at the top of [my profile](https://github.com/0xharkirat) now.
+
+## Try it before you install anything
+
+There is a [playground](https://0xharkirat.github.io/dither-portrait/). Type a GitHub username, or drop in any photo, and you see the result immediately.
+
+![The dither-portrait playground, showing dark and light versions of a dithered portrait beside sliders for motion and grid](/uploads/posts/show-some-love-to-your-github-profile-readme/playground.webp "Nothing you drop in leaves your browser. It all runs locally.")
+
+Push the sliders around. Grid is the one that changes the look most.
+
+## Getting started
+
+Two ways, and the first is quicker.
+
+1. Open the [playground](https://0xharkirat.github.io/dither-portrait/) and press **Add workflow to my profile**. GitHub opens with the file already written for you. Press Commit.
+2. Committing runs it once, so the SVGs appear in your profile repo a minute later.
+3. Paste the embed into your README where you want the picture:
+
+```html
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="portrait-dark.svg">
+  <img alt="portrait" src="portrait-light.svg" width="330">
+</picture>
+```
+
+That is it. You get a dark and a light version, and GitHub picks whichever matches the reader's theme.
+
+If you would rather write the workflow yourself, it is in the [README](https://github.com/0xharkirat/dither-portrait#usage). It also reruns monthly, so changing your avatar updates the portrait without you doing anything.
+
+## Picking a photo
+
+This is the part that decides whether it looks good, more than any setting does.
+
+A photo with a clear subject and a plain-ish background works. Faces close to the camera work. Busy backgrounds turn into noise, because the dither cannot tell your hair from a bookshelf.
+
+If your result comes out as a solid dark block, flip the `invert` switch. Whether that is needed depends on the subject rather than the background, so the tool does not try to guess it for you.
+
+There is a [longer note on choosing a photo](https://github.com/0xharkirat/dither-portrait/blob/main/docs/choosing-a-photo.md) if the first attempt disappoints you.
+
+## Tell me if it breaks
+
+It is MIT, it is [on GitHub](https://github.com/0xharkirat/dither-portrait), and I would like to know what happens on photos that are not mine. Open an issue with the picture that came out wrong.
+
+Especially interested in group photos, pets, and anything where the subject is not a face.

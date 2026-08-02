@@ -22,6 +22,10 @@
       {
         "href": "/recommendations",
         "label": "Recommendations"
+      },
+      {
+        "href": "https://github.com/0xharkirat#%EF%B8%8F-featured-work",
+        "label": "Projects"
       }
     ]
   },

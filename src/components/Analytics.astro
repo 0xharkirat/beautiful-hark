@@ -1,46 +1,94 @@
 ---
 /**
- * Google Analytics 4.
+ * Umami, replacing Google Analytics.
  *
- * Renders nothing unless PUBLIC_GA_ID is set, so local dev and any
- * environment without the variable stay clean. Set it for Production only in
- * Vercel and preview deployments will not pollute the property.
+ * GA was wired here and dormant: 49 lines behind PUBLIC_GA_ID that were never
+ * switched on. Leaving it was the risk rather than running it. Setting that one
+ * variable would have shipped roughly 50KB of gtag plus cookies that legally
+ * need a consent banner, onto a site whose whole browser payload is one 16KB
+ * bundle. Umami is about 2KB, sets no cookies and needs no banner.
  */
-const GA_ID = import.meta.env.PUBLIC_GA_ID;
+
+/*
+  The website id sits in the source because it is not a secret and cannot be.
+  Umami reads it from a script tag in the page, so it reaches every visitor's
+  browser by definition; hiding it in an env var would protect nothing and only
+  make a local build behave differently from a deployed one.
+ */
+const UMAMI_ID = 'd9ea7c53-94ff-4e81-871a-7a582241c020';
+
+/*
+  Production deploys only, decided at build time rather than by remembering a
+  setting.
+
+  Gating on an env var meant setting it in Vercel and scoping it correctly, and
+  the failure mode of getting that wrong is silent: set it for Preview too and
+  every deploy preview counts itself as a visitor, quietly inflating the numbers
+  with your own traffic. VERCEL_ENV is set by Vercel and is 'production' only on
+  a production deploy, so previews and local dev are excluded by construction
+  instead of by discipline.
+
+  To check it locally: VERCEL_ENV=production pnpm build.
+*/
+const enabled = process.env.VERCEL_ENV === 'production';
 ---
 
 {
-  GA_ID && (
+  enabled && (
     <>
-      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
-      <script is:inline define:vars={{ GA_ID }}>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          dataLayer.push(arguments);
-        }
-        gtag('js', new Date());
+      {/*
+        data-auto-track="false", then one manual track per astro:page-load.
 
-        /*
-          send_page_view: false, then one manual page_view per astro:page-load.
+        Umami's auto-tracking hooks pushState, and ClientRouter uses pushState,
+        so leaving it on would half-work by accident while counting a navigation
+        Astro has not finished swapping, leaving the URL and the title
+        disagreeing about which page was viewed.
 
-          ClientRouter navigations are not document loads, so gtag's automatic
-          page_view fires once and every subsequent page goes uncounted.
-          astro:page-load fires on the initial load *and* after each swap, so
-          sending it ourselves covers both with no double count.
-        */
-        gtag('config', GA_ID, { send_page_view: false });
-
-        // The head persists across swaps, so this script should run once. Guard
-        // anyway: a second registration would double every page_view, and
-        // silently inflated analytics is worse than none.
-        if (!window.__gaPageViewBound) {
-          window.__gaPageViewBound = true;
+        Verified against the tracker source that this is safe: auto-track off
+        skips the automatic pageview and the history hooks, and still exposes
+        window.umami.track for the listener below to call.
+      */}
+      <script
+        is:inline
+        defer
+        src="https://cloud.umami.is/script.js"
+        data-website-id={UMAMI_ID}
+        data-auto-track="false"
+      />
+      <script is:inline>
+        {/*
+          The head persists across swaps, so this should register once. Guard
+          anyway: a second listener doubles every page view, and quietly
+          inflated numbers are worse than no numbers.
+        */}
+        if (!window.__umamiBound) {
+          window.__umamiBound = true;
           document.addEventListener('astro:page-load', () => {
-            gtag('event', 'page_view', {
-              page_title: document.title,
-              page_location: location.href,
-              page_path: location.pathname + location.search,
-            });
+            /*
+              The url has to be passed explicitly. A bare track() reports the
+              url captured when the script first ran, every single time.
+
+              Umami keeps the current url in a variable that its history hook
+              updates, and that hook is only installed inside the auto-track
+              branch, which is off here. So the title updates, being read live,
+              and the url does not. Measured: after a pushState to
+              /second-page, a bare track() still sent /start.
+
+              Every client-side navigation on this site would have been recorded
+              as whatever page the reader first landed on, which is worse than
+              no analytics, because the numbers look plausible.
+
+              The function form is used rather than a plain object so referrer,
+              screen size and the rest survive instead of being replaced.
+
+              Optional chaining because the script is deferred: the first
+              page-load can beat it, and a missing umami must not throw.
+            */
+            window.umami?.track((props) => ({
+              ...props,
+              url: location.pathname + location.search,
+              title: document.title,
+            }));
           });
         }
       </script>

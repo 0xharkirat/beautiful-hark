@@ -38,7 +38,6 @@ cp .env.example .env
 | `PUBLIC_TINA_CLIENT_ID` | TinaCloud project client ID |
 | `TINA_TOKEN` | TinaCloud read and write token |
 | `SITE_URL` | Canonical origin, used for feeds and the sitemap |
-| `PUBLIC_GA_ID` | Google Analytics ID, optional |
 
 Start the dev server.
 It runs Tina's local GraphQL server alongside Astro.

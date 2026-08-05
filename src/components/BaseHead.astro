@@ -18,10 +18,12 @@ const { title, description, image = '/uploads/hark-singh.webp' } = Astro.props;
 
 <script is:inline>
 	(function () {
+		// Light is the default, and the OS setting is deliberately not consulted.
+		// Dark is only ever reached by pressing the toggle, which is what writes
+		// the key. A reader on a dark OS who never pressed it gets light.
 		function isDark() {
 			try {
-				const stored = localStorage.getItem('theme');
-				return stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+				return localStorage.getItem('theme') === 'dark';
 			} catch (e) {
 				return false;
 			}

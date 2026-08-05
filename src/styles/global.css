@@ -46,6 +46,12 @@
   3.77:1 on dark. Same hue, tuned to its background, exactly as the greys are.
 */
 :root {
+  /* Pins the browser's own chrome - scrollbars, the overscroll strip, any form
+     control - to the theme this site is in, not the one the OS is in. Left
+     undeclared it defaults to `normal`, so a reader on a dark OS gets a dark
+     scrollbar against light paper. It moves with .dark below, not with the OS. */
+  color-scheme: light;
+
   --paper: #faf9f7;
   --raised: #ffffff;
   --ink: #161614;      /* 17.2:1 on paper */
@@ -80,6 +86,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   --paper: #131312;
   --raised: #1a1a18;
   --ink: #eceae5;      /* 15.5:1 on paper */
@@ -113,7 +121,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Headings are Hark's voice, so serif. Sizes stay modest on purpose —
+  /* Headings are Hark's voice, so serif. Sizes stay modest on purpose:
      a title should introduce the writing, not replace it. */
   h1, h2, h3, h4 {
     font-family: var(--font-serif);
@@ -291,7 +299,7 @@
 .gurmukhi { font-family: var(--font-gurmukhi); }
 
 /*
-  Small inline links (nav, footer) render as ~22px of text — under the 24px
+  Small inline links (nav, footer) render as ~22px of text, under the 24px
   WCAG 2.2 minimum and well under the 44px comfortable target. Pad the hit
   area out and pull the same amount back as negative margin, so the box
   grows to 44px without moving anything on screen.

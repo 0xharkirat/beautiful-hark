@@ -4,34 +4,53 @@ on:
     branches:
       - dependabot/npm_and_yarn/**
 
+# This job commits back to the branch, so it needs write. Nothing else.
+permissions:
+  contents: write
+
 jobs:
   update-tinacms:
     runs-on: ubuntu-latest
     steps:
-      # Clone repo
+      # SHA-pinned, see the note in pr-open.yml. It matters more here than
+      # there, because this job holds contents: write.
       - name: Check out repo to update
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
 
-      - uses: pnpm/action-setup@v4
+      # This used to pin pnpm 9, which was the real hole in this file.
+      #
+      # pnpm 9 ignores pnpm-workspace.yaml entirely, so onlyBuiltDependencies
+      # did not apply and every package was free to run its install scripts.
+      # That was happening on Dependabot branches: the one place in this repo
+      # where freshly published dependency versions get installed, running with
+      # script blocking switched off. Reading packageManager pins it to 11.9.0
+      # along with everything else.
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         name: Install pnpm
         with:
-          version: 9
           run_install: false
 
-      # Install deps, update Tina packages, update schema
       - name: Install dependencies
-        run: pnpm install
-      - name: Update Tina packages
-        run: pnpm update tinacms@latest @tinacms/cli@latest
+        run: pnpm install --frozen-lockfile
+
+      # Regenerate only. The previous version of this step ran
+      # `pnpm update tinacms@latest @tinacms/cli@latest`, which pulls whatever
+      # was published moments ago, bypasses the lockfile, and then commits the
+      # result. That is the exact shape of the attack the cooldown in
+      # pnpm-workspace.yaml exists to stop, so it cannot stay.
+      #
+      # Dependabot already proposes the version bumps. This job's remaining job
+      # is to keep the generated Tina files in step with them.
       - name: Update Schema
         run: pnpm tinacms audit
-      # Commit changes
+
       - name: Commit changes back to branch
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
         with:
           message: "Update TinaCMS generated files"
           branch: ${{ github.ref }}

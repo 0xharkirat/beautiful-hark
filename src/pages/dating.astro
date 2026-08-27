@@ -21,6 +21,7 @@
  */
 import '../styles/dating.css';
 import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import Analytics from '../components/Analytics.astro';
 import DatingBody from '../components/islands/DatingBody.astro';
 import { getDating } from '../lib/data';
 import { islands } from '../lib/islands';
@@ -43,6 +44,9 @@ const data = result.data?.dating;
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
   />
+  {/* standalone: this page has no ClientRouter, so astro:page-load never fires
+      and Umami has to do its own pageview. */}
+  <Analytics standalone />
 </head>
 <body>
 
@@ -121,6 +125,14 @@ const data = result.data?.dating;
     /* ---------- voice ---------- */
     const play = closest(e.target, '[data-audio]') as HTMLButtonElement | null;
     if (play) { togglePlay(play); return; }
+
+    /* ---------- the one way out of this page ---------- */
+    if (closest(e.target, '[data-cta]')) {
+      // No preventDefault: the link opens in a new tab either way, and a
+      // failed or blocked tracker must never cost someone the message.
+      (window as any).umami?.track('dating-instagram');
+      return;
+    }
 
     /* ---------- share ---------- */
     if (closest(e.target, '[data-share]')) share();

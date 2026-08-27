@@ -31,6 +31,21 @@ const UMAMI_ID = 'd9ea7c53-94ff-4e81-871a-7a582241c020';
   To check it locally: VERCEL_ENV=production pnpm build.
 */
 const enabled = process.env.VERCEL_ENV === 'production';
+
+/*
+  standalone: for a page that does not use Base.astro, and therefore has no
+  ClientRouter.
+
+  The manual-tracking dance below exists purely because ClientRouter navigates
+  with pushState. A page without it never fires astro:page-load, so the listener
+  would never run and the pageview would never send: the script would load and
+  report nothing, which is worse than no script because it looks like it works.
+
+  With no pushState in play, Umami's own auto-tracking is simply correct, so
+  standalone drops the data-auto-track override and the listener entirely.
+*/
+interface Props { standalone?: boolean }
+const { standalone = false } = Astro.props;
 ---
 
 {
@@ -48,13 +63,17 @@ const enabled = process.env.VERCEL_ENV === 'production';
         skips the automatic pageview and the history hooks, and still exposes
         window.umami.track for the listener below to call.
       */}
+      {/* In standalone mode the attribute is omitted rather than set to
+          "true": absent is Umami's own default and the documented way to leave
+          auto-tracking on. */}
       <script
         is:inline
         defer
         src="https://cloud.umami.is/script.js"
         data-website-id={UMAMI_ID}
-        data-auto-track="false"
+        data-auto-track={standalone ? undefined : 'false'}
       />
+      {!standalone && (
       <script is:inline>
         {/*
           The head persists across swaps, so this should register once. Guard
@@ -92,6 +111,7 @@ const enabled = process.env.VERCEL_ENV === 'production';
           });
         }
       </script>
+      )}
     </>
   )
 }

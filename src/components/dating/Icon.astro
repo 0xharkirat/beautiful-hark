@@ -1,0 +1,31 @@
+---
+/**
+ * UI glyphs only: 24px grid, 1.5 stroke, no fills.
+ * Profile facts use emoji instead (see VitalsCard) because hand-drawn icons for
+ * things like "marijuana" and "drugs" read as scribbles at 17px.
+ */
+interface Props { name: string; size?: number; class?: string }
+const { name, size = 20, class: cls } = Astro.props;
+
+const P: Record<string, string> = {
+  caption: '<path d="M5 7.5h14M5 12h14M5 16.5h8"/>',
+  share: '<path d="M12 3.6v12M12 3.6 8.4 7.2M12 3.6l3.6 3.6"/><path d="M5 13v6.2a1.8 1.8 0 0 0 1.8 1.8h10.4a1.8 1.8 0 0 0 1.8-1.8V13"/>',
+  close: '<path d="m6.6 6.6 10.8 10.8M17.4 6.6 6.6 17.4"/>',
+  muted: '<path d="M11 5.5 6.5 9.2H3.6v5.6h2.9L11 18.5z"/><path d="m15.5 9.8 4.4 4.4M19.9 9.8l-4.4 4.4"/>',
+  sound: '<path d="M11 5.5 6.5 9.2H3.6v5.6h2.9L11 18.5z"/><path d="M14.8 9.4a3.6 3.6 0 0 1 0 5.2M17.4 7a7 7 0 0 1 0 10"/>',
+};
+---
+<svg
+  class={cls}
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={P[name] ?? P.caption}
+/>

@@ -1,0 +1,64 @@
+---
+import type { DatingTestimonial } from '../../lib/data';
+
+interface Props { heading: string; items: DatingTestimonial[] }
+const { heading, items } = Astro.props;
+---
+<section class="people" aria-labelledby="people-head">
+  <h2 class="head" id="people-head">{heading}</h2>
+
+  <ul class="rail u-scroller">
+    {items.map((t) => (
+      <li class="voucher">
+        <p class="q">{t.q}</p>
+        <blockquote class="display body">{t.body}</blockquote>
+        <cite class="by">— {t.by}</cite>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .people { display: flex; flex-direction: column; gap: 14px; }
+
+  .head {
+    margin: 0;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+  }
+
+  /* Break out of the column padding so cards can bleed to the screen edge. */
+  .rail {
+    gap: 12px;
+    margin: 0 calc(var(--pad) * -1);
+    padding: 4px var(--pad) 8px;
+    list-style: none;
+    scroll-snap-type: x mandatory;
+  }
+
+  .voucher {
+    flex: 0 0 min(80%, 320px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--pad);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+    scroll-snap-align: center;
+  }
+
+  .q { margin: 0; font-size: 13px; color: var(--ink-muted); }
+
+  .body { flex: 1; font-size: 19px; line-height: 1.34; }
+
+  .by { font-size: 13px; font-style: normal; color: var(--ink-muted); }
+
+  @media (min-width: 760px) {
+    .voucher { flex-basis: 300px; }
+  }
+</style>

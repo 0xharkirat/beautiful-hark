@@ -4,14 +4,15 @@
 import type { IslandRegistry } from '@tinacms/astro/experimental';
 import type { QueryResult } from '@tinacms/astro/data';
 
-import type { GlobalQuery, PageQuery, PoemQuery, PostQuery } from '../../tina/__generated__/types';
-import type { CmsGlobal, CmsPage, CmsPoem, CmsPost } from './data';
+import type { DatingQuery, GlobalQuery, PageQuery, PoemQuery, PostQuery } from '../../tina/__generated__/types';
+import type { CmsDating, CmsGlobal, CmsPage, CmsPoem, CmsPost } from './data';
 import PageBody from '../components/islands/PageBody.astro';
 import PostBody from '../components/islands/PostBody.astro';
 import PoemBody from '../components/islands/PoemBody.astro';
+import DatingBody from '../components/islands/DatingBody.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { getGlobal, getPage, getPoem, getPost } from './data';
+import { getDating, getGlobal, getPage, getPoem, getPost } from './data';
 
 export const islands: IslandRegistry = {
   page: {
@@ -44,6 +45,16 @@ export const islands: IslandRegistry = {
     wrapper: { tag: 'article' },
     propsFromData: (data) => ({
       data: (data as QueryResult<PoemQuery>).data?.poem as CmsPoem | undefined,
+    }),
+  },
+  dating: {
+    fetch: () => getDating(),
+    component: DatingBody,
+    // div, not main. DatingBody renders its own <header> and <main>, and the
+    // wrapper sits outside both.
+    wrapper: { tag: 'div' },
+    propsFromData: (data) => ({
+      data: (data as QueryResult<DatingQuery>).data?.dating as CmsDating | undefined,
     }),
   },
   global: {

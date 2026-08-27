@@ -17,6 +17,12 @@ export const getPost = (slug: string) =>
 export const getPoem = (slug: string) =>
   requestWithMetadata(client.queries.poem({ relativePath: `${slug}.json` }), { priority: 'primary' });
 
+/** The unlisted /dating page. One document, so no slug. */
+export const getDating = () =>
+  requestWithMetadata(client.queries.dating({ relativePath: 'profile.json' }), {
+    priority: 'primary',
+  });
+
 export async function listPosts() {
   const result = await client.queries.postConnection();
   return (result.data.postConnection.edges ?? [])
@@ -49,6 +55,13 @@ export type CmsGlobal = Awaited<ReturnType<typeof getGlobal>>['data']['global'];
 export type CmsPage = Awaited<ReturnType<typeof getPage>>['data']['page'];
 export type CmsPost = Awaited<ReturnType<typeof getPost>>['data']['post'];
 export type CmsPoem = Awaited<ReturnType<typeof getPoem>>['data']['poem'];
+export type CmsDating = Awaited<ReturnType<typeof getDating>>['data']['dating'];
+
+export type DatingChip = NonNullable<NonNullable<CmsDating['chips']>[number]>;
+export type DatingDetail = NonNullable<NonNullable<CmsDating['details']>[number]>;
+export type DatingCard = NonNullable<NonNullable<CmsDating['feed']>[number]>;
+export type DatingPeople = Extract<DatingCard, { __typename: 'DatingFeedPeople' }>;
+export type DatingTestimonial = NonNullable<NonNullable<DatingPeople['items']>[number]>;
 
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;
 export type HeroBlock = Extract<PageBlock, { __typename: 'PageBlocksHero' }>;

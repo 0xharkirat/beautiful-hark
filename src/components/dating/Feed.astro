@@ -1,0 +1,62 @@
+---
+import PhotoCard from './PhotoCard.astro';
+import TextCard from './TextCard.astro';
+import VoiceCard from './VoiceCard.astro';
+import VideoCard from './VideoCard.astro';
+import VitalsCard from './VitalsCard.astro';
+import PeopleCard from './PeopleCard.astro';
+import type { DatingCard, DatingChip, DatingDetail } from '../../lib/data';
+
+interface Props { feed: DatingCard[]; chips: DatingChip[]; details: DatingDetail[] }
+const { feed, chips, details } = Astro.props;
+---
+<div class="feed">
+  {feed.map((c, i) => {
+    if (c.__typename === 'DatingFeedPhoto')
+      return (
+        <PhotoCard
+          label={c.label ?? undefined}
+          src={c.src ?? ''}
+          alt={c.alt ?? ''}
+          caption={c.caption ?? undefined}
+          focus={c.focus ?? 'center'}
+          shape={c.shape ?? '4 / 5'}
+          eager={i < 2}
+        />
+      );
+    if (c.__typename === 'DatingFeedText')
+      return <TextCard q={c.q ?? ''} a={c.a ?? ''} lead={c.lead ?? false} />;
+    if (c.__typename === 'DatingFeedVoice')
+      return <VoiceCard q={c.q ?? ''} audio={c.audio ?? undefined} transcript={c.transcript ?? ''} />;
+    if (c.__typename === 'DatingFeedVideo')
+      return (
+        <VideoCard
+          q={c.q ?? ''}
+          src={c.src ?? ''}
+          poster={c.poster ?? undefined}
+          caption={c.caption ?? undefined}
+        />
+      );
+    if (c.__typename === 'DatingFeedVitals')
+      return <VitalsCard chips={chips} details={details} />;
+    if (c.__typename === 'DatingFeedPeople')
+      return <PeopleCard heading={c.heading ?? ''} items={(c.items ?? []).filter(Boolean)} />;
+    return null;
+  })}
+</div>
+
+<style>
+  .feed {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: var(--col);
+    margin-inline: auto;
+    padding-inline: var(--pad);
+  }
+
+  @media (min-width: 760px) {
+    .feed { gap: 18px; }
+  }
+</style>

@@ -1,0 +1,139 @@
+---
+import CardShell from './CardShell.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  label?: string;
+  src: string;
+  alt: string;
+  caption?: string;
+  focus?: string;
+  shape?: string;
+  eager?: boolean;
+}
+const { label, src, alt, caption, focus = 'center', shape = '4 / 5', eager = false } =
+  Astro.props;
+
+---
+<CardShell flush>
+  <figure class="photo">
+    {label && <p class="prompt-label head">{label}</p>}
+
+    {/* With a caption the whole photo is the control, not just the badge: a
+        28px chip is a small target for something the whole image reacts to.
+        The badge is a span, because a button cannot nest inside a button.
+
+        Two literal branches rather than one dynamic <Frame> tag. Astro only
+        scopes styles onto elements it can see statically, so a computed tag
+        name silently keeps the browser's default button border, padding and
+        grey background. */}
+    {caption ? (
+      <button class="frame" type="button" data-photo aria-expanded="false">
+        <img
+          class="img"
+          src={src}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          style={`object-position:${focus};aspect-ratio:${shape}`}
+        />
+        <span class="scrim" aria-hidden="true"></span>
+        <figcaption class="cap">{caption}</figcaption>
+        <span class="badge" aria-hidden="true">
+          <Icon name="caption" size={17} />
+        </span>
+        <span class="sr">Tap the photo to read its caption</span>
+      </button>
+    ) : (
+      <div class="frame">
+        <img
+          class="img"
+          src={src}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          style={`object-position:${focus};aspect-ratio:${shape}`}
+        />
+      </div>
+    )}
+  </figure>
+</CardShell>
+
+<style>
+  .photo { margin: 0; }
+
+  .head {
+    padding: 16px var(--pad);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .frame { position: relative; display: block; }
+  button.frame { cursor: pointer; }
+
+  .img {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    background: var(--surface-2);
+  }
+
+  /* Hinge dims the whole photo and centres the caption on top of it. */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(12, 10, 9, 0.62);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms var(--ease-out);
+  }
+
+  .cap {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 32px 26px;
+    color: #fff;
+    font-size: clamp(16px, 4.4vw, 19px);
+    line-height: 1.45;
+    text-align: center;
+    text-wrap: balance;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms var(--ease-out);
+  }
+
+  .frame[data-open] .scrim,
+  .frame[data-open] .cap { opacity: 1; }
+
+  /* Affordance only. The whole frame takes the tap. */
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--r-pill);
+    background: rgba(16, 14, 12, 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    transition: background-color 180ms var(--ease-out);
+  }
+
+  .frame:hover .badge { background: rgba(16, 14, 12, 0.82); }
+  .frame[data-open] .badge { background: rgba(255, 255, 255, 0.26); }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

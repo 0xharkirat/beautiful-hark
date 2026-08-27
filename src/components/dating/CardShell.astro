@@ -1,0 +1,27 @@
+---
+interface Props { flush?: boolean; dark?: boolean }
+const { flush = false, dark = false } = Astro.props;
+---
+<article class="card" class:list={[{ flush, dark }]}>
+  <slot />
+</article>
+
+<style>
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    padding-bottom: 22px;
+  }
+
+  /* Media runs to the card edge and sets its own spacing. */
+  .flush { padding-bottom: 0; }
+
+  .dark {
+    background: #100e0c;
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+</style>

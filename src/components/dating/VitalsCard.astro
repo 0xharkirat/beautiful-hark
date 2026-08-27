@@ -1,0 +1,110 @@
+---
+import CardShell from './CardShell.astro';
+import type { DatingChip, DatingDetail } from '../../lib/data';
+
+interface Props { chips: DatingChip[]; details: DatingDetail[] }
+const { chips, details } = Astro.props;
+
+/**
+ * Emoji, not line icons. A 17px hand-drawn glyph for "marijuana" or "drugs"
+ * reads as a scribble; the emoji is unmistakable at any size and needs no
+ * legend. Keys match the options in tina/collections/dating.ts.
+ */
+const EMOJI: Record<string, string> = {
+  age: '🎂',
+  gender: '🧑',
+  orientation: '💑',
+  height: '📏',
+  location: '📍',
+  children: '👶',
+  familyPlans: '🍼',
+  drinking: '🍷',
+  smoking: '🚬',
+  marijuana: '🌿',
+  drugs: '💊',
+  work: '💼',
+  school: '🎓',
+  home: '🏡',
+  looking: '🔎',
+  relationship: '💞',
+};
+
+const glyph = (key?: string | null) => EMOJI[key ?? ''] ?? '•';
+---
+<CardShell>
+  <div class="vitals">
+    <ul class="chips u-scroller" aria-label="The basics">
+      {chips.map((c) => (
+        <li class="chip">
+          <span class="g" aria-hidden="true">{glyph(c.icon)}</span>
+          <span>{c.text}</span>
+        </li>
+      ))}
+    </ul>
+
+    <ul class="details">
+      {details.map((d) => (
+        <li class="detail">
+          <span class="g" aria-hidden="true">{glyph(d.icon)}</span>
+          <span class="txt">
+            {d.text}
+            {d.note && <span class="note">{d.note}</span>}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</CardShell>
+
+<style>
+  .vitals { padding-bottom: 0; }
+
+  /* Emoji only render in colour from an emoji font, so name one explicitly. */
+  .g {
+    flex: none;
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* Fades hint that the row keeps going past the edge. */
+  .chips {
+    gap: 0;
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+    scroll-snap-type: x proximity;
+    mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%);
+  }
+
+  .chip {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 14px 16px;
+    font-size: 14.5px;
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+
+  .chip + .chip { border-left: 1px solid var(--line); }
+
+  .details { margin: 0; padding: 0 var(--pad); list-style: none; }
+
+  .detail {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 14px 0;
+    font-size: 15px;
+  }
+
+  .detail + .detail { border-top: 1px solid var(--line); }
+  .detail .g { font-size: 17px; margin-top: 1px; }
+
+  .txt { display: flex; flex-direction: column; gap: 2px; }
+  .note { font-size: 13px; color: var(--ink-muted); }
+</style>

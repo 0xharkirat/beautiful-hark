@@ -1,0 +1,201 @@
+{
+  "name": "Hark",
+  "instagram": "talesofhark",
+  "cta": "Say hi. I'll definitely reply.",
+  "chips": [
+    {
+      "icon": "age",
+      "text": "24"
+    },
+    {
+      "icon": "gender",
+      "text": "Man"
+    },
+    {
+      "icon": "orientation",
+      "text": "Straight"
+    },
+    {
+      "icon": "height",
+      "text": "5'7\""
+    },
+    {
+      "icon": "location",
+      "text": "Newcastle"
+    },
+    {
+      "icon": "children",
+      "text": "Don’t have children"
+    },
+    {
+      "icon": "familyPlans",
+      "text": "Open to children"
+    },
+    {
+      "icon": "drinking",
+      "text": "No"
+    },
+    {
+      "icon": "smoking",
+      "text": "No"
+    },
+    {
+      "icon": "marijuana",
+      "text": "No"
+    },
+    {
+      "icon": "drugs",
+      "text": "No"
+    }
+  ],
+  "details": [
+    {
+      "icon": "work",
+      "text": "Software Engineer"
+    },
+    {
+      "icon": "school",
+      "text": "Bachelor in Computer Science"
+    },
+    {
+      "icon": "home",
+      "text": "Newcastle"
+    },
+    {
+      "icon": "looking",
+      "text": "Long-term relationship",
+      "note": ""
+    },
+    {
+      "icon": "relationship",
+      "text": "Monogamy"
+    }
+  ],
+  "feed": [
+    {
+      "label": "My uniform",
+      "src": "/uploads/dating/Picsart_26-08-23_23-38-58-403.webp",
+      "alt": "Hark in a green turban and knit jumper",
+      "caption": "tale of green flag hark 💚 ft. casio gshock",
+      "focus": "top",
+      "shape": "4 / 5",
+      "_template": "photo"
+    },
+    {
+      "heading": "From people close to Hark",
+      "items": [
+        {
+          "q": "How they look out for people",
+          "body": "The first time I met hark, I was eating alone at the gurudwara (sikh temple). I was feeling a bit out of place. Hark sat down next to me and said he didn’t want me to eat alone and feel left out. He’s an amazing friend.",
+          "by": "Hollie, Friend"
+        },
+        {
+          "q": "Something you can count on them for",
+          "body": "You can count on Hark to be the friendliest most energised person in the room. Always open and smiling and interested in other people and their interests",
+          "by": "Micaela, Friend"
+        },
+        {
+          "q": "Something you can count on them for",
+          "body": "Hark always brings the most amazing, warm, upbeat light, energy into every situation. You can always count on him to be positive, supportive and kind.",
+          "by": "Penny, Friend"
+        },
+        {
+          "q": "My therapist would say",
+          "body": "I work with Hark and he is incredibly kind. My biggest fear is that the woman he meets would not be worthy of him. He is the one person that you can always count on to show up.",
+          "by": "Marina, Friend & Colleague"
+        }
+      ],
+      "_template": "people"
+    },
+    {
+      "q": "My self-care routine is",
+      "src": "/uploads/dating/VID_20260822_064751_792_bsl.mp4",
+      "poster": "",
+      "caption": "",
+      "_template": "video"
+    },
+    {
+      "q": "My love language is",
+      "a": "- Being able to talk about anything,\n- Sit in silence for hours,\n- laugh at something deeply stupid,\n- long hugs for no reason,\n- and still kiss in the kitchen like we just met.",
+      "_template": "text"
+    },
+    {
+      "label": "Guess where this photo was taken",
+      "src": "/uploads/dating/IMG_20260723_094605854.webp",
+      "alt": "Hark mirror selfie with awesome text",
+      "caption": "indeed that is all...",
+      "focus": "center",
+      "_template": "photo"
+    },
+    {
+      "label": "As seen on my Mom's fridge",
+      "src": "/uploads/dating/Picsart_26-08-23_23-52-34-430.webp",
+      "alt": "A collage of Hark at work",
+      "caption": "tale of prof. hark",
+      "focus": "center",
+      "shape": "1 / 1",
+      "_template": "photo"
+    },
+    {
+      "_template": "vitals"
+    },
+    {
+      "label": "Lowkey flex",
+      "src": "/uploads/dating/14-Mar-2026-ATV-9-CT-AAA_9331.webp",
+      "alt": "Hark riding a quad bike on the beach",
+      "caption": "Moreton Bay Island (Tangalooma Island Resort), Qld",
+      "focus": "left",
+      "shape": "4 / 5",
+      "_template": "photo"
+    },
+    {
+      "q": "Together, we could",
+      "a": "- Dance in the kitchen while we cook.\n- Go for a walk or a run\n- Pottery, Pilates or drawing class\n- Go to Morgan Jay show",
+      "_template": "text"
+    },
+    {
+      "q": "I'm known for",
+      "src": "/uploads/dating/VID_20260826_040150_533_bsl.mp4",
+      "poster": "",
+      "caption": "",
+      "_template": "video"
+    },
+    {
+      "label": "Most exotic place I've been",
+      "src": "/uploads/dating/13-Mar-2026-DOL-L56-LW-D56_0076~2.webp",
+      "alt": "Hark in the shallows next to a dolphin",
+      "caption": "Moreton Bay Island (Tangalooma Island Resort), Qld",
+      "focus": "left",
+      "shape": "4 / 5",
+      "_template": "photo"
+    },
+    {
+      "q": "What I do in my free time",
+      "a": "- Build ~~Lego~~ Mould King 18009. \n- solo car karaoke.\n- watch my comfort tv show or movie on repeat (guess them)\n- Sometimes read a book, or listen to a podcast.",
+      "_template": "text"
+    },
+    {
+      "label": "Take me back to",
+      "src": "/uploads/dating/IMG_20260628_170434832_HDR.webp",
+      "alt": "Hark posting with the drawings",
+      "caption": "Charcoal drawing 101",
+      "focus": "center",
+      "_template": "photo"
+    },
+    {
+      "label": "A favorite memory of mine",
+      "src": "/uploads/dating/Picsart_26-08-03_10-20-49-868.webp",
+      "alt": "Aunt combing Hark's hair",
+      "caption": "Bibi combing my hair one saturday afternoon ",
+      "focus": "top",
+      "shape": "4 / 5",
+      "_template": "photo"
+    },
+    {
+      "q": "Our first date",
+      "a": "I want to make our first date easy and comfortable for you.\n\nWhere: The Press Book House on Hunter St.\n\nWhen: Saturday around 9am, or a weekday between 1 and 2pm.\n\nWhat: Tea or coffee with a sweet treat, then a walk down to the ocean and get some ice cream.",
+      "lead": true,
+      "_template": "text"
+    }
+  ]
+}

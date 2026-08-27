@@ -5,6 +5,7 @@ import { PageCollection } from './collections/page';
 import { TagCollection } from './collections/tag';
 import { AuthorCollection } from './collections/author';
 import { GlobalCollection } from './collections/global';
+import { DatingCollection } from './collections/dating';
 
 const branch =
   process.env.GITHUB_BRANCH ||
@@ -34,6 +35,7 @@ export default defineConfig({
       AuthorCollection,
       TagCollection,
       GlobalCollection,
+      DatingCollection,
     ],
   },
 });

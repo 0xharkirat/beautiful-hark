@@ -1,0 +1,46 @@
+---
+import CardShell from './CardShell.astro';
+interface Props { q: string; a: string; lead?: boolean }
+const { q, a, lead = false } = Astro.props;
+
+/**
+ * The one piece of markup allowed in an answer: ~~struck out~~.
+ * Everything else stays literal text, and Astro escapes it, so a stray < or &
+ * in an answer can never become markup.
+ */
+const parts = a.split(/(~~[^~]+~~)/g).filter((x) => x !== '');
+const isStruck = (x: string) => x.startsWith('~~') && x.endsWith('~~');
+---
+<CardShell>
+  <div class="text" class:list={[{ lead }]}>
+    <p class="prompt-label q">{q}</p>
+    <p class="display a">{parts.map((x) => (isStruck(x) ? <s>{x.slice(2, -2)}</s> : x))}</p>
+  </div>
+</CardShell>
+
+<style>
+  .text { padding: 20px var(--pad) 4px; }
+
+  .q { color: var(--ink-muted); font-weight: 500; margin-bottom: 10px; }
+
+  .a {
+    font-size: clamp(23px, 6vw, 27px);
+    line-height: 1.28;
+    white-space: pre-line;
+  }
+
+  /* A struck word is a joke, not a correction, so it recedes rather than
+     shouting. The default line is hairline thin at this size. */
+  .a s {
+    color: var(--ink-muted);
+    text-decoration-color: var(--ink-muted);
+    text-decoration-thickness: 0.06em;
+  }
+
+  /* A long answer wants to read as paragraphs, not one giant headline. */
+  .lead .a {
+    font-size: clamp(19px, 4.8vw, 21px);
+    line-height: 1.5;
+    max-width: 46ch;
+  }
+</style>

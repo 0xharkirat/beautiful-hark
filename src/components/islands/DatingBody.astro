@@ -1,0 +1,132 @@
+---
+/**
+ * The editable region of /dating.
+ *
+ * Everything Tina can change lives in here so the side-by-side preview updates
+ * as you type. The page shell around it (document, styles, behaviour script)
+ * stays outside, because the bridge swaps this subtree's HTML on every edit.
+ */
+import Feed from '../dating/Feed.astro';
+import Icon from '../dating/Icon.astro';
+import type { CmsDating } from '../../lib/data';
+
+interface Props { data?: CmsDating }
+const { data } = Astro.props;
+
+const name = data?.name ?? '';
+const instagram = data?.instagram ?? '';
+const cta = data?.cta ?? 'Say hi. I always reply.';
+---
+<header class="bar">
+  <div class="bar-in">
+    <p class="who">{name}</p>
+    <button class="round" type="button" data-share aria-label="Copy the link to this page">
+      <Icon name="share" size={19} />
+    </button>
+  </div>
+</header>
+
+<main>
+  <Feed
+    feed={data?.feed ?? []}
+    chips={data?.chips ?? []}
+    details={data?.details ?? []}
+  />
+
+  <section class="outro">
+    <a class="cta" href={`https://ig.me/m/${instagram}`} target="_blank" rel="noopener noreferrer">
+      {cta}
+    </a>
+  </section>
+</main>
+
+<style>
+  /* Full-bleed bar, capped content. Capping the bar itself leaves a visible
+     blurred rectangle floating in the middle of a wide screen. */
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    padding-top: max(14px, env(safe-area-inset-top));
+    padding-bottom: 12px;
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+  }
+
+  .bar-in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    max-width: var(--col);
+    margin-inline: auto;
+    padding-inline: var(--pad);
+  }
+
+  .who {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 600;
+    font-kerning: normal;
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+  }
+
+  .round {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      transform 150ms var(--ease-out),
+      background-color 160ms var(--ease-out);
+  }
+
+  .round:hover { background: var(--surface-2); }
+  .round:active { transform: scale(0.92); }
+
+  /*
+   * Generous bottom padding on purpose. Mobile Safari and Chrome float a
+   * toolbar over the bottom of the viewport, and that bar is NOT reported by
+   * env(safe-area-inset-bottom) while the browser chrome is showing, so a
+   * button sitting 48px from the document end gets covered by it. This leaves
+   * room for the toolbar and still respects the home-indicator inset.
+   */
+  .outro {
+    width: 100%;
+    max-width: var(--col);
+    margin: 26px auto 0;
+    padding: 0 var(--pad) calc(104px + env(safe-area-inset-bottom));
+  }
+
+  .cta {
+    display: block;
+    padding: 16px;
+    border-radius: var(--r-pill);
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 160ms var(--ease-out);
+  }
+
+  .cta:hover { background: color-mix(in oklch, var(--ink) 84%, #fff); }
+
+  @media (min-width: 760px) {
+    .bar { padding-top: 26px; padding-bottom: 16px; }
+    .who { font-size: 34px; }
+  }
+</style>

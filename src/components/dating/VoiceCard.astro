@@ -1,0 +1,104 @@
+---
+import CardShell from './CardShell.astro';
+
+interface Props { q: string; audio?: string; transcript: string }
+const { q, audio, transcript } = Astro.props;
+
+/* A fixed, deterministic waveform. Real amplitude data would need the file
+   decoded at build time; this is decoration, so it stays cheap and stable. */
+const BARS = Array.from({ length: 38 }, (_, i) =>
+  30 + Math.round(56 * Math.abs(Math.sin(i * 1.9) * Math.cos(i * 0.6))),
+);
+---
+<CardShell>
+  <div class="voice">
+    <p class="prompt-label q">{q}</p>
+
+    {audio && (
+      <div class="player">
+        <button class="play" type="button" data-audio={audio} aria-label={`Play the answer to ${q}`}>
+          <svg class="tri" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.4v13.2L19 12z" /></svg>
+          <svg class="bars" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5v13M15 5.5v13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+        </button>
+
+        <div class="wave" aria-hidden="true">
+          {BARS.map((h) => <i style={`--h:${h}%`} />)}
+        </div>
+      </div>
+    )}
+
+    {/* No recording uploaded yet: show the words on their own rather than a
+        play button that does nothing. */}
+    <p class="transcript" class:list={[{ alone: !audio }]}>{transcript}</p>
+  </div>
+</CardShell>
+
+<style>
+  .voice { padding: 20px var(--pad) 4px; }
+
+  .q { color: var(--ink-muted); font-weight: 500; margin-bottom: 14px; }
+
+  .player { display: flex; align-items: center; gap: 14px; }
+
+  .play {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--voice);
+    color: #fff;
+    cursor: pointer;
+    transition:
+      transform 150ms var(--ease-out),
+      background-color 180ms var(--ease-out);
+  }
+
+  .play:hover { background: color-mix(in oklch, var(--voice) 88%, black); }
+  .play:active { transform: scale(0.9); }
+
+  .play svg { width: 22px; height: 22px; }
+  .tri { fill: currentColor; margin-left: 2px; }
+  .bars { display: none; fill: none; }
+
+  .play[data-playing] .tri { display: none; }
+  .play[data-playing] .bars { display: block; }
+
+  .wave {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    height: 40px;
+    min-width: 0;
+  }
+
+  .wave i {
+    flex: 1;
+    min-width: 2px;
+    height: var(--h);
+    border-radius: 2px;
+    background: color-mix(in oklch, var(--voice) 42%, transparent);
+  }
+
+  .transcript {
+    margin: 16px 0 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+    max-width: 60ch;
+  }
+
+  .transcript.alone {
+    margin-top: 0;
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.36;
+    color: var(--ink);
+    max-width: 40ch;
+  }
+</style>

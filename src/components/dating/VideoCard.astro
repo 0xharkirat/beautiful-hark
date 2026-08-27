@@ -1,0 +1,106 @@
+---
+import CardShell from './CardShell.astro';
+import Icon from './Icon.astro';
+
+interface Props { q: string; src: string; poster?: string; caption?: string }
+const { q, src, poster, caption } = Astro.props;
+---
+<CardShell flush dark>
+  {/* The whole clip toggles sound. Autoplay is only permitted while muted, so
+      it always starts silent and the first tap turns it on. */}
+  <button class="clip" type="button" data-video aria-pressed="false" aria-label={`Turn the sound on for ${q}`}>
+    <video
+      class="vid"
+      src={src}
+      poster={poster}
+      playsinline
+      muted
+      loop
+      preload="none"
+      aria-label={`Video answer to ${q}`}
+    ></video>
+
+    <span class="sound" aria-hidden="true">
+      <Icon name="muted" size={16} class="off" />
+      <Icon name="sound" size={16} class="on" />
+    </span>
+
+    {caption && <p class="cap">{caption}</p>}
+
+    <span class="foot">
+      <span class="q">{q}</span>
+    </span>
+  </button>
+</CardShell>
+
+<style>
+  .clip {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+  }
+
+  .vid {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    background: #100e0c;
+  }
+
+  /* Affordance only. The whole clip takes the tap. */
+  .sound {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--r-pill);
+    background: rgba(16, 14, 12, 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+  }
+
+  .sound :global(svg) { grid-area: 1 / 1; }
+  .sound :global(.on) { display: none; }
+  .clip[aria-pressed='true'] .sound :global(.on) { display: block; }
+  .clip[aria-pressed='true'] .sound :global(.off) { display: none; }
+
+  .cap {
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    text-align: center;
+    font-size: clamp(15px, 4.2vw, 17px);
+    line-height: 1.45;
+    color: #fff;
+    text-wrap: balance;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 18px rgba(0, 0, 0, 0.6);
+  }
+
+  /* A scrim, so the label survives whatever the frame underneath looks like. */
+  .foot {
+    position: absolute;
+    inset: auto 0 0;
+    display: block;
+    padding: 44px var(--pad) 18px;
+    background: linear-gradient(to top, rgba(16, 14, 12, 0.72), transparent);
+    pointer-events: none;
+  }
+
+  .q { display: block; font-size: 14px; font-weight: 600; color: #fff; }
+</style>

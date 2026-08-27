@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@tinacms/cli": "^2.4.4",
+    "@tinacms/cli": "^2.6.1",
     "@types/node": "^25.9.1",
     "playwright": "^1.62.0",
     "tinacms": "^3.9.1",

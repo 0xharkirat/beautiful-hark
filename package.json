@@ -40,7 +40,7 @@
     "@tinacms/cli": "^2.4.4",
     "@types/node": "^25.9.1",
     "playwright": "^1.62.0",
-    "tinacms": "^3.9.1",
+    "tinacms": "^3.12.1",
     "typescript": "^6.0.3"
   }
 }

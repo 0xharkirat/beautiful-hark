@@ -25,8 +25,6 @@
       "length": "30m"
     }
   ],
-  "faq": [
-    "Tea / coffee is on me.",
-    "It will be a relaxed conversation on random things, so no need to be stressed at all."
-  ]
+  "faq": "Tea / coffee is on me.\n\nIt will be a relaxed conversation on random things, so no need to be stressed at all.\n\nAny questions, message me on [LinkedIn](https://www.linkedin.com/in/talesofhark) or [Instagram](https://www.instagram.com/talesofhark).",
+  "faqHeading": "Good to know"
 }

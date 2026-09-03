@@ -1,0 +1,32 @@
+{
+  "title": "Tea",
+  "quote": "Sharing tea with a fascinating stranger is one of life's true delights.",
+  "quoteSource": "Uncle Iroh",
+  "quoteWork": "Avatar: The Last Airbender",
+  "quoteUrl": "https://www.youtube.com/watch?v=W2ONjMIjMoo",
+  "intro": "The idea of having tea / coffee with strangers came from ***“[Avatar: The Last Airbender S2E8](https://www.youtube.com/watch?v=W2ONjMIjMoo)”*** .\n\nThen I found [Will Berry](https://www.linkedin.com/in/will-berry/) from TEDx Newy is already doing it. So I had a coffee with him, and he encouraged me to do this as well.\n\n![](/uploads/tea/hark-coffee-with-will-berry.jpeg \"Having a coffee with \\\"Will Berry\\\" at The Press Book House, Hunter St.\")\n",
+  "teas": [
+    {
+      "slug": "weekday-tea-coffee",
+      "name": "Weekday tea or coffee",
+      "where": "Mon to Friday. The Press Book House, Ante Meridiem, or suggest your favourite cafe in the CBD.",
+      "length": "30m"
+    },
+    {
+      "slug": "saturday-tea-coffee",
+      "name": "Saturday tea or coffee",
+      "where": "Mills Place in Adamstown, The Press Book House, or suggest one.",
+      "length": "30m"
+    },
+    {
+      "slug": "virtual-tea-coffee",
+      "name": "Virtual tea or coffee",
+      "where": "Anywhere.",
+      "length": "30m"
+    }
+  ],
+  "faq": [
+    "Tea / coffee is on me.",
+    "It will be a relaxed conversation on random things, so no need to be stressed at all."
+  ]
+}

@@ -1,0 +1,207 @@
+---
+/**
+ * The editable region of /tea.
+ *
+ * Everything Tina can change lives in here so the side-by-side preview updates
+ * as you type. The calendar and the behaviour script stay outside in
+ * tea.astro, because the bridge replaces this subtree's HTML on every keystroke
+ * and would throw away a running cal.com embed with it.
+ *
+ * The click handler survives that for the same reason it survives a
+ * ClientRouter swap: it is delegated from the wrapper in tea.astro, which sits
+ * outside this component and is never replaced.
+ */
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import { tinaField } from '@tinacms/astro/tina-field';
+import { richTextComponents } from '../../lib/richtext';
+import type { CmsTea } from '../../lib/data';
+
+interface Props {
+  data?: CmsTea | null;
+  /** Slugs the page is willing to build a calendar for. */
+  allowed: readonly string[];
+  calUser: string;
+}
+
+const { data, allowed, calUser } = Astro.props;
+
+/*
+  A tea with an unknown slug is dropped rather than rendered.
+
+  The Tina field is a fixed set of options, so this cannot happen through the
+  CMS. It can happen by hand-editing the JSON, and the failure it prevents is
+  the quiet one: a link that looks right, opens a panel, and shows cal.com's
+  404 with nothing on the page explaining why.
+*/
+const teas = (data?.teas ?? []).flatMap((t) =>
+  t?.slug && allowed.includes(t.slug) ? [t] : [],
+);
+---
+
+<section class="column pt-10">
+  {data?.title && <h1 data-tina-field={tinaField(data, 'title')}>{data.title}</h1>}
+
+  {data?.quote && (
+    <figure class="pull">
+      <blockquote class="serif" data-tina-field={tinaField(data, 'quote')}>
+        {data.quote}
+      </blockquote>
+      <figcaption class="meta mt-3">
+        <span data-tina-field={tinaField(data, 'quoteSource')}>{data.quoteSource}</span>{
+          data.quoteWork && (
+            <>
+              {', '}
+              <a
+                href={data.quoteUrl ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link"
+                data-tina-field={tinaField(data, 'quoteWork')}
+              >{data.quoteWork}</a>
+            </>
+          )
+        }
+      </figcaption>
+    </figure>
+  )}
+
+  {data?.intro && (
+    <div class="prose mt-8" data-tina-field={tinaField(data, 'intro')}>
+      <TinaMarkdown content={data.intro} components={richTextComponents} />
+    </div>
+  )}
+
+  <!-- Real links, not buttons. tea.astro's script intercepts the click and
+       swaps in the embed, but with the script blocked or still parsing these
+       still go somewhere useful: the same event on cal.com. -->
+  <ul class="teas" data-tina-field={tinaField(data, 'teas')}>
+    {
+      teas.map((tea) => (
+        <li>
+          <a
+            class="tea"
+            href={`https://cal.com/${calUser}/${tea.slug}`}
+            data-tea-open={tea.slug}
+            data-tea-name={tea.name}
+          >
+            <span class="tea-head">
+              <span class="tea-name serif">{tea.name}</span>
+              {tea.length && <span class="meta tea-len">{tea.length}</span>}
+            </span>
+            {tea.where && <span class="tea-where">{tea.where}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  /*
+    Spacing lives here rather than on an mt-* utility, for the reason the .tap
+    rule in global.css already warns about, one step worse.
+
+    A scoped style is compiled to `.pull[data-astro-cid-…]`, which outranks a
+    bare `.mt-7`. So a reset like `margin: 0` here does not merely compete with
+    the utility on the same element, it silently deletes it. Resetting the
+    figure's UA margin and setting the gap in one declaration means there is
+    only ever one rule deciding.
+  */
+  .pull {
+    margin: 28px 0 0;
+  }
+
+  .pull blockquote {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.45;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+
+  /* ── The three teas ──────────────────────────────────────────────── */
+
+  /*
+    Hairline rules, not boxes. Nothing else on this site sits in a card, and a
+    bordered panel here would read as a widget dropped in from another site.
+  */
+  .teas {
+    list-style: none;
+    /* Same reset-eats-the-utility trap as .pull above. */
+    margin: 36px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .teas li {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /*
+    The whole row is the link, and now it says so.
+
+    The anchor already filled the row and already had a pointer cursor, but the
+    only thing that moved on hover was the title's underline, so the row read as
+    "the title is a link with some grey text under it" rather than one target.
+    Tinting the whole box is what makes the real hit area visible.
+
+    The inline padding is cancelled by an equal negative margin, so the tint has
+    room to breathe around the text while the hairline rules above and below
+    stay exactly on the reading measure. Nothing moves; only the highlight is
+    wider than the words.
+  */
+  .tea {
+    display: grid;
+    gap: 5px;
+    padding-block: 18px;
+    padding-inline: 12px;
+    margin-inline: -12px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+  }
+
+  /* aria-current is the open one, so it keeps the tint rather than only
+     showing it under the cursor. */
+  .tea:hover,
+  .tea:focus-visible,
+  .tea[aria-current] {
+    background: color-mix(in oklab, var(--ink) 4%, transparent);
+  }
+
+  .tea-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  /* Same underline-on-hover as the homepage entry list, so a tea and a post
+     announce themselves as the same kind of thing. The aria-current arm is the
+     open one, set by tea.astro when its calendar is showing. */
+  .tea-name {
+    font-size: 18px;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .tea:hover .tea-name,
+  .tea:focus-visible .tea-name,
+  .tea[aria-current] .tea-name {
+    text-decoration-color: var(--accent);
+  }
+
+  .tea-len {
+    flex: none;
+  }
+
+  .tea-where {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+</style>

@@ -23,6 +23,12 @@ export const getDating = () =>
     priority: 'primary',
   });
 
+/** The /tea page. One document, so no slug. */
+export const getTea = () =>
+  requestWithMetadata(client.queries.tea({ relativePath: 'index.json' }), {
+    priority: 'primary',
+  });
+
 export async function listPosts() {
   const result = await client.queries.postConnection();
   return (result.data.postConnection.edges ?? [])
@@ -56,6 +62,8 @@ export type CmsPage = Awaited<ReturnType<typeof getPage>>['data']['page'];
 export type CmsPost = Awaited<ReturnType<typeof getPost>>['data']['post'];
 export type CmsPoem = Awaited<ReturnType<typeof getPoem>>['data']['poem'];
 export type CmsDating = Awaited<ReturnType<typeof getDating>>['data']['dating'];
+export type CmsTea = Awaited<ReturnType<typeof getTea>>['data']['tea'];
+export type TeaOption = NonNullable<NonNullable<CmsTea['teas']>[number]>;
 
 export type DatingChip = NonNullable<NonNullable<CmsDating['chips']>[number]>;
 export type DatingDetail = NonNullable<NonNullable<CmsDating['details']>[number]>;

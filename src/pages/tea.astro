@@ -317,27 +317,69 @@ const data = (await getTea()).data?.tea ?? null;
   }
 
   /*
-    Reserve most of the height the embed settles at, so opening a tea does not
-    shove the footer down and then pull it back a second later.
+    Reserve most of the height the stacked layout settles at, so opening a tea
+    does not shove the footer down and then pull it back a second later.
 
-    Set under the smallest real measurement rather than at the largest: the
-    embed sizes itself, so a floor taller than the actual calendar leaves dead
-    space under it, which is the more visible of the two faults. Measured 1177px
-    at the 640px column and 927px at a 360px phone, both in cal.com's stacked
-    layout. 880 clears the smaller of those, and anything taller simply grows
-    past it.
+    This is the phone and narrow-window case, and the fallback for a browser
+    without zoom. Measured 927px at a 360px screen; 880 clears it and anything
+    taller simply grows past it.
 
-    This number moved when the calendar came onto the reading measure. On the
-    old 1040px track cal.com used its three-pane layout and settled at 569px.
+    The two guards above are deliberate. @supports drops a browser without zoom
+    back to the stacked layout rather than overflowing the page with a 770px
+    box, and the media query keeps phones stacked, where scaling 770px onto a
+    345px screen would leave 6px text.
   */
   .frames {
     min-height: 880px;
   }
 
+  /*
+    cal.com switches to its horizontal three-pane layout above 768px of iframe
+    width, and stacks below it. Measured on the real embed: 768px wide renders
+    stacked and 951px tall, 770px renders three-pane and 538px tall. The
+    breakpoint is that sharp.
+
+    The reading measure only offers 592px, so the panel is rendered at 770 and
+    scaled down to fit. That buys the layout that actually reads well without
+    the calendar being the one element on the site that breaks the column.
+
+    zoom, not transform: scale(). zoom changes the element's layout size, so
+    the space under the calendar collapses with it. A transform would leave the
+    original 538px reserved and open a gap the height of the page.
+  */
+  @supports (zoom: 1) {
+    @media (min-width: 700px) {
+      /*
+        :global on the child, because this element does not exist in the
+        template. build() creates it at runtime, so it never receives the
+        data-astro-cid attribute Astro appends to scoped selectors, and an
+        unqualified `.frames > [data-frame]` compiles to a selector that cannot
+        match it. Measured: zoom computed as 1 until this was added.
+      */
+      .frames > :global([data-frame]) {
+        width: 770px;
+        /*
+          592 / 770 = 0.7688, rounded down so a sub-pixel rounding error cannot
+          spill past the column. Text lands at about 10.8px, small but legible,
+          and the browser's own zoom still works on top of it.
+        */
+        zoom: 0.768;
+      }
+
+      /* The three-pane panel settles near 413px once scaled. */
+      .frames {
+        min-height: 400px;
+      }
+    }
+  }
+
   /* cal.com writes inline styles onto the container it is handed, so the
      plain [hidden] behaviour is not guaranteed to survive. This is the only
-     place on the page where a third party can outrank us. */
-  .frames > [hidden] {
+     place on the page where a third party can outrank us.
+
+     :global for the same reason as the rule above: these containers are built
+     by script, so a scoped selector would never reach them. */
+  .frames > :global([hidden]) {
     display: none !important;
   }
 </style>

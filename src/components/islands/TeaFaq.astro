@@ -7,7 +7,9 @@
  * between the teas and these lines, and an island renders as a single block:
  * one island holding both would put the calendar below the lot.
  */
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
 import { tinaField } from '@tinacms/astro/tina-field';
+import { richTextComponents } from '../../lib/richtext';
 import type { CmsTea } from '../../lib/data';
 
 interface Props {
@@ -15,35 +17,70 @@ interface Props {
 }
 
 const { data } = Astro.props;
-const faq = (data?.faq ?? []).filter((line): line is string => Boolean(line));
 ---
 
-{faq.length > 0 && (
+{data?.faq && (
   <section class="column">
-    <ul class="faq" data-tina-field={tinaField(data, 'faq')}>
-      {faq.map((line) => <li>{line}</li>)}
-    </ul>
+    <hr class="rule" />
+
+    {data.faqHeading && (
+      <h2 class="heading mt-6" data-tina-field={tinaField(data, 'faqHeading')}>
+        {data.faqHeading}
+      </h2>
+    )}
+
+    <div class="faq mt-3" data-tina-field={tinaField(data, 'faq')}>
+      <TinaMarkdown content={data.faq} components={richTextComponents} />
+    </div>
   </section>
 )}
 
 <style>
+  /* Sized down from the page's h2 so it reads as a footnote heading rather
+     than a second title competing with "Tea" at the top. */
+  .heading {
+    font-size: 17px;
+    color: var(--ink-2);
+  }
+
   /*
     Serif is set here rather than borrowing .prose. These lines are Hark
     talking, so they want the same voice as the body above, but .prose also
     brings an 18px size and a 1.25em gap between children that both have to be
     overridden straight back. One font-family is the smaller lie.
-
-    The top margin is in this rule rather than on an mt-* utility because a
-    scoped selector outranks one, so a margin declared here would silently
-    delete it. Same trap the .tap rule in global.css warns about.
   */
   .faq {
-    list-style: none;
-    margin: 36px 0 0;
-    padding: 0;
     font-family: var(--font-serif);
     font-size: 17px;
     line-height: 1.6;
     color: var(--ink-2);
+  }
+
+  /*
+    Each line is its own paragraph now that this is rich text, so the gap
+    between them is set here rather than by .prose. Tight, because these are
+    three short lines and not prose.
+  */
+  .faq :global(p) {
+    margin: 0;
+  }
+  .faq :global(p + p) {
+    margin-top: 0.35em;
+  }
+
+  /* Same treatment body links get, so the LinkedIn and Instagram links match
+     the rest of the page rather than arriving as raw blue. */
+  .faq :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--ink-3);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  }
+  .faq :global(a:hover),
+  .faq :global(a:focus-visible) {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
   }
 </style>

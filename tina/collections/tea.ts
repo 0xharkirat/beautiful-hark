@@ -109,10 +109,21 @@ export const TeaCollection: Collection = {
     },
     {
       type: 'string',
+      name: 'faqHeading',
+      label: 'Small print heading',
+      description: 'The heading above the last section, e.g. "Good to know".',
+    },
+    {
+      /*
+        Rich text rather than a list of plain strings, because these lines now
+        need links in them (the "message me" line). A string list cannot hold
+        one, and adding a second field for the linked line would split one
+        visual block across two forms.
+      */
+      type: 'rich-text',
       name: 'faq',
       label: 'Small print',
-      list: true,
-      description: 'One line each, at the bottom of the page.',
+      description: 'The short lines at the bottom of the page. Links work here.',
     },
   ],
 };

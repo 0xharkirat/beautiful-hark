@@ -46,6 +46,10 @@ const ext = (u?: string | null) => isExternal(u, Astro.site);
     <!-- Hardcoded next to rss rather than added to the Tina nav: the bird is
          an easter egg, and a fifth nav item would announce it. -->
     <a href="/hawky" class="quiet tap">hawky</a>
+    <!-- Also hardcoded rather than added to the Tina nav. /tea is a standing
+         invitation, not a section of the site, and a seventh nav item would
+         give it more weight in the header than it wants. -->
+    <a href="/tea" class="quiet tap">tea</a>
     {social.map((s) => (
       <a
         href={s.url ?? '#'}

@@ -1,0 +1,343 @@
+---
+/**
+ * /tea: book a tea or coffee with Hark.
+ *
+ * The booking itself is cal.com's. This page is the doorway: the story, three
+ * choices, and an inline embed that only exists once someone picks one.
+ *
+ * Nothing here talks to a server of ours. There is no form, no database and no
+ * mail, because cal.com already owns availability, timezones, the invite and
+ * the reminder, and a hand-rolled version of any one of those is a thing that
+ * silently stops working on a Sunday.
+ *
+ * The words are Tina's, in two islands either side of the calendar. The
+ * calendar and the script below are deliberately outside both, because the
+ * bridge replaces an island's HTML on every keystroke and would take a running
+ * cal.com embed with it. The click handler survives because it is delegated
+ * from [data-tea], which wraps the islands and is never replaced.
+ */
+import Base from '../layouts/Base.astro';
+import TinaIsland from '@tinacms/astro/TinaIsland.astro';
+import TeaBody from '../components/islands/TeaBody.astro';
+import TeaFaq from '../components/islands/TeaFaq.astro';
+import { getTea } from '../lib/data';
+import { islands } from '../lib/islands';
+import { CAL_USER, TEA_SLUGS } from '../lib/tea';
+
+const data = (await getTea()).data?.tea ?? null;
+---
+
+<Base
+  title={`${data?.title ?? 'Tea'} | Tales of Hark`}
+  description={data?.quote ?? 'Book a tea or coffee with Hark.'}
+>
+  <div data-tea data-cal-user={CAL_USER}>
+    <TinaIsland name="tea" wrapper={islands.tea.wrapper} primary>
+      <TeaBody data={data} allowed={TEA_SLUGS} calUser={CAL_USER} />
+    </TinaIsland>
+
+    <!--
+      Outside .column on purpose. The reading measure is 640px and cal.com's
+      month view wants closer to 1000, so the calendar gets its own wider track
+      rather than a horizontal scrollbar inside the column.
+
+      It sits directly under the three teas, and they stay on screen while it is
+      open. Picking again is then just clicking the other one, which is both
+      fewer steps than a back button and one less state to be in.
+    -->
+    <section class="stage mt-10" data-tea-stage hidden aria-label="Book a time">
+      <h2 class="stage-title" data-tea-title tabindex="-1"></h2>
+      <p class="meta stage-note mt-4" data-tea-note hidden>Loading the calendar.</p>
+      <div class="frames mt-4" data-tea-frames></div>
+    </section>
+
+    <TinaIsland name="tea-faq" wrapper={islands['tea-faq'].wrapper}>
+      <TeaFaq data={data} />
+    </TinaIsland>
+  </div>
+</Base>
+
+<!--
+  The cal.com loader stub, verbatim from cal.com's own embed dialog.
+
+  It only *defines* window.Cal. The <script src> for embed.js is appended by the
+  stub on the first Cal(...) call, which this page does not make until someone
+  picks a tea. So a reader who never books pays for these few hundred bytes and
+  nothing else, and a bad day at the script host cannot break the page above it.
+
+  is:inline because it has to stay exactly as cal.com ships it, and because it
+  must be defined before the module script below runs.
+-->
+<script is:inline>
+(function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+</script>
+
+<script>
+  /*
+    cal.com's booker lives on cal.com; only the loader is served from
+    app.cal.com. Both values come from cal.com's own code generator, so neither
+    is a guess.
+  */
+  const BOOKER_ORIGIN = 'https://cal.com';
+
+  type CalFn = (...args: unknown[]) => void;
+  type CalGlobal = CalFn & { ns: Record<string, CalFn> };
+
+  const cal = () => (window as unknown as { Cal: CalGlobal }).Cal;
+
+  /** Present only on production deploys; see Analytics.astro. */
+  type Umami = { track: (name: string, data?: Record<string, unknown>) => void };
+  const umami = () => (window as unknown as { umami?: Umami }).umami;
+
+  const themeNow = () =>
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+  const uiConfig = () => ({
+    hideEventTypeDetails: false,
+    layout: 'month_view',
+    theme: themeNow(),
+  });
+
+  /*
+    A theme flip rebuilds the calendar rather than restyling it.
+
+    cal.com's "ui" instruction looks like the way to do this, and it is what
+    Comments.astro does with giscus, but it only lands while the embed is still
+    initialising. Called a few seconds later it is ignored in silence: the
+    iframe src keeps its old theme= and nothing repaints. Sending it a partial
+    config is worse, because it replaces the running config instead of merging
+    into it, so theme without layout re-renders the booker with no layout at
+    all. Measured as the iframe growing from 569px to 1031px and painting
+    nothing.
+
+    So the frame is thrown away and built again at the new theme. That does
+    cost a half-typed booking form, but only for someone who toggles the theme
+    mid-booking. The alternative is a white calendar sitting on a black page,
+    which is the one that reads as broken.
+
+    The handler is a module-level slot rather than an observer created inside
+    mount(), because documentElement outlives a ClientRouter swap and a
+    per-mount observer would stack up one per visit to this page.
+  */
+  let onThemeChange: (() => void) | null = null;
+
+  new MutationObserver(() => onThemeChange?.()).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    onThemeChange = null;
+  });
+
+  const mount = () => {
+    const root = document.querySelector<HTMLElement>('[data-tea]');
+    // astro:page-load fires on every navigation, most of which are not this
+    // page. The dataset flag stops a second bind if it ever fires twice.
+    if (!root || root.dataset.mounted === '1') return;
+    root.dataset.mounted = '1';
+
+    // Read off the DOM rather than repeating the handle in this script, so the
+    // frontmatter stays the one place the cal.com user is written down.
+    const user = root.dataset.calUser ?? '';
+
+    const stage = root.querySelector<HTMLElement>('[data-tea-stage]');
+    const frames = root.querySelector<HTMLElement>('[data-tea-frames]');
+    const title = root.querySelector<HTMLElement>('[data-tea-title]');
+    const note = root.querySelector<HTMLElement>('[data-tea-note]');
+    if (!stage || !frames || !title || !note) return;
+
+    /*
+      One container per event type, created on first pick and then kept.
+
+      cal.com's inline embed writes an iframe into the element it is handed and
+      there is no supported way to repoint an existing one at a different
+      calLink, so switching teas shows a different container rather than
+      rebuilding a shared one. It also means coming back to a tea you already
+      opened keeps whatever you had typed into it.
+
+      The namespace is the element id rather than the slug, so every build gets
+      a fresh one. Re-initialising a namespace that has already rendered is not
+      something cal.com's API promises, and the theme rebuild below needs a
+      clean one each time.
+    */
+    let seq = 0;
+
+    const build = (slug: string) => {
+      const frame = document.createElement('div');
+      frame.dataset.frame = slug;
+      // elementOrSelector takes a selector string, so the element needs an id
+      // for cal.com to find it by.
+      frame.id = `cal-${slug}-${++seq}`;
+      frames.appendChild(frame);
+
+      note.hidden = false;
+      // The note is ours and sits outside the frame, so cal.com cannot clear
+      // it. Retire it the moment the iframe it stood in for exists.
+      new MutationObserver((_, obs) => {
+        if (!frame.querySelector('iframe')) return;
+        note.hidden = true;
+        obs.disconnect();
+      }).observe(frame, { childList: true, subtree: true });
+
+      const Cal = cal();
+      Cal('init', frame.id, { origin: BOOKER_ORIGIN });
+      Cal.ns[frame.id]('inline', {
+        elementOrSelector: `#${frame.id}`,
+        calLink: `${user}/${slug}`,
+        config: { layout: 'month_view', theme: themeNow() },
+      });
+      Cal.ns[frame.id]('ui', uiConfig());
+      return frame;
+    };
+
+    const show = (frame: HTMLElement) => {
+      for (const el of Array.from(frames.children)) {
+        (el as HTMLElement).hidden = el !== frame;
+      }
+    };
+
+    /*
+      Every frame is now the wrong theme, so all of them go. Only the one on
+      screen is built again; the rest cost nothing until they are picked, and
+      rebuilding them here would fetch calendars nobody is looking at.
+
+      Pulling the element out from under cal.com logs one "Instruction couldn't
+      be executed Error: Element not found" from embed.js, which is it noticing
+      the container it was given has gone. It is cal.com's own bookkeeping about
+      a teardown we did on purpose, it fires at most once, and the rebuilt
+      calendar is correct. There is no public teardown call to do this politely.
+    */
+    onThemeChange = () => {
+      const current = frames.querySelector<HTMLElement>('[data-frame]:not([hidden])');
+      const slug = stage.hidden ? undefined : current?.dataset.frame;
+      frames.replaceChildren();
+      if (slug) show(build(slug));
+    };
+
+    const open = (link: HTMLAnchorElement) => {
+      const slug = link.dataset.teaOpen ?? '';
+      const frame =
+        frames.querySelector<HTMLElement>(`[data-frame="${slug}"]`) ?? build(slug);
+      show(frame);
+
+      // The three teas stay on screen, so which one is open has to be visible.
+      // aria-current carries it for a screen reader and the CSS hangs the
+      // accent underline off the same attribute, so they cannot disagree.
+      for (const other of root.querySelectorAll('[data-tea-open]')) {
+        other.removeAttribute('aria-current');
+      }
+      link.setAttribute('aria-current', 'true');
+
+      title.textContent = link.dataset.teaName ?? '';
+      stage.hidden = false;
+
+      // Focus the heading, not the calendar. A keyboard user needs to be told
+      // what opened before being dropped inside a third-party date grid.
+      // preventScroll, then scroll deliberately: focus() alone jumps, and
+      // scrollIntoView inherits the smooth behaviour global.css sets on html,
+      // which the reduced-motion block there already turns back off.
+      title.focus({ preventScroll: true });
+      stage.scrollIntoView({ block: 'start' });
+    };
+
+    // Delegated, so the three links are one handler and nothing has to be
+    // rebound if the list ever grows.
+    root.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement | null;
+      const link = target?.closest<HTMLAnchorElement>('[data-tea-open]');
+      if (!link) return;
+
+      /*
+        Which tea people pick, which is the only interesting number this page
+        has and the one Umami cannot see on its own: opening a calendar is not
+        a navigation, so it produces no pageview.
+
+        Called here rather than through a data-umami-event attribute, because
+        that attribute is handled by the same auto-track branch of the tracker
+        that Analytics.astro turns off to stop it fighting ClientRouter. The
+        explicit call is unaffected by that switch.
+
+        Counted before the modifier check below, so a cmd-click that opens
+        cal.com in its own tab still counts as wanting that tea. Optional
+        chaining because Umami is deferred, is absent outside production, and
+        must never be the reason a click stops working.
+      */
+      umami()?.track('tea-open', { tea: link.dataset.teaOpen ?? '' });
+
+      // Leave modified clicks alone: cmd-click and middle-click mean "open the
+      // cal.com page in a tab", and the href is already right for that.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      e.preventDefault();
+      open(link);
+    });
+  };
+
+  document.addEventListener('astro:page-load', mount);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mount, { once: true });
+  } else {
+    mount();
+  }
+</script>
+
+<style>
+  /* ── The calendar ────────────────────────────────────────────────── */
+
+  /*
+    The calendar sits on the reading measure, same as everything else.
+
+    It used to get its own 1040px track on the grounds that cal.com's month view
+    prefers the room. It does, but the price was the only element on the site
+    that broke the column, so the page had one edge above the calendar and a
+    different one at it. A booking panel is not important enough to be the thing
+    that bends the layout.
+
+    Below roughly 700px cal.com stacks its three panes and grows taller instead,
+    which is the same layout phones get and is already the case this page was
+    tested at. Taller inside the column beats wider outside it.
+  */
+  .stage {
+    width: 100%;
+    max-width: var(--measure);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .stage-title {
+    font-size: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  /* The heading is focused when the calendar opens, so it must not look
+     focused-by-mouse; :focus-visible still draws the ring for keyboard. */
+  .stage-title:focus {
+    outline: none;
+  }
+
+  /*
+    Reserve most of the height the embed settles at, so opening a tea does not
+    shove the footer down and then pull it back a second later.
+
+    Set under the smallest real measurement rather than at the largest: the
+    embed sizes itself, so a floor taller than the actual calendar leaves dead
+    space under it, which is the more visible of the two faults. Measured 1177px
+    at the 640px column and 927px at a 360px phone, both in cal.com's stacked
+    layout. 880 clears the smaller of those, and anything taller simply grows
+    past it.
+
+    This number moved when the calendar came onto the reading measure. On the
+    old 1040px track cal.com used its three-pane layout and settled at 569px.
+  */
+  .frames {
+    min-height: 880px;
+  }
+
+  /* cal.com writes inline styles onto the container it is handed, so the
+     plain [hidden] behaviour is not guaranteed to survive. This is the only
+     place on the page where a third party can outrank us. */
+  .frames > [hidden] {
+    display: none !important;
+  }
+</style>

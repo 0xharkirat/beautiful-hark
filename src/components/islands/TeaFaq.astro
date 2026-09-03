@@ -1,0 +1,49 @@
+---
+/**
+ * The small print at the bottom of /tea.
+ *
+ * A second island over the same document, the way global and global-footer
+ * both read the global one. It is split off because the calendar has to sit
+ * between the teas and these lines, and an island renders as a single block:
+ * one island holding both would put the calendar below the lot.
+ */
+import { tinaField } from '@tinacms/astro/tina-field';
+import type { CmsTea } from '../../lib/data';
+
+interface Props {
+  data?: CmsTea | null;
+}
+
+const { data } = Astro.props;
+const faq = (data?.faq ?? []).filter((line): line is string => Boolean(line));
+---
+
+{faq.length > 0 && (
+  <section class="column">
+    <ul class="faq" data-tina-field={tinaField(data, 'faq')}>
+      {faq.map((line) => <li>{line}</li>)}
+    </ul>
+  </section>
+)}
+
+<style>
+  /*
+    Serif is set here rather than borrowing .prose. These lines are Hark
+    talking, so they want the same voice as the body above, but .prose also
+    brings an 18px size and a 1.25em gap between children that both have to be
+    overridden straight back. One font-family is the smaller lie.
+
+    The top margin is in this rule rather than on an mt-* utility because a
+    scoped selector outranks one, so a margin declared here would silently
+    delete it. Same trap the .tap rule in global.css warns about.
+  */
+  .faq {
+    list-style: none;
+    margin: 36px 0 0;
+    padding: 0;
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+</style>

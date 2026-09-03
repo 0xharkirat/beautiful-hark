@@ -4,15 +4,18 @@
 import type { IslandRegistry } from '@tinacms/astro/experimental';
 import type { QueryResult } from '@tinacms/astro/data';
 
-import type { DatingQuery, GlobalQuery, PageQuery, PoemQuery, PostQuery } from '../../tina/__generated__/types';
-import type { CmsDating, CmsGlobal, CmsPage, CmsPoem, CmsPost } from './data';
+import type { DatingQuery, GlobalQuery, PageQuery, PoemQuery, PostQuery, TeaQuery } from '../../tina/__generated__/types';
+import type { CmsDating, CmsGlobal, CmsPage, CmsPoem, CmsPost, CmsTea } from './data';
 import PageBody from '../components/islands/PageBody.astro';
 import PostBody from '../components/islands/PostBody.astro';
 import PoemBody from '../components/islands/PoemBody.astro';
 import DatingBody from '../components/islands/DatingBody.astro';
+import TeaBody from '../components/islands/TeaBody.astro';
+import TeaFaq from '../components/islands/TeaFaq.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { getDating, getGlobal, getPage, getPoem, getPost } from './data';
+import { getDating, getGlobal, getPage, getPoem, getPost, getTea } from './data';
+import { CAL_USER, TEA_SLUGS } from './tea';
 
 export const islands: IslandRegistry = {
   page: {
@@ -55,6 +58,34 @@ export const islands: IslandRegistry = {
     wrapper: { tag: 'div' },
     propsFromData: (data) => ({
       data: (data as QueryResult<DatingQuery>).data?.dating as CmsDating | undefined,
+    }),
+  },
+  /*
+    Two islands over one document, the way global and global-footer both read
+    the global one. The calendar has to sit between the teas and the small
+    print, and an island renders as a single block, so the page needs to be
+    able to put something between these two.
+  */
+  tea: {
+    fetch: () => getTea(),
+    component: TeaBody,
+    wrapper: { tag: 'div' },
+    propsFromData: (data) => ({
+      data: (data as QueryResult<TeaQuery>).data?.tea as CmsTea | undefined,
+      // The bridge re-renders this island with no page around it, so anything
+      // tea.astro passes on the server has to be repeated here or it is
+      // missing from every refetch. Both come from src/lib/tea.ts for exactly
+      // that reason.
+      allowed: TEA_SLUGS,
+      calUser: CAL_USER,
+    }),
+  },
+  'tea-faq': {
+    fetch: () => getTea(),
+    component: TeaFaq,
+    wrapper: { tag: 'div' },
+    propsFromData: (data) => ({
+      data: (data as QueryResult<TeaQuery>).data?.tea as CmsTea | undefined,
     }),
   },
   global: {

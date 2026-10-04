@@ -5,7 +5,7 @@ import VoiceCard from './VoiceCard.astro';
 import VideoCard from './VideoCard.astro';
 import VitalsCard from './VitalsCard.astro';
 import PeopleCard from './PeopleCard.astro';
-import type { DatingCard, DatingChip, DatingDetail } from '../../lib/data';
+import { type DatingCard, type DatingChip, type DatingDetail, present } from '../../lib/data';
 
 interface Props { feed: DatingCard[]; chips: DatingChip[]; details: DatingDetail[] }
 const { feed, chips, details } = Astro.props;
@@ -40,7 +40,7 @@ const { feed, chips, details } = Astro.props;
     if (c.__typename === 'DatingFeedVitals')
       return <VitalsCard chips={chips} details={details} />;
     if (c.__typename === 'DatingFeedPeople')
-      return <PeopleCard heading={c.heading ?? ''} items={(c.items ?? []).filter(Boolean)} />;
+      return <PeopleCard heading={c.heading ?? ''} items={(c.items ?? []).filter(present)} />;
     return null;
   })}
 </div>

@@ -1,0 +1,93 @@
+---
+/**
+ * A code block with a Copy button. Registered as `code_block` in richtext.ts,
+ * which @tinacms/astro's CodeBlockNode hands the flattened value and language.
+ *
+ * Posts give readers prompts and commands to paste. Selecting a whole block by
+ * hand is fiddly on a phone and easy to get one character short on a laptop,
+ * and one tap is the whole point of a copyable prompt.
+ *
+ * Plain script, bundled once by Astro however many blocks a page has. The
+ * status text lives in a polite live region, so a screen reader hears "Copied"
+ * without the button's own name changing under focus.
+ */
+interface Props {
+  value: string;
+  lang?: string | null;
+}
+
+const { value, lang } = Astro.props;
+---
+
+<div class="code">
+  <pre><code class={lang ? `language-${lang}` : undefined}>{value}</code></pre>
+  <button type="button" class="copy" data-copy aria-label="Copy code">Copy</button>
+  <span class="sr-only" aria-live="polite" data-copy-status></span>
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    const block = button.closest('.code');
+    const code = block?.querySelector('code');
+    const status = block?.querySelector<HTMLElement>('[data-copy-status]');
+    let reset: number | undefined;
+    button.addEventListener('click', async () => {
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code.textContent ?? '');
+        button.textContent = 'Copied';
+      } catch {
+        // No clipboard permission (old browser, or an insecure origin): select
+        // the code instead, so a keyboard copy still takes one press.
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        const selection = getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        button.textContent = 'Selected';
+      }
+      if (status) status.textContent = button.textContent === 'Copied' ? 'Copied to clipboard' : 'Code selected';
+      clearTimeout(reset);
+      reset = window.setTimeout(() => {
+        button.textContent = 'Copy';
+        if (status) status.textContent = '';
+      }, 1600);
+    });
+  }
+</script>
+
+<style>
+  .code {
+    position: relative;
+  }
+  /* Wrap instead of scrolling sideways, and keep a lane on the right, so the
+     button never covers text. These blocks are mostly prompts, which read as
+     sentences; a reader should see the whole thing before copying it, and on a
+     phone a sideways scroll hides most of it. */
+  .code pre {
+    padding-right: 76px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-height: 28px;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--ink-2);
+    background: var(--raised);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .copy:hover {
+    color: var(--ink);
+  }
+  .copy:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+</style>

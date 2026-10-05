@@ -10,6 +10,7 @@
  * them end up behaving differently. Add future overrides to this map.
  */
 import Checklist from '../components/richtext/Checklist.astro';
+import CodeBlock from '../components/richtext/CodeBlock.astro';
 import ImagePair from '../components/richtext/ImagePair.astro';
 import MarkdownImage from '../components/richtext/MarkdownImage.astro';
 import MarkdownLink from '../components/richtext/MarkdownLink.astro';
@@ -21,6 +22,8 @@ export const richTextComponents = {
   // template on some body's schema.
   a: MarkdownLink,
   img: MarkdownImage,
+  // Adds a Copy button to every fenced code block (see CodeBlock.astro).
+  code_block: CodeBlock,
   Video,
   ImagePair,
   Checklist,

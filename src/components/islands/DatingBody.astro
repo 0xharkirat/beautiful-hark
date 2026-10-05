@@ -8,7 +8,7 @@
  */
 import Feed from '../dating/Feed.astro';
 import Icon from '../dating/Icon.astro';
-import type { CmsDating } from '../../lib/data';
+import { type CmsDating, present } from '../../lib/data';
 
 interface Props { data?: CmsDating }
 const { data } = Astro.props;
@@ -28,9 +28,9 @@ const cta = data?.cta ?? 'Say hi. I always reply.';
 
 <main>
   <Feed
-    feed={data?.feed ?? []}
-    chips={data?.chips ?? []}
-    details={data?.details ?? []}
+    feed={(data?.feed ?? []).filter(present)}
+    chips={(data?.chips ?? []).filter(present)}
+    details={(data?.details ?? []).filter(present)}
   />
 
   <section class="outro">

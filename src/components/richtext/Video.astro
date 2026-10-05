@@ -32,9 +32,39 @@ const safePoster = ok(poster);
 // the other. Requesting autoplay and silently getting a still frame is worse
 // than muting something the reader did not choose to start.
 const auto = !!autoPlay;
+
+// A YouTube link in the same url field becomes an embed, so the schema and the
+// lock file stay as they are and an editor pastes whatever link they have:
+// watch?v=, youtu.be/, /embed/ or /shorts/. Only the 11 character id survives,
+// and the player is built from it on youtube-nocookie, which sets no tracking
+// cookies until the reader presses play.
+const youtubeId = safe?.match(/^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})(?:[?&#/]|$)/i)?.[1] ?? null;
+
+// An iframe needs a title for screen readers. The caption already names the
+// video, so reuse it with markdown links reduced to their text and the SSW
+// "Video:" prefix dropped.
+const title =
+  caption
+    ?.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^Video:\s*/i, '')
+    .trim() || 'YouTube video';
 ---
 
-{safe && (
+{youtubeId && (
+  <figure class="fig">
+    <iframe
+      src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
+      title={title}
+      loading="lazy"
+      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+    {caption && <FigCaption caption={caption} />}
+  </figure>
+)}
+
+{safe && !youtubeId && (
   <figure class="fig">
     {/*
       controls stays even on autoplay. An autoplaying loop longer than five
@@ -74,7 +104,7 @@ const auto = !!autoPlay;
   </figure>
 )}
 
-{safe && auto && (
+{safe && !youtubeId && auto && (
   <script is:inline>
     /*
       Do not autoplay for a reader who asked for less motion. The site already
@@ -108,6 +138,16 @@ const auto = !!autoPlay;
     display: block;
     width: 100%;
     height: auto;
+    border-radius: 4px;
+  }
+  /* An iframe has no intrinsic size, so the ratio reserves YouTube's 16:9 box
+     before the player loads and nothing below it jumps. border: 0 replaces the
+     deprecated frameborder attribute, as in Hero.astro. */
+  .fig iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
     border-radius: 4px;
   }
 </style>

@@ -1,0 +1,110 @@
+---
+title: Hark's AI - I cloned my voice for done videos
+excerpt: |
+  I cloned my voice with ElevenLabs and use it from Claude Code, so my done videos make themselves. Here are the steps, the prompts to copy, and what I learned keeping the voice consistent.
+author: ''
+date: 2026-10-05T00:00:00.000Z
+tags:
+  - tag: src/content/tags/ai.mdx
+---
+
+This is **Hark's AI**, my voice clone by ElevenLabs & Claude Code.
+
+<Video url="https://youtu.be/H5bpsZGg4Co" caption="Video: Done Videos with ElevenLabs & Claude Code (3:24)" />
+
+## What you need
+
+* An [ElevenLabs](https://elevenlabs.io) account on the **Starter** plan ($6 a month). It is the cheapest plan with Instant Voice Cloning.
+* [Claude Code](https://claude.com/claude-code)
+* A few minutes of you talking, with no music behind it. (You can also use your already published YouTube videos)
+
+## Step 1 - Create an API key
+
+In ElevenLabs, go to **Developers > API Keys > Create Key**.
+
+Name it `done-videos`, so future you knows what it is for.
+
+Give it only what it needs, or your SysAdmins will get mad at you:
+
+| Endpoint         | Access | Why                                   |
+| ---------------- | ------ | ------------------------------------- |
+| Text to Speech   | Access | Needed: the narration                 |
+| Voices           | Write  | Needed: creating your clone           |
+| Sound Effects    | Access | Optional: if Claude makes your sounds |
+| Music Generation | Access | Optional: if Claude makes your music  |
+| User             | Access | Optional: lets Claude check credits   |
+
+Only the first 2 are required.
+
+Everything else can stay on **No Access**.
+
+Keep **Auto-disable if leaked** on.
+
+## Step 2 - Put the key on your machine
+
+Paste this into Claude Code:
+
+```text
+Save my ElevenLabs API key as an environment variable called ELEVENLABS_API_KEY,
+in a file that stays out of git. Do not ask me for the key.
+Open the file and I will paste it in myself.
+```
+
+I keep mine in `~/.zshrc.local`. Paste the key, save, restart the terminal. Then ask Claude to:
+
+```text
+Check ELEVENLABS_API_KEY is set and works. Do not print the key.
+```
+
+Never paste the key into the chat.
+
+## Step 3 - Clone your voice
+
+```text
+Clone my voice with ElevenLabs Instant Voice Cloning from these videos: <your YouTube links>.
+Use only the parts where I am talking alone, with no music.
+Name the voice "<your name>'s AI".
+```
+
+Or clone it in the ElevenLabs web app: **Voices > Create Voice > Instant Voice Clone**.
+
+## Step 4 - Use it
+
+```text
+Make a 2-3 minute done video for <PBI link>, narrated with my ElevenLabs voice "<your name>'s AI".
+Write the script, voice it with eleven_v4, burn in subtitles, and build the video with Remotion.
+```
+
+That is the prompt I started from. Claude Code wrote the script, made the narration and built the video.
+
+## ⚠️ Notes from my runs
+
+AI voices are not deterministic. My 2nd video came out sounding American 😅
+
+So I measured what keeps it close, and these are the things I follow now:
+
+* **Tell it your accent.** I start every request with `[Indian English accent]`. In a side-by-side test, the same scene went from 100% American to 0% with just this tag.
+* **Keep stability at 0.5** on `eleven_v4`. At 0.7 it sounded calmer, but the clone stopped listening to the accent tag.
+* **Send 500-900 characters per request**, and pass the previous request's ID (`previous_request_ids`) so the tone carries over. ElevenLabs says very short requests drift more.
+* **Fix the `seed`** (the random roll behind each take, like `"seed": 1729`). Same text and same seed gave back a 99% identical take, so I can redo one line without the voice changing.
+* **Slow it down with pauses, not the speed slider.** `eleven_v4` ignores speed.
+* **Do not redo a scene for a mispronounced name.** Mine says "Clod" for Claude sometimes. The subtitles say Claude, and redoing it just burns credits.
+* **Do not pay for sound effects or music.** Royalty-free clicks, typing and background music from the YouTube Audio Library work fine.
+
+With all of these together, across a whole 3 minute video:
+
+|        | American scenes | Sounds like me |
+| ------ | --------------- | -------------- |
+| Before | 7 of 10         | 0.54 - 0.75    |
+| After  | 0 of 10         | 0.66 - 0.79    |
+
+I packed these into a Claude Code skill for my own done videos. It is on [GitHub](https://github.com/0xharkirat/harks-ai-studio) if you want to see how it works.
+
+## What it costs
+
+Starter gives 30k credits a month, about 1 credit per character on `eleven_v4`. A 3 minute script is about 3k characters, so with a few redos that is around 8 videos a month. Unused credits roll over for 2 months.
+
+## 2 rules I do not skip
+
+* Every video says it is my AI, in the intro and the sign-off. On YouTube, I tick "altered or synthetic content".
+* Only clone your own voice, or one you have permission for.

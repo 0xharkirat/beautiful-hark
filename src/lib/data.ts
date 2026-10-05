@@ -71,6 +71,13 @@ export type DatingCard = NonNullable<NonNullable<CmsDating['feed']>[number]>;
 export type DatingPeople = Extract<DatingCard, { __typename: 'DatingFeedPeople' }>;
 export type DatingTestimonial = NonNullable<NonNullable<DatingPeople['items']>[number]>;
 
+/**
+ * Keeps the real items of a Tina list field. The generated types allow null
+ * entries inside every list, and `.filter(Boolean)` does not narrow them away,
+ * so a list passed straight to a component's props fails astro check.
+ */
+export const present = <T>(item: T | null | undefined): item is T => item != null;
+
 export type PageBlock = NonNullable<NonNullable<CmsPage['blocks']>[number]>;
 export type HeroBlock = Extract<PageBlock, { __typename: 'PageBlocksHero' }>;
 export type AboutBlock = Extract<PageBlock, { __typename: 'PageBlocksAbout' }>;
